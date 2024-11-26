@@ -1,0 +1,181 @@
+.md-editor.ProseMirror-focused {
+	@apply outline-none;
+}
+
+.md-editor {
+	@apply bg-white rounded-md py-16 px-24 min-h-[90rem] border border-neutral-100 text-[14pt];
+}
+
+/* Style for bold markup: **text** */
+.md-strong {
+	@apply font-bold;
+}
+
+/* Style for italic markup: *text* */
+.md-em {
+	@apply italic;
+}
+
+/* Style for strikethrough markup: ~~text~~ */
+.md-del {
+	@apply line-through;
+}
+
+/* Style for inline code: `text` */
+.md-codespan {
+	@apply font-mono px-2 rounded-md bg-gray-100;
+}
+
+/* Style for inline math source: $x^2+1=0$ */
+.md-inlinemath {
+	@apply font-mono;
+}
+
+.ProseMirror img {
+	@apply inline;
+}
+
+.md-rendered-image {
+	@apply inline cursor-pointer;
+}
+
+/* Style for footnote reference */
+.md-punctuation.md-hidden+.md-footnoteref {
+	@apply align-super text-xs bg-blue-100 text-blue-500 underline px-1 rounded-md cursor-pointer;
+}
+
+/* Style for links */
+.md-link {
+	@apply cursor-pointer underline text-blue-400;
+}
+
+/* Style for style punctuation */
+.md-punctuation {
+	@apply text-gray-300;
+}
+
+.md-code-block {
+	@apply bg-gray-100 rounded-md p-5;
+}
+
+.ProseMirror ul {
+	@apply list-none ml-9;
+}
+
+.ProseMirror ol {
+	@apply list-decimal ml-[3.5rem];
+}
+
+.ProseMirror ul>li {
+	@apply relative pl-5;
+}
+
+.ProseMirror ul>li.md-list-item::before,
+.ProseMirror ul>li.md-checklist-item div {
+	@apply block absolute top-0 left-0;
+}
+
+.ProseMirror ul>li.md-list-item::before {
+	content: "•";
+}
+
+.ProseMirror table {
+	@apply border-collapse mx-auto;
+}
+
+.ProseMirror th,
+.ProseMirror td {
+	@apply border border-neutral-800 py-1 px-2;
+}
+
+.ProseMirror th {
+	@apply font-bold;
+}
+
+/* Style to hide hidden elements (e.g. punctuation when cursor is near) */
+.md-hidden {
+	@apply hidden;
+}
+
+/* Titles */
+.md-title {
+	@apply font-bold mb-3;
+}
+
+.md-title-1 {
+	@apply text-6xl mb-7;
+}
+
+.md-title-2 {
+	@apply text-5xl;
+}
+
+.md-title-3 {
+	@apply text-4xl;
+}
+
+.md-title-4 {
+	@apply text-3xl;
+}
+
+.md-title-5 {
+	@apply text-2xl;
+}
+
+.md-title-6 {
+	@apply text-lg;
+}
+
+/* Block spacing */
+.ProseMirror>.md-block:not(.md-extended-block):not(:first-child),
+.ProseMirror>ul:not(:first-child),
+.ProseMirror>ol:not(:first-child),
+.ProseMirror>.cm-editor:not(:first-child) {
+	@apply mt-5;
+}
+
+/* Code mirror styling */
+.cm-editor {
+	@apply bg-gray-100 rounded-md;
+}
+
+.cm-scroller {
+	@apply p-3;
+}
+
+.cm-editor.cm-focused {
+	outline: 1px solid cyan;
+}
+
+.cm-panels.cm-panels-bottom {
+	@apply bg-transparent flex justify-end p-2 border-t border-dashed;
+}
+
+/* .cm-editor:not(.cm-focused) .cm-panels.cm-panels-bottom {
+    @apply hidden;
+} */
+
+.cm-code-lang {
+	@apply px-3 py-1 rounded-md bg-gray-200 text-xs text-gray-600 font-mono text-center;
+}
+
+.md-html-block-editor>.cm-editor:not(.cm-focused),
+.md-html-block-editor>.cm-editor:not(.cm-focused) * {
+	@apply !h-0 overflow-hidden;
+}
+
+.md-html-block-editor {
+	@apply min-h-3 hover:bg-neutral-100 hover:rounded-md transition-all cursor-pointer;
+}
+
+.md-toolbar {
+	@apply sticky top-5 flex items-center gap-1 text-neutral-700 mb-5 bg-white border border-neutral-100 rounded-[calc(theme(borderRadius.lg)+0.25rem)] p-1 shadow-md shadow-gray-100 max-w-4xl mx-auto;
+}
+
+.md-toolbar-action {
+	@apply py-1 px-2 rounded-lg hover:bg-neutral-100 cursor-pointer transition-all;
+}
+
+.md-toolbar-action.active {
+	@apply bg-blue-100 text-blue-800;
+}
