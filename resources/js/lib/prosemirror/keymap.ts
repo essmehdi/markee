@@ -2,23 +2,23 @@ import { baseKeymap, chainCommands, setBlockType } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { Fragment } from "prosemirror-model";
 import {
-	liftListItem,
-	splitListItem,
-	wrapInList,
+    liftListItem,
+    splitListItem,
+    wrapInList,
 } from "prosemirror-schema-list";
 import { Command, EditorState, Selection, TextSelection, Transaction } from "prosemirror-state";
 import {
-	addColumnAfter,
-	addColumnBefore,
-	addRowAfter,
-	addRowBefore,
-	deleteColumn,
-	deleteRow,
+    addColumnAfter,
+    addColumnBefore,
+    addRowAfter,
+    addRowBefore,
+    deleteColumn,
+    deleteRow,
 } from "prosemirror-tables";
 import { EditorView } from "prosemirror-view";
+import { toggleBasicMarkup } from "./commands/markup";
 import mdSchema from "./editor-schema";
 import { CODE_BLOCK_STARTER } from "./plugins/text-shortcuts";
-import { punctuationWrapperCommand, toggleBasicMarkup } from "./commands/markup";
 
 /**
  * The default editor shortcuts
@@ -33,7 +33,6 @@ export default function editorKeymap(schema: typeof mdSchema) {
 		liftListItem(schema.nodes.list_item),
 		baseKeymap["Enter"],
 	);
-	// keys["Shift-Enter"] = keys["Enter"];
 	keys["Shift-Enter"] = insertSoftBreak;
 	keys["Mod-Shift-l"] = chainCommands(wrapInList(schema.nodes.bullet_list));
 	keys["Mod-Shift-o"] = chainCommands(wrapInList(schema.nodes.ordered_list));
@@ -81,7 +80,7 @@ function insertSoftBreak(
 /**
  * Create a table with the cursor content as the first cell
  */
-function wrapInTable(
+export function wrapInTable(
 	editorState: EditorState,
 	dispatch?: EditorView["dispatch"],
 ): boolean {
@@ -115,7 +114,7 @@ function wrapInTable(
 /**
  * Toggles the list item into a checkbox
  */
-function toggleListItemCheckbox(
+export function toggleListItemCheckbox(
 	editorState: EditorState,
 	dispatch?: EditorView["dispatch"],
 ): boolean {

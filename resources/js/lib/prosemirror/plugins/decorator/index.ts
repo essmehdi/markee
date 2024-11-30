@@ -49,6 +49,17 @@ function decorate(node: Node): ParsingResult {
 	marked.use({ extensions: [inlineMath, footnoteRef] });
 
 	node.descendants((node, position) => {
+		console.log("Analyzing node", node);
+		if (
+			node.type === mdSchema.nodes.blockquote ||
+			node.type === mdSchema.nodes.bullet_list ||
+			node.type === mdSchema.nodes.ordered_list ||
+			node.type === mdSchema.nodes.list_item
+		) {
+			console.log("Complex node, diving...");
+			return true;
+		}
+
 		/* The offset is to align the ProseMirror positions with the tokens
 		 * analyzer. ProseMirror positioning system includes also the html tags
 		 */
@@ -241,13 +252,9 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 	inlinemath: (markup, isSelectionNear) => {
 		const decorationsArray = [...punctuationDecorator(markup, isSelectionNear)];
 		decorationsArray.push(
-			Decoration.inline(
-				markup.punctuation[0][1],
-				markup.punctuation[1][0],
-				{
-					class: `md-inlinemath${isSelectionNear ? "" : " md-hidden"}`,
-				},
-			),
+			Decoration.inline(markup.punctuation[0][1], markup.punctuation[1][0], {
+				class: `md-inlinemath${isSelectionNear ? "" : " md-hidden"}`,
+			}),
 		);
 		if (!isSelectionNear) {
 			decorationsArray.push(

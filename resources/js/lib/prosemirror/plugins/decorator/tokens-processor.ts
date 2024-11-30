@@ -1,13 +1,22 @@
 import { Token, Tokens } from "marked";
+import {
+	Heading,
+	HeadingLevel,
+	InlineMath,
+	Markup,
+	Position,
+} from "../../../types";
 import { HTMLToken } from "./html-processor";
-import { Heading, HeadingLevel, InlineMath, Markup, Position } from "~/lib/types";
 
 /**
  * Describes markdown markup punctuation
  */
 type BasicPunctuationData = {
 	char: string;
-	count: number | [number, number] | ((token: Token) => number | [number, number]); // Array of numbers is punctuation is asymmetrical
+	count:
+	| number
+	| [number, number]
+	| ((token: Token) => number | [number, number]); // Array of numbers is punctuation is asymmetrical
 	parseInside?: boolean;
 	leftSideOnlyPunctuation?: boolean;
 };
@@ -66,14 +75,16 @@ export function processTokenForRanges(
 	token: Token,
 	initCursor: number,
 	excludedTypes: string[],
-	htmlStack: HTMLToken[]
+	htmlStack: HTMLToken[],
 ): [Markup[], number] {
 	const ranges: Markup[] = [];
 	const tokenLength = token.raw.length;
 
 	const htmlRawLength = htmlStack.length;
 	if (htmlRawLength > 0 && token.type !== "html") {
-		htmlStack[htmlRawLength - 1].afterContent = htmlStack[htmlRawLength - 1].afterContent.concat(token.raw);
+		htmlStack[htmlRawLength - 1].afterContent = htmlStack[
+			htmlRawLength - 1
+		].afterContent.concat(token.raw);
 	}
 
 	let cursor = initCursor;
@@ -116,7 +127,7 @@ export function processTokenForRanges(
 					nestedToken,
 					nestedCursor,
 					excludedTypes.concat([token.type]),
-					htmlStack
+					htmlStack,
 				);
 				ranges.push(...newNestedMarkups);
 				nestedCursor = newNestedCursor;
@@ -134,7 +145,9 @@ export function processTokenForRanges(
 			(markup as InlineMath).expression = token.expression;
 		} else if (token.type === "heading") {
 			(markup as Heading).level = token.raw.startsWith("#")
-				? ((token.raw.trim().length - 1 - (token as Tokens.Heading).text.length) as HeadingLevel)
+				? ((token.raw.trim().length -
+					1 -
+					(token as Tokens.Heading).text.length) as HeadingLevel)
 				: 1;
 		}
 
@@ -159,7 +172,7 @@ export function processTokenForRanges(
 				nestedToken,
 				nestedCursor,
 				excludedTypes.concat([token.type]),
-				htmlStack
+				htmlStack,
 			);
 			ranges.push(...newNestedMarkups);
 			nestedCursor = newNestedCursor;
@@ -171,7 +184,7 @@ export function processTokenForRanges(
 				nestedToken,
 				nestedCursor,
 				excludedTypes.concat([token.type]),
-				htmlStack
+				htmlStack,
 			);
 			ranges.push(...newNestedMarkups);
 			nestedCursor = newNestedCursor;
@@ -203,7 +216,10 @@ export function processTokenForRanges(
 	} else if (token.type === "image") {
 		const punctuation = [
 			[context[0], context[0] + 2],
-			[context[0] + 2 + token.text.length, context[0] + 2 + token.text.length + 2],
+			[
+				context[0] + 2 + token.text.length,
+				context[0] + 2 + token.text.length + 2,
+			],
 			[context[1] - 1, context[1]],
 		] as Position[];
 

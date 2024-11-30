@@ -13,7 +13,10 @@ function getCellAttrs(dom: HTMLElement | string, extraAttrs: Attrs): Attrs {
 	}
 
 	const widthAttr = dom.getAttribute("data-colwidth");
-	const widths = widthAttr && /^\d+(,\d+)*$/.test(widthAttr) ? widthAttr.split(",").map((s) => Number(s)) : null;
+	const widths =
+		widthAttr && /^\d+(,\d+)*$/.test(widthAttr)
+			? widthAttr.split(",").map((s) => Number(s))
+			: null;
 	const colspan = Number(dom.getAttribute("colspan") || 1);
 	const result = {
 		colspan,
@@ -34,7 +37,8 @@ function setCellAttrs(node: Node, extraAttrs: Attrs): Attrs {
 	const attrs: Record<string, string> = {};
 	if (node.attrs.colspan != 1) attrs.colspan = node.attrs.colspan;
 	if (node.attrs.rowspan != 1) attrs.rowspan = node.attrs.rowspan;
-	if (node.attrs.colwidth) attrs["data-colwidth"] = node.attrs.colwidth.join(",");
+	if (node.attrs.colwidth)
+		attrs["data-colwidth"] = node.attrs.colwidth.join(",");
 	for (const prop in extraAttrs) {
 		const setter = extraAttrs[prop].setDOMAttr;
 		if (setter) setter(node.attrs[prop], attrs);
@@ -101,27 +105,31 @@ const mdSchema = new Schema({
 				return [
 					"li",
 					{
-						class: typeof node.attrs.checked !== "boolean" ? "md-list-item" : "md-checklist-item",
+						class:
+							typeof node.attrs.checked !== "boolean"
+								? "md-list-item"
+								: "md-checklist-item",
 						checked: node.attrs.checked,
 					},
 					0,
 				];
 			},
 		},
-		// soft_break: {
-    //   inline: true,
-    //   group: "inline",
-    //   selectable: false,
-    //   parseDOM: [{tag: "br"}],
-    //   toDOM() { return ["br"] }
-    // },
+		blockquote: {
+			content: "block+",
+			group: "block",
+			parseDOM: [{ tag: "blockquote" }],
+			toDOM() {
+				return ["blockquote", 0];
+			},
+		},
 		html: {
 			content: "inline*",
 			group: "block",
 			code: true,
 		},
 		table: {
-			content: "table_row table_row table_row*",
+			content: "table_row table_row+",
 			tableRole: "table",
 			isolating: true,
 			group: "block",

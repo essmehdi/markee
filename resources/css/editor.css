@@ -92,6 +92,10 @@
 	@apply font-bold;
 }
 
+.ProseMirror blockquote {
+	@apply border-l-8 border-blue-600 text-neutral-600 italic pl-5;
+}
+
 /* Style to hide hidden elements (e.g. punctuation when cursor is near) */
 .md-hidden {
 	@apply hidden;
@@ -178,4 +182,8 @@
 
 .md-toolbar-action.active {
 	@apply bg-blue-100 text-blue-800;
+}
+
+.md-toolbar-separator {
+	@apply text-neutral-200;
 }
