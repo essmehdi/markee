@@ -128,6 +128,11 @@ const mdSchema = new Schema({
 			group: "block",
 			code: true,
 		},
+		math_block: {
+			content: "inline*",
+			group: "block",
+			code: true,
+		},
 		table: {
 			content: "table_row table_row+",
 			tableRole: "table",

@@ -1,7 +1,7 @@
 import { Node } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-import mdSchema from "../editor-schema";
+import mdSchema from "@/lib/prosemirror/editor-schema";
 
 function decorate(doc: Node) {
 	const decorations: Decoration[] = [];

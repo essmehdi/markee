@@ -11,7 +11,6 @@ import {
     addColumnAfter,
     addColumnBefore,
     addRowAfter,
-    addRowBefore,
     deleteColumn,
     deleteRow,
 } from "prosemirror-tables";
@@ -19,6 +18,7 @@ import { EditorView } from "prosemirror-view";
 import { toggleBasicMarkup } from "./commands/markup";
 import mdSchema from "./editor-schema";
 import { CODE_BLOCK_STARTER } from "./plugins/text-shortcuts";
+import { addRowBefore } from "./commands/tables";
 
 /**
  * The default editor shortcuts

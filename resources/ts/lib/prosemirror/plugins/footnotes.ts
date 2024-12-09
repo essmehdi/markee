@@ -1,6 +1,6 @@
 import { Node } from "prosemirror-model";
 import { NodeSelection, Plugin } from "prosemirror-state";
-import mdSchema from "../editor-schema";
+import mdSchema from "@/lib/prosemirror/editor-schema";
 
 type Footnote = {
 	label: string;

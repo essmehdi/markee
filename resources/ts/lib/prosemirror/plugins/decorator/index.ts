@@ -1,13 +1,13 @@
-import { footnoteRef, inlineMath } from "../../../marked";
-import { marked } from "marked";
+import { marked, Token } from "marked";
 import { Node, NodeType } from "prosemirror-model";
-import { EditorState, Plugin, PluginKey, Selection } from "prosemirror-state";
-import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
-import type { Markup, Position } from "../../../types";
-import mdSchema from "../../editor-schema";
-import html from "../../widgets/html-widget";
-import image from "../../widgets/image-widget";
-import inlineMathWidget from "../../widgets/inline-math-widget";
+import { EditorState, Plugin, PluginKey } from "prosemirror-state";
+import { Decoration, DecorationSet } from "prosemirror-view";
+import { footnoteRef, inlineMath } from "@/lib/marked";
+import type { Markup } from "@/lib/types";
+import mdSchema from "@/lib/prosemirror/editor-schema";
+import html from "@/lib/prosemirror/widgets/html-widget";
+import image from "@/lib/prosemirror/widgets/image-widget";
+import inlineMathWidget from "@/lib/prosemirror/widgets/inline-math-widget";
 import { HTMLToken, processHTMLTokens } from "./html-processor";
 import { processTokenForRanges } from "./tokens-processor";
 
@@ -21,6 +21,7 @@ type MarkupDecorationHandlers = {
 
 type Transform = {
 	targetType: NodeType;
+	token?: Token; // Necessary if the transformation needs info from the token
 	position: number;
 };
 
@@ -49,15 +50,17 @@ function decorate(node: Node): ParsingResult {
 	marked.use({ extensions: [inlineMath, footnoteRef] });
 
 	node.descendants((node, position) => {
-		console.log("Analyzing node", node);
 		if (
 			node.type === mdSchema.nodes.blockquote ||
 			node.type === mdSchema.nodes.bullet_list ||
 			node.type === mdSchema.nodes.ordered_list ||
 			node.type === mdSchema.nodes.list_item
 		) {
-			console.log("Complex node, diving...");
 			return true;
+		}
+
+		if (node.type !== mdSchema.nodes.paragraph) {
+			return false;
 		}
 
 		/* The offset is to align the ProseMirror positions with the tokens
@@ -75,13 +78,21 @@ function decorate(node: Node): ParsingResult {
 		let cursor = position + 1;
 		const htmlStack: HTMLToken[] = [];
 		for (const token of tokens) {
+			console.log(token);
 			if (token.type === "space") {
+				cursor += token.raw.length;
 				continue;
 			}
 			if (token.type === "html") {
-				transforms.push({ targetType: mdSchema.nodes.html, position });
+				transforms.push({ targetType: mdSchema.nodes.html, position, token });
+			} else if (token.type === "table") {
+				transforms.push({ targetType: mdSchema.nodes.table, position: cursor, token });
 			} else {
-				transforms.push({ targetType: mdSchema.nodes.paragraph, position });
+				transforms.push({
+					targetType: mdSchema.nodes.paragraph,
+					position,
+					token,
+				});
 			}
 			const [newRanges, newPosition] = processTokenForRanges(
 				token,
@@ -256,17 +267,15 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				class: `md-inlinemath${isSelectionNear ? "" : " md-hidden"}`,
 			}),
 		);
-		if (!isSelectionNear) {
-			decorationsArray.push(
-				Decoration.widget(
-					markup.punctuation[0][1],
-					inlineMathWidget(markup.expression),
-					{
-						key: markup.expression,
-					},
-				),
-			);
-		}
+		decorationsArray.push(
+			Decoration.widget(
+				markup.punctuation[0][1],
+				inlineMathWidget(markup.expression, isSelectionNear),
+				{
+					key: `${markup.expression}-${isSelectionNear}`,
+				},
+			),
+		);
 		return decorationsArray;
 	},
 	html: (markup, isSelectionNear) => {
@@ -393,6 +402,7 @@ export function selectionMarkupPosition(
 	markupType: Markup["type"],
 ): Markup | null {
 	const selection = editorState.selection;
+	console.log("Checking markup", selection.from);
 	const markups = markdownDecorator.getState(editorState)?.markups ?? [];
 	const filteredMarkups = markups.filter((markup) => {
 		return (
@@ -401,6 +411,7 @@ export function selectionMarkupPosition(
 			markup.context[1] >= selection.to
 		);
 	});
+	console.log(filteredMarkups);
 	return filteredMarkups.pop() ?? null;
 }
 

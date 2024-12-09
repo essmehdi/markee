@@ -1,5 +1,5 @@
 import { Token } from "marked";
-import { Markup } from "~/lib/types";
+import { Markup } from "@/lib/types";
 
 export type HTMLToken = {
 	token: Token;

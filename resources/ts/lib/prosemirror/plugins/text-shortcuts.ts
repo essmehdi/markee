@@ -1,13 +1,14 @@
 import { wrapInList } from "prosemirror-schema-list";
 import { Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import mdSchema from "../editor-schema";
+import mdSchema from "@/lib/prosemirror/editor-schema";
 
 export const CODE_BLOCK_STARTER = /^```([^`].*)?$/m;
 export const UNORDERED_LIST_STARTER = /^-\s/m;
 export const ORDERED_LIST_STARTER = /^(\d+).\s/m;
 export const DOUBLE_BREAK = /\n\n/;
 export const QUOTE_STARTER = /^>\s/;
+export const MATH_BLOCK_STARTER = /^\$\$\s*$/;
 
 type Shortcut = {
 	regex: RegExp;
@@ -90,6 +91,17 @@ const shortcuts: Record<string, Shortcut> = {
 			editorView.dispatch(transaction);
 		},
 	},
+	mathBlock: {
+		regex: MATH_BLOCK_STARTER,
+		transaction(match, editorView, range) {
+			const transaction = editorView.state.tr.replaceRangeWith(
+				match.index === 0 ? range[0] : range[0] - 1, // Replace also the line break
+				range[1],
+				mdSchema.nodes.math_block.createAndFill()!,
+			);
+			editorView.dispatch(transaction);
+		},
+	}
 };
 
 const textShortcuts = new Plugin({

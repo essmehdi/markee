@@ -1,12 +1,11 @@
-import { EditorView } from "prosemirror-view";
-import { Markup } from "../../../types";
-import { toggleBasicMarkup } from "../../commands/markup";
-import { selectionMarkupPosition } from "../decorator";
-import mdSchema from "../../editor-schema";
-import { liftListItem, wrapInList } from "prosemirror-schema-list";
-import { Command } from "prosemirror-state";
 import { setBlockType } from "prosemirror-commands";
-import { toggleListItemCheckbox } from "../../keymap";
+import { wrapInList } from "prosemirror-schema-list";
+import { EditorView } from "prosemirror-view";
+import { Markup } from "@/lib/types";
+import { toggleBasicMarkup } from "@/lib/prosemirror/commands/markup";
+import mdSchema from "@/lib/prosemirror/editor-schema";
+import { toggleListItemCheckbox, wrapInTable } from "@/lib/prosemirror/keymap";
+import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/decorator";
 
 type OptionWithId = {
 	id: string;
@@ -110,11 +109,11 @@ export default class MenuView {
 			name: "Inline math",
 			description: "Makes the selection inline math",
 			onClick: (view) => {
-				const toggleCommand = toggleBasicMarkup("codespan", "`");
+				const toggleCommand = toggleBasicMarkup("inlinemath", "$");
 				toggleCommand(view.state, view.dispatch);
 			},
 			getActiveMarkup(view) {
-				return selectionMarkupPosition(view.state, "codespan");
+				return selectionMarkupPosition(view.state, "inlinemath");
 			},
 		},
 		{
@@ -169,6 +168,26 @@ export default class MenuView {
 			description: "Makes the selected block a blockuote",
 			onClick: (view) => {
 				setBlockType(mdSchema.nodes.blockquote)(view.state, view.dispatch);
+			},
+		},
+		{
+			id: "action_insert_math_block",
+			type: "action",
+			icon: "ph-function",
+			name: "Math block",
+			description: "Makes the selected block a math block",
+			onClick: (view) => {
+				setBlockType(mdSchema.nodes.math_block)(view.state, view.dispatch);
+			},
+		},
+		{
+			id: "action_insert_table",
+			type: "action",
+			icon: "ph-table",
+			name: "Table",
+			description: "Makes the selected block a table",
+			onClick: (view) => {
+				wrapInTable(view.state, view.dispatch);
 			},
 		},
 	];

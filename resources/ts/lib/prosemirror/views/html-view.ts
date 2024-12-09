@@ -1,10 +1,17 @@
 import { defaultKeymap, indentWithTab } from "@codemirror/commands";
-import { defaultHighlightStyle, syntaxHighlighting } from "@codemirror/language";
-import { EditorView as CodeMirror, keymap as cmKeymap, drawSelection } from "@codemirror/view";
+import {
+	defaultHighlightStyle,
+	syntaxHighlighting,
+} from "@codemirror/language";
+import {
+	EditorView as CodeMirror,
+	keymap as cmKeymap,
+	drawSelection,
+} from "@codemirror/view";
 import { Node, Schema } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import SyncedCodeMirrorView from "./synced-codemirror-view";
-import { autoCloseTags, html } from "@codemirror/lang-html"
+import { autoCloseTags, html } from "@codemirror/lang-html";
 
 /**
  * Provides the node view for the HTML block. When focused, it shows
@@ -14,14 +21,23 @@ export default class HTMLView extends SyncedCodeMirrorView {
 	private container: HTMLDivElement;
 	private renderedHTMLContainer: HTMLDivElement;
 
-	constructor(node: Node, view: EditorView, getPos: () => number | undefined, mdSchema: Schema) {
+	constructor(
+		node: Node,
+		view: EditorView,
+		getPos: () => number | undefined,
+		mdSchema: Schema,
+	) {
 		super(node, view, getPos, mdSchema);
 
 		// HTML editor
 		this.cm = new CodeMirror({
 			doc: this.node.textContent,
 			extensions: [
-				cmKeymap.of([...this.codeMirrorKeymap(), ...defaultKeymap, indentWithTab]),
+				cmKeymap.of([
+					...this.codeMirrorKeymap(),
+					...defaultKeymap,
+					indentWithTab,
+				]),
 				drawSelection(),
 				syntaxHighlighting(defaultHighlightStyle),
 				html(),
@@ -32,8 +48,8 @@ export default class HTMLView extends SyncedCodeMirrorView {
 
 		// Rendered HTML block
 		this.renderedHTMLContainer = document.createElement("div");
-		this.renderedHTMLContainer.innerHTML = this.node.textContent.trim();
-		this.renderedHTMLContainer.classList.add("md-html-block-render")
+		this.renderHTML(this.node.textContent);
+		this.renderedHTMLContainer.classList.add("md-html-block-render");
 
 		this.container = document.createElement("div");
 		this.container.appendChild(this.cm.dom);
@@ -46,8 +62,12 @@ export default class HTMLView extends SyncedCodeMirrorView {
 	override update(node: Node): boolean {
 		const handledUpdate = super.update(node);
 		if (handledUpdate) {
-			this.renderedHTMLContainer.innerHTML = node.textContent.trim();
+			this.renderHTML(node.textContent);
 		}
 		return handledUpdate;
+	}
+
+	renderHTML(html: string) {
+		this.renderedHTMLContainer.innerHTML = html.trim();
 	}
 }
