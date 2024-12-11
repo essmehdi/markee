@@ -1,8 +1,8 @@
-import { marked, Token } from "marked";
+import { Token } from "marked";
+import marked from "@/lib/marked";
 import { Node, NodeType } from "prosemirror-model";
 import { EditorState, Plugin, PluginKey } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-import { footnoteRef, inlineMath } from "@/lib/marked";
 import type { Markup } from "@/lib/types";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import html from "@/lib/prosemirror/widgets/html-widget";
@@ -15,7 +15,7 @@ import { processTokenForRanges } from "./tokens-processor";
 type MarkupDecorationHandlers = {
 	[K in Markup["type"]]: (
 		markup: Extract<Markup, { type: K }>,
-		isSelectionNear: boolean,
+		isSelectionNear: boolean
 	) => Decoration[];
 };
 
@@ -47,19 +47,25 @@ function decorate(node: Node): ParsingResult {
 		return EMPTY_RESULT;
 	}
 
-	marked.use({ extensions: [inlineMath, footnoteRef] });
-
-	node.descendants((node, position) => {
+	node.descendants((node, position, parent) => {
 		if (
 			node.type === mdSchema.nodes.blockquote ||
 			node.type === mdSchema.nodes.bullet_list ||
 			node.type === mdSchema.nodes.ordered_list ||
-			node.type === mdSchema.nodes.list_item
+			node.type === mdSchema.nodes.list_item ||
+			node.type === mdSchema.nodes.table ||
+			node.type === mdSchema.nodes.table_row //||
+			// node.type === mdSchema.nodes.table_header ||
+			// node.type === mdSchema.nodes.table_cell
 		) {
 			return true;
 		}
 
-		if (node.type !== mdSchema.nodes.paragraph) {
+		if (
+			node.type !== mdSchema.nodes.paragraph &&
+			node.type !== mdSchema.nodes.table_header &&
+			node.type !== mdSchema.nodes.table_cell
+		) {
 			return false;
 		}
 
@@ -67,7 +73,7 @@ function decorate(node: Node): ParsingResult {
 		 * analyzer. ProseMirror positioning system includes also the html tags
 		 */
 		const nodeText = node.textBetween(0, node.nodeSize - 2, null, (leaf) =>
-			leaf.type === mdSchema.nodes.soft_break ? "\n" : "",
+			leaf.type === mdSchema.nodes.soft_break ? "\n" : ""
 		);
 
 		if (nodeText.length === 0) {
@@ -78,33 +84,41 @@ function decorate(node: Node): ParsingResult {
 		let cursor = position + 1;
 		const htmlStack: HTMLToken[] = [];
 		for (const token of tokens) {
-			console.log(token);
 			if (token.type === "space") {
 				cursor += token.raw.length;
 				continue;
 			}
-			if (token.type === "html") {
-				transforms.push({ targetType: mdSchema.nodes.html, position, token });
-			} else if (token.type === "table") {
-				transforms.push({ targetType: mdSchema.nodes.table, position: cursor, token });
-			} else {
-				transforms.push({
-					targetType: mdSchema.nodes.paragraph,
-					position,
-					token,
-				});
+			// Transform blocks into appropriate nodes
+			if (
+				parent &&
+				(parent.type === mdSchema.nodes.doc ||
+					parent.type === mdSchema.nodes.list_item ||
+					parent.type === mdSchema.nodes.blockquote)
+			) {
+				if (token.type === "html" && node.type !== mdSchema.nodes.html) {
+					transforms.push({ targetType: mdSchema.nodes.html, position, token });
+				} else if (token.type === "table" && node.type !== mdSchema.nodes.table) {
+					transforms.push({
+						targetType: mdSchema.nodes.table,
+						position: cursor,
+						token,
+					});
+				} else if (token.type === "paragraph" && node.type !== mdSchema.nodes.paragraph) {
+					transforms.push({
+						targetType: mdSchema.nodes.paragraph,
+						position,
+						token,
+					});
+				}
 			}
 			const [newRanges, newPosition] = processTokenForRanges(
 				token,
 				cursor,
 				[],
-				htmlStack,
+				htmlStack
 			);
 			markups.push(...newRanges);
 			cursor = newPosition;
-		}
-		if (htmlStack.length === 0) {
-			transforms.push({ targetType: mdSchema.nodes.paragraph, position });
 		}
 		markups.push(...processHTMLTokens(htmlStack));
 		return false;
@@ -122,7 +136,7 @@ function decorate(node: Node): ParsingResult {
  */
 function styleDecorator(
 	markup: Markup,
-	isSelectionNear: boolean,
+	isSelectionNear: boolean
 ): Decoration[] {
 	const decorationsArray = [];
 	if (markup.punctuation.length > 0) {
@@ -133,8 +147,8 @@ function styleDecorator(
 				markup.punctuation[1]?.[0] ?? markup.context[1],
 				{
 					class: decoClass,
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -143,7 +157,7 @@ function styleDecorator(
 
 function punctuationDecorator(
 	markup: Markup,
-	isSelectionNear: boolean,
+	isSelectionNear: boolean
 ): Decoration[] {
 	const decorationsArray: Decoration[] = [];
 	markup.punctuation.forEach((punctuation) => {
@@ -154,7 +168,7 @@ function punctuationDecorator(
 		decorationsArray.push(
 			Decoration.inline(punctuation[0], punctuation[1], {
 				class: punctuationClass,
-			}),
+			})
 		);
 	});
 	return decorationsArray;
@@ -162,7 +176,7 @@ function punctuationDecorator(
 
 function genericDecorator(
 	markup: Markup,
-	isSelectionNear: boolean,
+	isSelectionNear: boolean
 ): Decoration[] {
 	return [
 		...styleDecorator(markup, isSelectionNear),
@@ -188,8 +202,8 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					markup.punctuation[1]?.[0] ?? markup.context[1],
 					{
 						class: decoClass,
-					},
-				),
+					}
+				)
 			);
 		}
 
@@ -202,7 +216,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				Decoration.inline(punctuation[0], punctuation[1], {
 					class: punctuationClass,
 					level: markup.level.toString(),
-				}),
+				})
 			);
 		});
 
@@ -216,7 +230,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 			decorationsArray.push(
 				Decoration.inline(markup.punctuation[1][1], markup.punctuation[2][0], {
 					class: "md-hidden",
-				}),
+				})
 			);
 			decorationsArray.push(
 				Decoration.inline(markup.punctuation[0][1], markup.punctuation[1][0], {
@@ -224,7 +238,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					href: markup.href,
 					title: markup.title ?? "",
 					role: "link",
-				}),
+				})
 			);
 		} else if (markup.punctuation.length === 0) {
 			decorationsArray.push(
@@ -233,29 +247,29 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					href: markup.href,
 					title: markup.title ?? "",
 					role: "link",
-				}),
+				})
 			);
 		}
 		return decorationsArray;
 	},
 	image: (markup, isSelectionNear) => {
-		const decorationArray = [...styleDecorator(markup, isSelectionNear)];
+		const decorationArray = [...punctuationDecorator(markup, isSelectionNear)];
 		if (!isSelectionNear) {
 			decorationArray.push(
 				Decoration.inline(markup.punctuation[1][1], markup.punctuation[2][0], {
 					class: "md-hidden",
-				}),
+				})
 			);
 			decorationArray.push(
 				Decoration.inline(markup.punctuation[0][1], markup.punctuation[1][0], {
 					class: "md-hidden",
-				}),
+				})
 			);
 			decorationArray.push(
 				Decoration.widget(
 					markup.context[0],
-					image(markup.url, markup.alt, markup.title),
-				),
+					image(markup.url, markup.alt, markup.title)
+				)
 			);
 		}
 		return decorationArray;
@@ -265,7 +279,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 		decorationsArray.push(
 			Decoration.inline(markup.punctuation[0][1], markup.punctuation[1][0], {
 				class: `md-inlinemath${isSelectionNear ? "" : " md-hidden"}`,
-			}),
+			})
 		);
 		decorationsArray.push(
 			Decoration.widget(
@@ -273,8 +287,8 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				inlineMathWidget(markup.expression, isSelectionNear),
 				{
 					key: `${markup.expression}-${isSelectionNear}`,
-				},
-			),
+				}
+			)
 		);
 		return decorationsArray;
 	},
@@ -286,8 +300,8 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					Decoration.inline(
 						markup.punctuation[0][1],
 						markup.punctuation[1][0],
-						{ style: markup.style },
-					),
+						{ style: markup.style }
+					)
 				);
 			} else {
 				const styleClasses = markup.decorations.reduce(
@@ -295,15 +309,15 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 						["em", "strong", "del", "codespan"].includes(type)
 							? acc.concat(`md-${type}`)
 							: acc,
-					[] as string[],
+					[] as string[]
 				);
 				decorationsArray.push(
 					Decoration.inline(markup.context[0], markup.context[1], {
 						class: "md-hidden",
-					}),
+					})
 				);
 				decorationsArray.push(
-					Decoration.widget(markup.context[0], html(markup.code, styleClasses)),
+					Decoration.widget(markup.context[0], html(markup.code, styleClasses))
 				);
 			}
 		}
@@ -311,8 +325,8 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 	},
 };
 
-const markdownDecorator = new Plugin({
-	key: new PluginKey("decorator"),
+const markdownParser = new Plugin({
+	key: new PluginKey("parser"),
 	state: {
 		init(_, { doc }) {
 			return decorate(doc);
@@ -344,7 +358,8 @@ const markdownDecorator = new Plugin({
 
 				const markupDecorationHandler = DECORATIONS_MAP[markup.type];
 				decorationArray.push(
-					...markupDecorationHandler(markup, isSelectionNear),
+					// @ts-expect-error Union type and never madness
+					...markupDecorationHandler(markup, isSelectionNear)
 				);
 			});
 
@@ -399,11 +414,10 @@ const markdownDecorator = new Plugin({
  */
 export function selectionMarkupPosition(
 	editorState: EditorState,
-	markupType: Markup["type"],
+	markupType: Markup["type"]
 ): Markup | null {
 	const selection = editorState.selection;
-	console.log("Checking markup", selection.from);
-	const markups = markdownDecorator.getState(editorState)?.markups ?? [];
+	const markups = markdownParser.getState(editorState)?.markups ?? [];
 	const filteredMarkups = markups.filter((markup) => {
 		return (
 			markup.context[0] <= selection.from &&
@@ -411,8 +425,7 @@ export function selectionMarkupPosition(
 			markup.context[1] >= selection.to
 		);
 	});
-	console.log(filteredMarkups);
 	return filteredMarkups.pop() ?? null;
 }
 
-export default markdownDecorator;
+export default markdownParser;

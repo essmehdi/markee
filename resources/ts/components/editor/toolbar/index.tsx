@@ -3,7 +3,7 @@ import { Toggle } from "@/components/ui/toggle";
 import { toggleBasicMarkup } from "@/lib/prosemirror/commands/markup";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import { toggleListItemCheckbox, wrapInTable } from "@/lib/prosemirror/keymap";
-import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/decorator";
+import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/parser";
 import { Markup } from "@/lib/types";
 import {
 	useEditorEventCallback,
@@ -80,7 +80,6 @@ const ACTIONS: ToolbarAction[] = [
 		},
 		getActiveMarkup(state) {
 			const result = selectionMarkupPosition(state, "strong");
-			console.log("Bold", result);
 			return result;
 		},
 	},
@@ -268,7 +267,7 @@ export default function Toolbar() {
 
 	const toolbarActions = getToolbarActions();
 	return (
-		<div className="flex justify-between sticky top-5 w-full max-w-6xl items-center gap-1 text-neutral-700 mb-5 bg-white border border-neutral-100 rounded-[calc(theme(borderRadius.lg)+0.25rem)] p-1 shadow-md shadow-gray-100 mx-auto">
+		<div className="flex justify-between sticky top-5 w-full max-w-6xl items-center gap-1 text-neutral-700 mb-5 bg-white border border-neutral-100 rounded-[calc(theme(borderRadius.lg)+0.25rem)] p-1 shadow-md shadow-gray-100 mx-auto z-[1]">
 			<Menu />
 			<div id="editor-toolbar" className="flex items-center gap-1">
 				{toolbarActions.toggles}

@@ -2,7 +2,7 @@ import { EditorState, TextSelection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Markup, Position } from "@/lib/types";
 import mdSchema from "@/lib/prosemirror/editor-schema";
-import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/decorator";
+import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/parser";
 
 /**
  * Returns a command that wraps the selection inside a punctuation string

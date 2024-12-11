@@ -1,4 +1,4 @@
-import { TokenizerAndRendererExtension } from "marked";
+import { marked, TokenizerAndRendererExtension } from "marked";
 
 /**
  * Adds support for inline math: $\sqrt{-1}=i$
@@ -45,3 +45,7 @@ export const footnoteRef: TokenizerAndRendererExtension = {
 		}
 	},
 };
+
+marked.use({ extensions: [footnoteRef, inlineMath] });
+
+export default marked;

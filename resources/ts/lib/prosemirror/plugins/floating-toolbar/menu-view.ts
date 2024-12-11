@@ -5,7 +5,7 @@ import { Markup } from "@/lib/types";
 import { toggleBasicMarkup } from "@/lib/prosemirror/commands/markup";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import { toggleListItemCheckbox, wrapInTable } from "@/lib/prosemirror/keymap";
-import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/decorator";
+import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/parser";
 
 type OptionWithId = {
 	id: string;

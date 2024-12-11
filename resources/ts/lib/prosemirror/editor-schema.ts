@@ -60,6 +60,10 @@ const mdSchema = new Schema({
 			attrs: {
 				...sharedBlockAttrs,
 			},
+			parseDOM: [{
+				tag: "p",
+				preserveWhitespace: "full"
+			}]
 		},
 		code: {
 			group: "block",
@@ -76,6 +80,7 @@ const mdSchema = new Schema({
 			inline: true,
 			group: "inline",
 			selectable: false,
+			linebreakReplacement: true,
 			toDOM() {
 				return ["br"];
 			},
@@ -140,7 +145,7 @@ const mdSchema = new Schema({
 			group: "block",
 			parseDOM: [{ tag: "table" }],
 			toDOM() {
-				return ["table", ["tbody", 0]];
+				return ["table", { class: "md-block" }, ["tbody", 0]];
 			},
 		},
 		table_row: {

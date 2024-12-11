@@ -5,7 +5,7 @@ import { tableEditing } from "prosemirror-tables";
 import { EditorView, NodeViewConstructor } from "prosemirror-view";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import editorKeymap from "@/lib/prosemirror/keymap";
-import markdownDecorator from "@/lib/prosemirror/plugins/decorator";
+import markdownParser from "@/lib/prosemirror/plugins/parser";
 import floatingToolbar from "@/lib/prosemirror/plugins/floating-toolbar";
 import footnoter from "@/lib/prosemirror/plugins/footnotes";
 import listItemDecorator from "@/lib/prosemirror/plugins/list-checkbox";
@@ -37,7 +37,7 @@ const editorInitialState = EditorState.create({
 	plugins: [
 		history(),
 		keymap(editorKeymap(mdSchema)),
-		markdownDecorator,
+		markdownParser,
 		transformer,
 		textShortcuts,
 		listItemDecorator,

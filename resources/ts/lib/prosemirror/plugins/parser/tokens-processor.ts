@@ -5,7 +5,7 @@ import {
 	InlineMath,
 	Markup,
 	Position,
-} from "../../../types";
+} from "@/lib/types";
 import { HTMLToken } from "./html-processor";
 
 /**
@@ -51,13 +51,13 @@ export const basicPunctuationData: Record<string, BasicPunctuationData> = {
 	heading: {
 		char: "#",
 		count: (token) => {
-			if (token.raw.startsWith("#")) {
-				return token.raw.trim().length - (token as Tokens.Heading).text.length;
+			if (token.raw.trim().startsWith("#")) {
+				const whitespaceShift = token.raw.match(/^\s+/)?.[0].length ?? 0;
+				return [whitespaceShift + (token as Tokens.Heading).depth + 1, 0];
 			}
-			return 0; // Deals with the heading with dashes or equals format
+			return [0, token.raw.trim().length - (token as Tokens.Heading).text.length]; // Deals with the heading with dashes or equals format
 		},
 		parseInside: true,
-		leftSideOnlyPunctuation: true,
 	},
 };
 export const basicDecorators = Object.keys(basicPunctuationData);
@@ -144,11 +144,7 @@ export function processTokenForRanges(
 		if (token.type === "inlinemath") {
 			(markup as InlineMath).expression = token.expression;
 		} else if (token.type === "heading") {
-			(markup as Heading).level = token.raw.startsWith("#")
-				? ((token.raw.trim().length -
-					1 -
-					(token as Tokens.Heading).text.length) as HeadingLevel)
-				: 1;
+			(markup as Heading).level = token.depth;
 		}
 
 		ranges.push(markup);

@@ -1,14 +1,13 @@
 import { Plugin, TextSelection } from "prosemirror-state";
 import mdSchema from "@/lib/prosemirror/editor-schema";
-import markdownDecorator from "./decorator";
+import markdownParser from "./parser";
 import { Tokens } from "marked";
-import { Fragment } from "prosemirror-model";
 
 const transformer = new Plugin({
 	view() {
 		return {
 			update(view) {
-				const parsingResult = markdownDecorator.getState(view.state);
+				const parsingResult = markdownParser.getState(view.state);
 				if (parsingResult) {
 					let transaction = view.state.tr;
 					let transformsCount = 0;
@@ -58,12 +57,6 @@ const transformer = new Plugin({
 									...tableRows,
 								]);
 
-								console.log(
-									"Replacing by table from",
-									transform.position,
-									"to",
-									transform.position + token.raw.length,
-								);
 								// Replace the node with table block
 								transaction = transaction.replaceRangeWith(
 									transform.position,
