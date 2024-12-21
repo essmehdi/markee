@@ -81,6 +81,7 @@ function decorate(node: Node): ParsingResult {
 		}
 
 		const tokens = marked.lexer(nodeText);
+		console.log(position);
 		let cursor = position + 1;
 		const htmlStack: HTMLToken[] = [];
 		for (const token of tokens) {
@@ -97,13 +98,19 @@ function decorate(node: Node): ParsingResult {
 			) {
 				if (token.type === "html" && node.type !== mdSchema.nodes.html) {
 					transforms.push({ targetType: mdSchema.nodes.html, position, token });
-				} else if (token.type === "table" && node.type !== mdSchema.nodes.table) {
+				} else if (
+					token.type === "table" &&
+					node.type !== mdSchema.nodes.table
+				) {
 					transforms.push({
 						targetType: mdSchema.nodes.table,
 						position: cursor,
 						token,
 					});
-				} else if (token.type === "paragraph" && node.type !== mdSchema.nodes.paragraph) {
+				} else if (
+					token.type === "paragraph" &&
+					node.type !== mdSchema.nodes.paragraph
+				) {
 					transforms.push({
 						targetType: mdSchema.nodes.paragraph,
 						position,
@@ -123,7 +130,7 @@ function decorate(node: Node): ParsingResult {
 		markups.push(...processHTMLTokens(htmlStack));
 		return false;
 	});
-
+	console.log(markups);
 	return {
 		markups: markups,
 		htmlTransforms: transforms,

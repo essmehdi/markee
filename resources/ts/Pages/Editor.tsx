@@ -21,6 +21,7 @@ import "~/css/editor.css";
 import Toolbar from "@/components/editor/toolbar";
 import { ProseMirror } from "@nytimes/react-prosemirror";
 import BaseLayout from "@/components/layouts/base-layout";
+import "prosemirror-view/style/prosemirror.css";
 
 const nodeViews: { [key: string]: NodeViewConstructor } = {
 	paragraph(node, view, getPos) {
@@ -62,13 +63,15 @@ export default function Editor() {
 						mount={mount}
 						defaultState={editorInitialState}
 						attributes={{
-							class: "md-editor",
-							autofocus: "true"
+							// class: "md-editor",
+							autofocus: "true",
 						}}
 						nodeViews={nodeViews}
 					>
 						<Toolbar />
-						<div ref={setMount} />
+						<div className="md-editor">
+							<div ref={setMount} />
+						</div>
 					</ProseMirror>
 				</div>
 			</div>

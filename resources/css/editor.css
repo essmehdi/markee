@@ -1,9 +1,12 @@
-.md-editor.ProseMirror-focused {
+.md-editor > div.ProseMirror-focused {
 	@apply outline-none;
 }
 
 .md-editor {
 	@apply bg-white rounded-md py-16 px-24 min-h-[90rem] border border-neutral-100 text-[14pt];
+}
+.exported {
+	@apply text-[8pt];
 }
 
 /* Style for bold markup: **text** */
@@ -109,10 +112,6 @@
 	@apply hidden;
 }
 
-p.md-block {
-	@apply break-words;
-}
-
 /* Titles */
 .md-title {
 	@apply font-bold mb-3;
@@ -142,6 +141,34 @@ p.md-block {
 	@apply text-lg;
 }
 
+.exported .md-title {
+	@apply font-bold mb-1;
+}
+
+.exported .md-title-1 {
+	@apply text-2xl mb-3;
+}
+
+.exported .md-title-2 {
+	@apply text-xl;
+}
+
+.exported .md-title-3 {
+	@apply text-lg;
+}
+
+.exported .md-title-4 {
+	@apply text-base;
+}
+
+.exported .md-title-5 {
+	@apply text-sm;
+}
+
+.exported .md-title-6 {
+	@apply text-xs;
+}
+
 /* Block spacing */
 .ProseMirror>.md-block:not(.md-extended-block):not(:first-child),
 .ProseMirror>ul:not(:first-child),
@@ -150,9 +177,20 @@ p.md-block {
 	@apply mt-5;
 }
 
+.exported.ProseMirror>.md-block:not(.md-extended-block):not(:first-child),
+.exported.ProseMirror>ul:not(:first-child),
+.exported.ProseMirror>ol:not(:first-child),
+.exported.ProseMirror>.cm-editor:not(:first-child) {
+	@apply mt-2;
+}
+
 /* Code mirror styling */
 .cm-editor {
 	@apply bg-gray-100 rounded-md overflow-hidden;
+}
+
+.cm-editor * {
+	@apply font-mono;
 }
 
 .cm-scroller {
@@ -165,6 +203,10 @@ p.md-block {
 
 .cm-panels.cm-panels-bottom {
 	@apply bg-gray-100 flex justify-end p-2 border-t border-dashed z-0;
+}
+
+.exported .cm-panels.cm-panels-bottom {
+	@apply hidden;
 }
 
 /* .cm-editor:not(.cm-focused) .cm-panels.cm-panels-bottom {
@@ -200,4 +242,24 @@ p.md-block {
 
 .md-toolbar-separator {
 	@apply text-neutral-200;
+}
+
+@media print {
+	body *:not(.exported, .exported *) {
+		display: none;
+	}
+
+	@page :footer {
+        display: none
+    }
+ 
+    @page :header {
+        display: none
+    }
+}
+
+* {
+	-webkit-print-color-adjust: exact !important;   /* Chrome, Safari 6 – 15.3, Edge */
+    color-adjust: exact !important;                 /* Firefox 48 – 96 */
+    print-color-adjust: exact !important;           /* Firefox 97+, Safari 15.4+ */
 }

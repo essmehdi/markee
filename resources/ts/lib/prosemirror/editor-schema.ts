@@ -149,7 +149,7 @@ const mdSchema = new Schema({
 			},
 		},
 		table_row: {
-			content: "(table_cell | table_header)*",
+			content: "(table_cell | table_header)+",
 			tableRole: "row",
 			parseDOM: [{ tag: "tr" }],
 			toDOM() {

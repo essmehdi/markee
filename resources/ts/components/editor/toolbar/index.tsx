@@ -24,7 +24,7 @@ import {
 	TextStrikethrough,
 } from "@phosphor-icons/react";
 import { ListCheck } from "lucide-react";
-import { setBlockType } from "prosemirror-commands";
+import { setBlockType, wrapIn } from "prosemirror-commands";
 import { wrapInList } from "prosemirror-schema-list";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -190,7 +190,7 @@ const ACTIONS: ToolbarAction[] = [
 		name: "Blockquote",
 		description: "Makes the selected block a blockuote",
 		onClick: (view) => {
-			setBlockType(mdSchema.nodes.blockquote)(view.state, view.dispatch);
+			wrapIn(mdSchema.nodes.blockquote)(view.state, view.dispatch);
 		},
 	},
 	{

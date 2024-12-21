@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import * as button from "@/components/ui/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -9,13 +9,21 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { browserPrint, generatePDF } from "@/lib/prosemirror/export/pdf";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import { getNewDocFromMarkdown } from "@/lib/prosemirror/serialization/deserializer";
 import { useEditorEventCallback } from "@nytimes/react-prosemirror";
-import { Export, FileMd, FilePdf, List } from "@phosphor-icons/react";
-import jsPDF from "jspdf";
+import {
+	Export,
+	File,
+	FileMd,
+	FilePdf,
+	List,
+	Printer,
+} from "@phosphor-icons/react";
 import { Node, Slice } from "prosemirror-model";
-import { ChangeEvent, memo, useRef } from "react";
+import { ChangeEvent, useRef } from "react";
+import { getMarkdownFromDocumentAsync } from "@/lib/prosemirror/export/markdown";
 
 function Menu() {
 	const openFileInputRef = useRef<HTMLInputElement>(null);
@@ -40,13 +48,25 @@ function Menu() {
 		}
 	};
 
-	const exportToPdf = useEditorEventCallback((view) => {
-		let pdf = new jsPDF("p", "pt", "a4");
-		pdf.html(view.dom, {
-			callback(doc) {
-				doc.save();
-			}
-		})
+	const printDocument = useEditorEventCallback((view) => {
+		browserPrint(view);
+	});
+
+	const exportToMarkdown = useEditorEventCallback((view) => {
+		getMarkdownFromDocumentAsync(view).then((code) => {
+			const mdBlob = new Blob([code], { type: "text/markdown" });
+			const mdBlobURL = URL.createObjectURL(mdBlob);
+
+			const link = document.createElement("a");
+			link.download = "exported.md";
+			link.href = mdBlobURL;
+			link.click();
+			URL.revokeObjectURL(mdBlobURL);
+		});
+	});
+
+	const exportToPDF = useEditorEventCallback((view) => {
+		generatePDF(view);
 	});
 
 	return (
@@ -57,18 +77,18 @@ function Menu() {
 				name="menu-open-file"
 				id="menu-open-file-input"
 				className="hidden"
-				accept="text/*"
+				accept=".txt,.md"
 				onChange={(e) => openFileHandler(e)}
 			/>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost">
+				<button.Button variant="ghost">
 					<List />
 					Menu
-				</Button>
+				</button.Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-56">
 				<DropdownMenuItem onSelect={() => openFileInputRef.current?.click()}>
-					<FileMd />
+					<File />
 					Import file
 				</DropdownMenuItem>
 				<DropdownMenuSub>
@@ -78,9 +98,17 @@ function Menu() {
 					</DropdownMenuSubTrigger>
 					<DropdownMenuPortal>
 						<DropdownMenuSubContent>
-							<DropdownMenuItem onSelect={exportToPdf}>
+							<DropdownMenuItem onSelect={printDocument}>
+								<Printer />
+								Print
+							</DropdownMenuItem>
+							<DropdownMenuItem onSelect={exportToPDF}>
 								<FilePdf />
 								PDF
+							</DropdownMenuItem>
+							<DropdownMenuItem onSelect={exportToMarkdown}>
+								<FileMd />
+								Markdown
 							</DropdownMenuItem>
 						</DropdownMenuSubContent>
 					</DropdownMenuPortal>
@@ -90,4 +118,4 @@ function Menu() {
 	);
 }
 
-export default memo(Menu);
+export default Menu;

@@ -2,6 +2,7 @@ import { wrapInList } from "prosemirror-schema-list";
 import { Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import mdSchema from "@/lib/prosemirror/editor-schema";
+import { addCommandToTransaction } from "../utils/transactions";
 
 export const CODE_BLOCK_STARTER = /^```([^`].*)?$/m;
 export const UNORDERED_LIST_STARTER = /^-\s/m;
@@ -16,7 +17,7 @@ type Shortcut = {
 	transaction: (
 		match: RegExpMatchArray,
 		editorView: EditorView,
-		range: [number, number],
+		range: [number, number]
 	) => void;
 };
 const shortcuts: Record<string, Shortcut> = {
@@ -26,7 +27,7 @@ const shortcuts: Record<string, Shortcut> = {
 			const transaction = editorView.state.tr.replaceRangeWith(
 				match.index === 0 ? range[0] : range[0] - 1, // Replace also the line break
 				range[1],
-				mdSchema.nodes.code.create({ language: match[1] ?? "" }),
+				mdSchema.nodes.code.create({ language: match[1] ?? "" })
 			);
 			editorView.dispatch(transaction);
 		},
@@ -35,19 +36,17 @@ const shortcuts: Record<string, Shortcut> = {
 		regex: UNORDERED_LIST_STARTER,
 		ignoreCursor: true,
 		transaction: (match, editorView, range) => {
+			let transaction;
 			if (match.index === 0) {
-				editorView.dispatch(editorView.state.tr.deleteRange(...range));
+				transaction = editorView.state.tr.deleteRange(...range);
 			} else {
-				editorView.dispatch(
-					editorView.state.tr
-						.deleteRange(range[0] - 1, range[1])
-						.split(range[0] - 1),
-				);
+				transaction = editorView.state.tr
+					.deleteRange(range[0] - 1, range[1])
+					.split(range[0] - 1);
 			}
-			wrapInList(mdSchema.nodes.bullet_list)(
-				editorView.state,
-				editorView.dispatch,
-			);
+			const wrapInListCommand = wrapInList(mdSchema.nodes.bullet_list);
+			addCommandToTransaction(editorView.state, transaction, wrapInListCommand);
+			editorView.dispatch(transaction);
 		},
 	},
 	orderedList: {
@@ -55,19 +54,19 @@ const shortcuts: Record<string, Shortcut> = {
 		ignoreCursor: true,
 		transaction: (match, editorView, range) => {
 			const startNumber = parseInt(match[1]);
+			let transaction;
 			if (match.index === 0) {
-				editorView.dispatch(editorView.state.tr.deleteRange(...range));
+				transaction = editorView.state.tr.deleteRange(...range);
 			} else {
-				editorView.dispatch(
+				transaction =
 					editorView.state.tr
 						.deleteRange(range[0] - 1, range[1])
-						.split(range[0]),
-				);
+						.split(range[0])
+				;
 			}
-			wrapInList(mdSchema.nodes.ordered_list, { order: startNumber })(
-				editorView.state,
-				editorView.dispatch,
-			);
+			const wrapInListCommand = wrapInList(mdSchema.nodes.ordered_list, { order: startNumber });
+			addCommandToTransaction(editorView.state, transaction, wrapInListCommand);
+			editorView.dispatch(transaction);
 		},
 	},
 	doubleBreak: {
@@ -75,7 +74,7 @@ const shortcuts: Record<string, Shortcut> = {
 		ignoreCursor: true,
 		transaction(match, editorView, range) {
 			editorView.dispatch(
-				editorView.state.tr.deleteRange(...range).split(range[0]),
+				editorView.state.tr.deleteRange(...range).split(range[0])
 			);
 		},
 	},
@@ -86,7 +85,7 @@ const shortcuts: Record<string, Shortcut> = {
 			const transaction = editorView.state.tr.replaceRangeWith(
 				match.index === 0 ? range[0] : range[0] - 1, // Replace also the line break
 				range[1],
-				mdSchema.nodes.blockquote.createAndFill()!,
+				mdSchema.nodes.blockquote.createAndFill()!
 			);
 			editorView.dispatch(transaction);
 		},
@@ -97,11 +96,11 @@ const shortcuts: Record<string, Shortcut> = {
 			const transaction = editorView.state.tr.replaceRangeWith(
 				match.index === 0 ? range[0] : range[0] - 1, // Replace also the line break
 				range[1],
-				mdSchema.nodes.math_block.createAndFill()!,
+				mdSchema.nodes.math_block.createAndFill()!
 			);
 			editorView.dispatch(transaction);
 		},
-	}
+	},
 };
 
 const textShortcuts = new Plugin({
@@ -114,13 +113,13 @@ const textShortcuts = new Plugin({
 					)
 						return (
 							node.type ===
-							(view.state.schema as typeof mdSchema).nodes.blockquote ||
+								(view.state.schema as typeof mdSchema).nodes.blockquote ||
 							node.type ===
-							(view.state.schema as typeof mdSchema).nodes.ordered_list ||
+								(view.state.schema as typeof mdSchema).nodes.ordered_list ||
 							node.type ===
-							(view.state.schema as typeof mdSchema).nodes.bullet_list ||
+								(view.state.schema as typeof mdSchema).nodes.bullet_list ||
 							node.type ===
-							(view.state.schema as typeof mdSchema).nodes.list_item
+								(view.state.schema as typeof mdSchema).nodes.list_item
 						);
 
 					const nodePosition = position;
@@ -131,9 +130,9 @@ const textShortcuts = new Plugin({
 						null,
 						(leafNode) =>
 							leafNode.type ===
-								(view.state.schema as typeof mdSchema).nodes.soft_break
+							(view.state.schema as typeof mdSchema).nodes.soft_break
 								? "\n"
-								: "",
+								: ""
 					);
 
 					const selection = view.state.selection;
@@ -160,7 +159,7 @@ const textShortcuts = new Plugin({
 								shortcutInfo.transaction(
 									codeBlockMatch,
 									view,
-									range as [number, number],
+									range as [number, number]
 								);
 							}
 
