@@ -10,7 +10,7 @@ import * as pdfMake from "pdfmake/build/pdfmake";
 import * as pdfFonts from "pdfmake/build/vfs_fonts";
 import { Content, ContentText, TDocumentDefinitions } from "pdfmake/interfaces";
 import markdownParser from "../plugins/parser";
-import { Markup, Position } from "../../types";
+import { Markup, Position } from "../types";
 
 type NodeHandlerMap = {
 	[key: keyof typeof mdSchema.nodes]: (

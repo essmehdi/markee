@@ -4,7 +4,7 @@ import { toggleBasicMarkup } from "@/lib/prosemirror/commands/markup";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import { toggleListItemCheckbox, wrapInTable } from "@/lib/prosemirror/keymap";
 import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/parser";
-import { Markup } from "@/lib/types";
+import { Markup } from "@/lib/prosemirror/types";
 import {
 	useEditorEventCallback,
 	useEditorState,
@@ -29,6 +29,11 @@ import { wrapInList } from "prosemirror-schema-list";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import Menu from "./menu";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type OptionWithId = {
 	id: string;
@@ -39,6 +44,7 @@ type OptionWithId = {
 type BaseToolbarAction = {
 	id: string;
 	type: string;
+	shortcut?: string[];
 };
 
 interface Toggle extends BaseToolbarAction {
@@ -82,6 +88,7 @@ const ACTIONS: ToolbarAction[] = [
 			const result = selectionMarkupPosition(state, "strong");
 			return result;
 		},
+		shortcut: ["Ctrl", "B"],
 	},
 	{
 		id: "toggle_italic",
@@ -96,6 +103,7 @@ const ACTIONS: ToolbarAction[] = [
 		getActiveMarkup(state) {
 			return selectionMarkupPosition(state, "em");
 		},
+		shortcut: ["Ctrl", "I"],
 	},
 	{
 		id: "toggle_strike",
@@ -110,6 +118,7 @@ const ACTIONS: ToolbarAction[] = [
 		getActiveMarkup(state) {
 			return selectionMarkupPosition(state, "del");
 		},
+		shortcut: ["Ctrl", "Shift", "X"],
 	},
 	{
 		id: "toggle_inline_code",
@@ -124,6 +133,7 @@ const ACTIONS: ToolbarAction[] = [
 		getActiveMarkup(state) {
 			return selectionMarkupPosition(state, "codespan");
 		},
+		shortcut: ["Ctrl", "`"],
 	},
 	{
 		id: "toggle_inline_math",
@@ -138,6 +148,7 @@ const ACTIONS: ToolbarAction[] = [
 		getActiveMarkup(state) {
 			return selectionMarkupPosition(state, "inlinemath");
 		},
+		shortcut: ["Ctrl", "M"],
 	},
 	{
 		id: "action_insert_unordered_list",
@@ -148,6 +159,7 @@ const ACTIONS: ToolbarAction[] = [
 		onClick: (view) => {
 			wrapInList(mdSchema.nodes.bullet_list)(view.state, view.dispatch);
 		},
+		shortcut: ["Ctrl", "Shift", "L"],
 	},
 	{
 		id: "action_insert_ordered_list",
@@ -158,6 +170,7 @@ const ACTIONS: ToolbarAction[] = [
 		onClick: (view) => {
 			wrapInList(mdSchema.nodes.ordered_list)(view.state, view.dispatch);
 		},
+		shortcut: ["Ctrl", "Shift", "O"],
 	},
 	{
 		id: "action_insert_check_list",
@@ -182,6 +195,7 @@ const ACTIONS: ToolbarAction[] = [
 				view.dispatch
 			);
 		},
+		shortcut: ["Ctrl", "Shift", "K"],
 	},
 	{
 		id: "action_insert_blockquote",
@@ -234,27 +248,63 @@ export default function Toolbar() {
 		const toggleGroup: JSX.Element[] = [];
 		const actionGroup: JSX.Element[] = [];
 
-		ACTIONS.map((action) => {
+		ACTIONS.forEach((action) => {
 			if (action.type === "toggle") {
 				toggleGroup.push(
-					<Toggle
-						key={action.id}
-						pressed={action.getActiveMarkup(editorState) !== null}
-						onMouseDown={(event) => applyAction(action.onClick, event)}
-					>
-						{action.icon}
-					</Toggle>
+					<Tooltip key={action.id}>
+						<TooltipTrigger>
+							<Toggle
+								key={action.id}
+								pressed={action.getActiveMarkup(editorState) !== null}
+								onMouseDown={(event) => applyAction(action.onClick, event)}
+							>
+								{action.icon}
+							</Toggle>
+						</TooltipTrigger>
+						<TooltipContent className="flex flex-col items-center">
+							<p>{action.name}</p>
+							{action.shortcut && (
+								<div className="text-sm">
+									{action.shortcut?.map((key, index) => (
+										<>
+											{index !== 0 && "+"}
+											<kbd className="px-1 bg-neutral-100 rounded-[0.3rem]">
+												{key}
+											</kbd>
+										</>
+									))}
+								</div>
+							)}
+						</TooltipContent>
+					</Tooltip>
 				);
 			} else if (action.type === "action") {
 				actionGroup.push(
-					<Button
-						key={action.id}
-						variant="ghost"
-						size="icon"
-						onMouseDown={(event) => applyAction(action.onClick, event)}
-					>
-						{action.icon}
-					</Button>
+					<Tooltip key={action.id}>
+						<TooltipTrigger>
+							<Button
+								key={action.id}
+								variant="ghost"
+								size="icon"
+								onMouseDown={(event) => applyAction(action.onClick, event)}
+							>
+								{action.icon}
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent className="flex flex-col items-center">
+							<p>{action.name}</p>
+							{action.shortcut && (
+								<div className="text-sm">
+									{action.shortcut?.map((key, index) => (
+										<>
+											{index !== 0 && "+"}
+											<kbd className="px-1 bg-neutral-100 rounded-[0.3rem]">{key}</kbd>
+										</>
+									))}
+								</div>
+							)}
+						</TooltipContent>
+					</Tooltip>
 				);
 			}
 		});

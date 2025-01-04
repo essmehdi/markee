@@ -1,6 +1,7 @@
 import { Node } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import mdSchema from "../editor-schema";
+import { EditorState } from "prosemirror-state";
 
 type MarkdownNodeHandlers = {
 	[key: string]: (node: Node, parent?: Node, childIndex?: number) => string;
@@ -113,27 +114,26 @@ const MD_NODE_HANDLERS: MarkdownNodeHandlers = {
 };
 
 /**
- * An async version of the {@link getMarkdownFromDocument} function
+ * An async version of the {@link getMarkdownFromDoc} function
  */
-export async function getMarkdownFromDocumentAsync(
-	editorView: EditorView
+export async function getMarkdownFromDocAsync(
+	editorState: EditorState
 ): Promise<string> {
-	return getMarkdownFromDocument(editorView);
+	return getMarkdownFromDoc(editorState);
 }
 
 /**
  * Transforms the document into a markdown code
- * @param editorView ProseMirror editor view
+ * @param editorState ProseMirror editor view
  */
-export function getMarkdownFromDocument(editorView: EditorView): string {
-	const doc = editorView.state.doc;
+export function getMarkdownFromDoc(editorState: EditorState): string {
+	const doc = editorState.doc;
 	return handleNodeDescendants(doc);
 }
 
 /**
  * Handles node direct descandants
  * @param node The node to be processed
- * @returns
  */
 export function handleNodeDescendants(
 	node: Node,

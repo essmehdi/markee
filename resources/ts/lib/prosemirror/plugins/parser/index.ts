@@ -3,7 +3,7 @@ import marked from "@/lib/marked";
 import { Node, NodeType } from "prosemirror-model";
 import { EditorState, Plugin, PluginKey } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-import type { Markup } from "@/lib/types";
+import type { Markup } from "@/lib/prosemirror/types";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import html from "@/lib/prosemirror/widgets/html-widget";
 import image from "@/lib/prosemirror/widgets/image-widget";
@@ -275,7 +275,10 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 			decorationArray.push(
 				Decoration.widget(
 					markup.context[0],
-					image(markup.url, markup.alt, markup.title)
+					image(markup.url, markup.alt, markup.title),
+					{
+						key: `${markup.url}-${markup.alt}-${markup.title}`
+					}
 				)
 			);
 		}

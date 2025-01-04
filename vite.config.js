@@ -1,3 +1,5 @@
+/// <reference types="vitest/config" />
+
 import path from "path";
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
@@ -12,14 +14,26 @@ export default defineConfig({
 		}),
 	],
 	resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./resources/ts"),
-      "~": path.resolve(__dirname, "./resources"),
-    },
-  },
+		alias: {
+			"@": path.resolve(__dirname, "./resources/ts"),
+			"~": path.resolve(__dirname, "./resources"),
+		},
+	},
+	optimizeDeps: {
+		exclude: ["chromium-bidi"],
+	},
 	server: {
 		hmr: {
 			host: "localhost",
+		},
+	},
+	test: {
+		environment: "jsdom",
+		url: "http://localhost:8000/editor",
+		browser: {
+			provider: "playwright",
+			enabled: true,
+			name: "chromium",
 		},
 	},
 });

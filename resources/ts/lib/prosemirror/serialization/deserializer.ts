@@ -2,9 +2,12 @@ import { MarkedToken, Token, Tokens } from "marked";
 import marked from "@/lib/marked";
 import { Node } from "prosemirror-model";
 import mdSchema from "../editor-schema";
+import type { CustomMarkedToken } from "@/lib/marked";
 
 type TokenHandlerMap = {
-	[K in MarkedToken["type"]]?: <T extends Extract<MarkedToken, { type: K; }>>(
+	[K in CustomMarkedToken["type"]]?: <
+		T extends Extract<CustomMarkedToken, { type: K }>
+	>(
 		token: T
 	) => Node;
 };
@@ -64,6 +67,9 @@ const TOKEN_HANDLER_MAP: TokenHandlerMap = {
 			})
 		);
 	},
+	mathblock: (token) => {
+		return mdSchema.nodes.math_block.create(null, mdSchema.text(token.code));
+	},
 };
 
 export function deserializeTokens(tokens: MarkedToken[]): Node[] {
@@ -81,7 +87,8 @@ export function deserializeTokens(tokens: MarkedToken[]): Node[] {
 			let j = i;
 			while (
 				isExtendable(token) &&
-				((token = tokens[++j]).type === "heading" ||
+				(token = tokens[++j]) &&
+				(token.type === "heading" ||
 					token.type === "paragraph" ||
 					token.type === "text")
 			) {

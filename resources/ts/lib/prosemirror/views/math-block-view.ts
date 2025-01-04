@@ -27,7 +27,7 @@ export default class MathBlockView extends SyncedCodeMirrorView {
 		node: Node,
 		view: EditorView,
 		getPos: () => number | undefined,
-		mdSchema: Schema,
+		mdSchema: Schema
 	) {
 		super(node, view, getPos, mdSchema);
 
@@ -69,6 +69,10 @@ export default class MathBlockView extends SyncedCodeMirrorView {
 	}
 
 	renderMath(math: string) {
-		katex.render(math, this.renderedMathContainer, { displayMode: true, throwOnError: false });
+		math = math.trim();
+		katex.render(math === "" ? "<Empty>" : math, this.renderedMathContainer, {
+			displayMode: true,
+			throwOnError: false,
+		});
 	}
 }

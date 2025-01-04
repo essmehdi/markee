@@ -5,7 +5,7 @@ import mdSchema from "@/lib/prosemirror/editor-schema";
 
 /**
  * ProseMirror command to add a row before the current selected row.
- * It does nothing if the selected node is not a table row.
+ * It does nothing if the selected node is not a header row.
  */
 export function addRowBefore(
 	editorState: EditorState,

@@ -5,7 +5,7 @@ import {
 	InlineMath,
 	Markup,
 	Position,
-} from "@/lib/types";
+} from "@/lib/prosemirror/types";
 import { HTMLToken } from "./html-processor";
 
 /**
@@ -33,7 +33,9 @@ export const basicPunctuationData: Record<string, BasicPunctuationData> = {
 	},
 	codespan: {
 		char: "`",
-		count: 1,
+		count: (token) => {
+			return token.raw.startsWith("``") ? 2 : 1;
+		},
 		parseInside: false,
 	},
 	del: {

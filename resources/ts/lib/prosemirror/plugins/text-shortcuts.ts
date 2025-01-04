@@ -3,6 +3,7 @@ import { Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import { addCommandToTransaction } from "../utils/transactions";
+import { Node } from "prosemirror-model";
 
 export const CODE_BLOCK_STARTER = /^```([^`].*)?$/m;
 export const UNORDERED_LIST_STARTER = /^-\s/m;
@@ -11,16 +12,31 @@ export const DOUBLE_BREAK = /\n\n/;
 export const QUOTE_STARTER = /^>\s/;
 export const MATH_BLOCK_STARTER = /^\$\$\s*$/;
 
+/**
+ * Text shortcut to be replaced when typed in the document
+ */
 type Shortcut = {
+	/** Regular expression for the shortcut */
 	regex: RegExp;
+	/**
+	 * Shoult the shortcut be replaced immediately or wait until cursor
+	 * is away from the text
+	 */
 	ignoreCursor?: boolean;
+	/** Replacement transaction */
 	transaction: (
 		match: RegExpMatchArray,
 		editorView: EditorView,
 		range: [number, number]
 	) => void;
+	/**
+	 * Function that provides the node to be produced when handling `Enter` key.
+	 * Should be declared for shortcuts that do not ignore cursor and
+	 * have special handling when hitting `Enter` key
+	 */
+	enterNode?: (match: RegExpMatchArray) => Node;
 };
-const shortcuts: Record<string, Shortcut> = {
+export const textShortcuts: Record<string, Shortcut> = {
 	codeBlock: {
 		regex: CODE_BLOCK_STARTER,
 		transaction: (match, editorView, range) => {
@@ -30,6 +46,9 @@ const shortcuts: Record<string, Shortcut> = {
 				mdSchema.nodes.code.create({ language: match[1] ?? "" })
 			);
 			editorView.dispatch(transaction);
+		},
+		enterNode(match) {
+			return mdSchema.nodes.code.create({ language: match[1] });
 		},
 	},
 	unorderedList: {
@@ -58,13 +77,13 @@ const shortcuts: Record<string, Shortcut> = {
 			if (match.index === 0) {
 				transaction = editorView.state.tr.deleteRange(...range);
 			} else {
-				transaction =
-					editorView.state.tr
-						.deleteRange(range[0] - 1, range[1])
-						.split(range[0])
-				;
+				transaction = editorView.state.tr
+					.deleteRange(range[0] - 1, range[1])
+					.split(range[0]);
 			}
-			const wrapInListCommand = wrapInList(mdSchema.nodes.ordered_list, { order: startNumber });
+			const wrapInListCommand = wrapInList(mdSchema.nodes.ordered_list, {
+				order: startNumber,
+			});
 			addCommandToTransaction(editorView.state, transaction, wrapInListCommand);
 			editorView.dispatch(transaction);
 		},
@@ -96,14 +115,20 @@ const shortcuts: Record<string, Shortcut> = {
 			const transaction = editorView.state.tr.replaceRangeWith(
 				match.index === 0 ? range[0] : range[0] - 1, // Replace also the line break
 				range[1],
-				mdSchema.nodes.math_block.createAndFill()!
+				mdSchema.nodes.math_block.create()
 			);
 			editorView.dispatch(transaction);
+		},
+		enterNode() {
+			return mdSchema.nodes.math_block.create();
 		},
 	},
 };
 
-const textShortcuts = new Plugin({
+/**
+ * Replaces text shortcuts with appropriate nodes in the document
+ */
+const textShortcutPlugin = new Plugin({
 	view() {
 		return {
 			update(view) {
@@ -138,9 +163,9 @@ const textShortcuts = new Plugin({
 					const selection = view.state.selection;
 					const cursor = nodePosition + 1;
 
-					const shortcutsKeys = Object.keys(shortcuts);
+					const shortcutsKeys = Object.keys(textShortcuts);
 					for (let i = 0; i < shortcutsKeys.length; i++) {
-						const shortcutInfo = shortcuts[shortcutsKeys[i]];
+						const shortcutInfo = textShortcuts[shortcutsKeys[i]];
 						const codeBlockMatch = currentNodeContent.match(shortcutInfo.regex);
 						if (codeBlockMatch) {
 							const range = [
@@ -175,4 +200,4 @@ const textShortcuts = new Plugin({
 	},
 });
 
-export default textShortcuts;
+export default textShortcutPlugin;

@@ -1,6 +1,6 @@
 import { EditorState, TextSelection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { Markup, Position } from "@/lib/types";
+import { Markup, Position } from "@/lib/prosemirror/types";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/parser";
 

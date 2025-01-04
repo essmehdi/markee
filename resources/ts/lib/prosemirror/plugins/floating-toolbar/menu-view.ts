@@ -1,7 +1,7 @@
 import { setBlockType } from "prosemirror-commands";
 import { wrapInList } from "prosemirror-schema-list";
 import { EditorView } from "prosemirror-view";
-import { Markup } from "@/lib/types";
+import { Markup } from "@/lib/prosemirror/types";
 import { toggleBasicMarkup } from "@/lib/prosemirror/commands/markup";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import { toggleListItemCheckbox, wrapInTable } from "@/lib/prosemirror/keymap";

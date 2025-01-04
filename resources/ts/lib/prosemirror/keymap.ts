@@ -1,24 +1,54 @@
-import { baseKeymap, chainCommands, setBlockType } from "prosemirror-commands";
+import { baseKeymap, chainCommands, setBlockType, wrapIn } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { Fragment } from "prosemirror-model";
 import {
-    liftListItem,
-    splitListItem,
-    wrapInList,
+	liftListItem,
+	splitListItem,
+	wrapInList,
 } from "prosemirror-schema-list";
-import { Command, EditorState, Selection, TextSelection, Transaction } from "prosemirror-state";
 import {
-    addColumnAfter,
-    addColumnBefore,
-    addRowAfter,
-    deleteColumn,
-    deleteRow,
+	Command,
+	EditorState,
+	Selection,
+	TextSelection,
+	Transaction,
+} from "prosemirror-state";
+import {
+	addColumnAfter,
+	addColumnBefore,
+	addRowAfter,
+	deleteColumn,
+	deleteRow,
 } from "prosemirror-tables";
 import { EditorView } from "prosemirror-view";
 import { toggleBasicMarkup } from "./commands/markup";
 import mdSchema from "./editor-schema";
-import { CODE_BLOCK_STARTER } from "./plugins/text-shortcuts";
+import {
+	textShortcuts,
+} from "./plugins/text-shortcuts";
 import { addRowBefore } from "./commands/tables";
+
+export const editorActionKeybinds = {
+	CODE_BLOCK: "Mod-Shift-k",
+	BULLET_LIST: "Mod-Shift-l",
+	ORDERED_LIST: "Mod-Shift-o",
+	LIST_ITEM_TOGGLE_CHECKBOX: "Mod-Shift-c",
+	LIST_ITEM_LIFT: "Mod-t",
+	TABLE: "Mod-Shift-h",
+	TABLE_ADD_COLUMN_AFTER: "Mod-]",
+	TABLE_ADD_COLUMN_BEFORE: "Mod-[",
+	TABLE_ADD_ROW_BEFORE: "Mod-{",
+	TABLE_ADD_ROW_AFTER: "Mod-}",
+	TABLE_DELETE_ROW: "Mod-d",
+	TABLE_DELETE_COLUMN: "Mod-Shift-d",
+	UNDO: "Mod-z",
+	REDO: "Mod-y",
+	BOLD_TOGGLE: "Mod-b",
+	ITALIC_TOGGLE: "Mod-i",
+	STRIKETHROUGH_TOGGLE: "Mod-Shift-x",
+	INLINE_CODE_TOGGLE: "Mod-`",
+	INLINE_MATH_TOGGLE: "Mod-m",
+} as const;
 
 /**
  * The default editor shortcuts
@@ -26,34 +56,34 @@ import { addRowBefore } from "./commands/tables";
 export default function editorKeymap(schema: typeof mdSchema) {
 	const keys: { [key: string]: Command } = { ...baseKeymap };
 
-	keys["Mod-Shift-k"] = setBlockType(schema.nodes.code, { language: "" });
+	keys[editorActionKeybinds.CODE_BLOCK] = setBlockType(schema.nodes.code, { language: "" });
 	keys["Enter"] = chainCommands(
-		checkForCodeBlockPunc,
+		checkForTextShortcuts,
 		splitListItem(schema.nodes.list_item),
 		liftListItem(schema.nodes.list_item),
-		baseKeymap["Enter"],
+		baseKeymap["Enter"]
 	);
 	keys["Shift-Enter"] = insertSoftBreak;
-	keys["Mod-Shift-l"] = chainCommands(wrapInList(schema.nodes.bullet_list));
-	keys["Mod-Shift-o"] = chainCommands(wrapInList(schema.nodes.ordered_list));
-	keys["Mod-Shift-c"] = toggleListItemCheckbox;
-	keys["Mod-t"] = liftListItem(schema.nodes.list_item);
-	keys["Mod-Shift-h"] = wrapInTable;
-	keys["Mod-]"] = addColumnAfter;
-	keys["Mod-["] = addColumnBefore;
-	keys["Mod-{"] = addRowBefore;
-	keys["Mod-}"] = addRowAfter;
-	keys["Mod-d"] = deleteRow;
-	keys["Mod-Shift-d"] = deleteColumn;
-	keys["Mod-z"] = undo;
-	keys["Mod-y"] = redo;
+	keys[editorActionKeybinds.BULLET_LIST] = wrapInList(schema.nodes.bullet_list);
+	keys[editorActionKeybinds.ORDERED_LIST] = wrapInList(schema.nodes.ordered_list);
+	keys[editorActionKeybinds.LIST_ITEM_TOGGLE_CHECKBOX] = toggleListItemCheckbox;
+	keys[editorActionKeybinds.LIST_ITEM_LIFT] = liftListItem(schema.nodes.list_item);
+	keys[editorActionKeybinds.TABLE] = wrapIn(mdSchema.nodes.table);
+	keys[editorActionKeybinds.TABLE_ADD_COLUMN_AFTER] = addColumnAfter;
+	keys[editorActionKeybinds.TABLE_ADD_COLUMN_BEFORE] = addColumnBefore;
+	keys[editorActionKeybinds.TABLE_ADD_ROW_BEFORE] = addRowBefore;
+	keys[editorActionKeybinds.TABLE_ADD_ROW_AFTER] = addRowAfter;
+	keys[editorActionKeybinds.TABLE_DELETE_ROW] = deleteRow;
+	keys[editorActionKeybinds.TABLE_DELETE_COLUMN] = deleteColumn;
+	keys[editorActionKeybinds.UNDO] = undo;
+	keys[editorActionKeybinds.REDO] = redo;
 
 	// Markup shortcuts
-	keys["Mod-b"] = toggleBasicMarkup("strong", "**");
-	keys["Mod-i"] = toggleBasicMarkup("em","*");
-	keys["Mod-Shift-x"] = toggleBasicMarkup("del", "~");
-	keys["Mod-`"] = toggleBasicMarkup("codespan", "`");
-	keys["Mod-m"] = toggleBasicMarkup("inlinemath", "$");
+	keys[editorActionKeybinds.BOLD_TOGGLE] = toggleBasicMarkup("strong", "**");
+	keys[editorActionKeybinds.ITALIC_TOGGLE] = toggleBasicMarkup("em", "*");
+	keys[editorActionKeybinds.STRIKETHROUGH_TOGGLE] = toggleBasicMarkup("del", "~");
+	keys[editorActionKeybinds.INLINE_CODE_TOGGLE] = toggleBasicMarkup("codespan", "`");
+	keys[editorActionKeybinds.INLINE_MATH_TOGGLE] = toggleBasicMarkup("inlinemath", "$");
 
 	keys["ArrowLeft"] = arrowHandler("left");
 	keys["ArrowRight"] = arrowHandler("right");
@@ -65,14 +95,14 @@ export default function editorKeymap(schema: typeof mdSchema) {
 
 function insertSoftBreak(
 	editorState: EditorState,
-	dispatch?: EditorView["dispatch"],
+	dispatch?: EditorView["dispatch"]
 ): boolean {
 	dispatch?.(
 		editorState.tr.replaceWith(
 			editorState.selection.from,
 			editorState.selection.to,
-			mdSchema.nodes.soft_break.create(),
-		),
+			mdSchema.nodes.soft_break.create()
+		)
 	);
 	return true;
 }
@@ -82,7 +112,7 @@ function insertSoftBreak(
  */
 export function wrapInTable(
 	editorState: EditorState,
-	dispatch?: EditorView["dispatch"],
+	dispatch?: EditorView["dispatch"]
 ): boolean {
 	const offset = editorState.tr.selection.anchor + 1;
 	const transaction = editorState.tr;
@@ -93,20 +123,20 @@ export function wrapInTable(
 		Fragment.fromArray([
 			editorState.schema.nodes.table_row.create(
 				null,
-				Fragment.fromArray([headCell, headCell, headCell]),
+				Fragment.fromArray([headCell, headCell, headCell])
 			),
 			editorState.schema.nodes.table_row.create(
 				null,
-				Fragment.fromArray([cell, cell, cell]),
+				Fragment.fromArray([cell, cell, cell])
 			),
-		]),
+		])
 	);
 
 	dispatch?.(
 		transaction
 			.replaceSelectionWith(node)
 			.scrollIntoView()
-			.setSelection(TextSelection.near(transaction.doc.resolve(offset))),
+			// .setSelection(TextSelection.near(transaction.doc.resolve(offset)))
 	);
 	return true;
 }
@@ -116,7 +146,7 @@ export function wrapInTable(
  */
 export function toggleListItemCheckbox(
 	editorState: EditorState,
-	dispatch?: EditorView["dispatch"],
+	dispatch?: EditorView["dispatch"]
 ): boolean {
 	const selectionFrom = editorState.selection.$from;
 	const currentNodePosition = selectionFrom.before(selectionFrom.depth - 1);
@@ -129,8 +159,8 @@ export function toggleListItemCheckbox(
 			editorState.tr.setNodeAttribute(
 				currentNodePosition,
 				"checked",
-				newCheckedValue,
-			),
+				newCheckedValue
+			)
 		);
 		return true;
 	}
@@ -138,13 +168,13 @@ export function toggleListItemCheckbox(
 }
 
 /**
- * Checks for the code block markdown start punctuation (\`\`\`) to be
- * to automatically start code block on Enter
+ * Checks for text shortcuts that should have special handling for the `Enter`
+ * key. See {@link textShortcuts}
  */
-function checkForCodeBlockPunc(
+function checkForTextShortcuts(
 	editorState: EditorState,
 	_dispatch?: EditorView["dispatch"],
-	editorView?: EditorView,
+	editorView?: EditorView
 ): boolean {
 	const selection = editorState.selection;
 
@@ -155,36 +185,40 @@ function checkForCodeBlockPunc(
 
 	if (
 		currentNode.type !==
-		(editorState.schema as typeof mdSchema).nodes.paragraph ||
+			(editorState.schema as typeof mdSchema).nodes.paragraph ||
 		(parentNode.type !==
 			(editorState.schema as typeof mdSchema).nodes.paragraph &&
 			parentNode.type !==
-			(editorState.schema as typeof mdSchema).nodes.list_item &&
+				(editorState.schema as typeof mdSchema).nodes.list_item &&
 			parentNode.type.name !== "doc")
 	)
 		return false;
 
-	const codeBlockMatch = currentNode.textContent.match(CODE_BLOCK_STARTER);
+	const textShortcutsValues = Object.values(textShortcuts);
+	for (let i = 0; i < textShortcutsValues.length; i++) {
+		const textShortcut = textShortcutsValues[i];
+		if (textShortcut.ignoreCursor || !textShortcut.enterNode) {
+			continue;
+		}
 
-	if (codeBlockMatch && editorView) {
-		const selection = editorView.state.selection;
-		const currentNode = selection.$from.node();
-		const currentNodePosition = selection.$from.before();
+		const match = currentNode.textContent.match(textShortcut.regex);
 
-		const newCodeNode = (
-			editorState.schema as typeof mdSchema
-		).nodes.code.create({
-			language: codeBlockMatch[1],
-		});
+		if (match && editorView) {
+			const selection = editorView.state.selection;
+			const currentNode = selection.$from.node();
+			const currentNodePosition = selection.$from.before();
 
-		const transaction = editorView.state.tr.replaceWith(
-			currentNodePosition,
-			currentNodePosition + currentNode.nodeSize,
-			newCodeNode,
-		);
+			const newCodeNode = textShortcut.enterNode(match);
 
-		editorView.dispatch(transaction);
-		return true;
+			const transaction = editorView.state.tr.replaceWith(
+				currentNodePosition,
+				currentNodePosition + currentNode.nodeSize,
+				newCodeNode
+			);
+
+			editorView.dispatch(transaction);
+			return true;
+		}
 	}
 
 	return false;
@@ -194,14 +228,14 @@ function arrowHandler(dir: "up" | "down" | "right" | "left") {
 	return (
 		state: EditorState,
 		dispatch?: (tr: Transaction) => void,
-		view?: EditorView,
+		view?: EditorView
 	) => {
 		if (state.selection.empty && view!.endOfTextblock(dir)) {
 			const side = dir == "left" || dir == "up" ? -1 : 1;
 			const $head = state.selection.$head;
 			const nextPos = Selection.near(
 				state.doc.resolve(side > 0 ? $head.after() : $head.before()),
-				side,
+				side
 			);
 			if (nextPos.$head && nextPos.$head.parent.type.name === "code") {
 				dispatch!(state.tr.setSelection(nextPos));

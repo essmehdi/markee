@@ -3,7 +3,7 @@
 }
 
 .md-editor {
-	@apply bg-white rounded-md py-16 px-24 min-h-[90rem] border border-neutral-100 text-[14pt];
+	@apply bg-white rounded-md py-10 px-24 text-[14pt] outline-none;
 }
 .exported {
 	@apply text-[8pt];
@@ -104,7 +104,7 @@
 }
 
 .ProseMirror blockquote {
-	@apply border-l-8 border-blue-600 text-neutral-600 italic pl-5;
+	@apply border-l-2 border-primary text-neutral-600 italic pl-5;
 }
 
 /* Style to hide hidden elements (e.g. punctuation when cursor is near) */

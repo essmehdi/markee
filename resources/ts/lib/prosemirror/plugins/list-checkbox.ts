@@ -9,27 +9,38 @@ function decorate(doc: Node) {
 	doc.descendants((node, position) => {
 		if (node.type === mdSchema.nodes.list_item) {
 			if (node.attrs.checked !== null) {
-				const checkBox = Decoration.widget(position + 1, (view, getPosition) => {
-					const checkBoxInputContainer = document.createElement("div");
-					checkBoxInputContainer.classList.add("md-checklist-item-checkbox");
-					const checkBoxInput = document.createElement("input");
-					checkBoxInput.type = "checkbox";
-					checkBoxInput.checked = node.attrs.checked;
-					checkBoxInput.addEventListener("change", (event) => {
-						const itemPosition = getPosition()!;
-						const transaction = view.state.tr.setNodeMarkup(itemPosition - 1, null, {
-							checked: (event.target as HTMLInputElement).checked,
+				const checkBox = Decoration.widget(
+					position + 1,
+					(view, getPosition) => {
+						const checkBoxInputContainer = document.createElement("div");
+						checkBoxInputContainer.classList.add("md-checklist-item-checkbox");
+						const checkBoxInput = document.createElement("input");
+						checkBoxInput.type = "checkbox";
+						checkBoxInput.checked = node.attrs.checked;
+						checkBoxInput.addEventListener("change", (event) => {
+							const itemPosition = getPosition()!;
+							const transaction = view.state.tr.setNodeMarkup(
+								itemPosition - 1,
+								null,
+								{
+									checked: (event.target as HTMLInputElement).checked,
+								}
+							);
+							view.dispatch(transaction);
 						});
-						view.dispatch(transaction);
-					});
-					checkBoxInputContainer.append(checkBoxInput);
-					return checkBoxInputContainer;
-				});
+						checkBoxInputContainer.append(checkBoxInput);
+						return checkBoxInputContainer;
+					}
+				);
 				decorations.push(checkBox);
 			}
 		}
 
-		return node.type === mdSchema.nodes.bullet_list || node.type === mdSchema.nodes.ordered_list;
+		return (
+			node.type === mdSchema.nodes.bullet_list ||
+			node.type === mdSchema.nodes.ordered_list ||
+			node.type === mdSchema.nodes.list_item
+		);
 	});
 
 	return DecorationSet.create(doc, decorations);

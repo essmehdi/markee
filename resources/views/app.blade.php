@@ -13,7 +13,7 @@
 		type="text/css"
 		href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css"
 	/>
-	<script src="https://unpkg.com/react-scan/dist/auto.global.js"></script>
+	{{-- <script src="https://unpkg.com/react-scan/dist/auto.global.js"></script> --}}
 	@viteReactRefresh
 	@vite(["resources/css/app.css", "resources/ts/inertia-bootstrap.tsx"])
     @inertiaHead
