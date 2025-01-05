@@ -24,7 +24,7 @@ export default function BrowserItem({
 	return (
 		<div style={style} className={className}>
 			<div
-				className="flex items-center gap-2 truncate grow p-3"
+				className="flex grow items-center gap-2 truncate p-3"
 				onClick={() => node.toggle()}
 			>
 				<div className="shrink-0">

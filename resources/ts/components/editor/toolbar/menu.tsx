@@ -10,9 +10,11 @@ import {
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { browserPrint, generatePDF } from "@/lib/prosemirror/export/pdf";
 import mdSchema from "@/lib/prosemirror/editor-schema";
+import { browserPrint, generatePDF } from "@/lib/prosemirror/export/pdf";
 import { getNewDocFromMarkdown } from "@/lib/prosemirror/serialization/deserializer";
+import { getMarkdownFromDocAsync } from "@/lib/prosemirror/serialization/serializer";
+import { useSourceManager } from "@/lib/store/source-manager";
 import {
 	useEditorEventCallback,
 	useEditorState,
@@ -22,28 +24,18 @@ import {
 	File,
 	FileMd,
 	FilePdf,
-	Files,
 	FloppyDisk,
-	Printer,
+	Printer
 } from "@phosphor-icons/react";
 import { Node, Slice } from "prosemirror-model";
 import { ChangeEvent, useCallback, useRef } from "react";
-import { getMarkdownFromDocAsync } from "@/lib/prosemirror/serialization/serializer";
+import SidebarToggle from "./sidebar-toggle";
 import Source from "./source";
-import { useSourceManager } from "@/lib/store/source-manager";
-import { useSidebar } from "@/components/ui/sidebar";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Toggle } from "@/components/ui/toggle";
 
 /**
  * The main editor file menu component
  */
 function Menu() {
-	const { open: sidebarOpen, toggleSidebar } = useSidebar();
 	const currentSource = useSourceManager((state) => state.currentSource);
 	const saveDocToSource = useSourceManager((state) => state.saveDocToSource);
 	const editorState = useEditorState();
@@ -114,18 +106,7 @@ function Menu() {
 
 	return (
 		<div className="flex items-center">
-			<Tooltip>
-				<TooltipTrigger asChild>
-					{/* Workaround for breaking props with `asChild` */}
-					<div>
-						<Toggle pressed={sidebarOpen} onMouseDown={toggleSidebar}>
-							<Files />
-						</Toggle>
-					</div>
-				</TooltipTrigger>
-				<TooltipContent>Open vault manager</TooltipContent>
-			</Tooltip>
-
+			<SidebarToggle />
 			<DropdownMenu modal={false}>
 				<input
 					ref={openFileInputRef}
