@@ -44,7 +44,8 @@ import { Toggle } from "@/components/ui/toggle";
  */
 function Menu() {
 	const { open: sidebarOpen, toggleSidebar } = useSidebar();
-	const sourceStore = useSourceManager();
+	const currentSource = useSourceManager((state) => state.currentSource);
+	const saveDocToSource = useSourceManager((state) => state.saveDocToSource);
 	const editorState = useEditorState();
 	const openFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -58,7 +59,7 @@ function Menu() {
 
 		const state = view.state;
 		view.dispatch(
-			state.tr.replace(0, state.doc.content.size, new Slice(doc.content, 0, 0))
+			state.tr.replace(0, state.doc.content.size, new Slice(doc.content, 0, 0)),
 		);
 	});
 
@@ -108,7 +109,7 @@ function Menu() {
 	 * Saves the file
 	 */
 	const save = useCallback(() => {
-		sourceStore.saveDocToSource(editorState);
+		saveDocToSource(editorState);
 	}, [editorState]);
 
 	return (
@@ -141,10 +142,7 @@ function Menu() {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent className="w-56">
-					<DropdownMenuItem
-						onSelect={save}
-						disabled={!sourceStore.currentSource}
-					>
+					<DropdownMenuItem onSelect={save} disabled={!currentSource}>
 						<FloppyDisk />
 						Save
 					</DropdownMenuItem>

@@ -20,9 +20,12 @@ export interface Vault {
 	id: string;
 	name: string;
 	type: string;
-	getTree(): Promise<VaultItem[]>;
+	getCachedRootContent(): Promise<VaultItem[]>;
 	getRootContent(): Promise<VaultItem[]>;
 	getFileContent(filePath: string): Promise<string>;
 	writeToFile(filePath: string, content: string): Promise<void>;
 	expandDirectoryContent(dir: string): Promise<void>;
+	createFile(dirPath: string, name: string): Promise<void>;
+	createDirectory(dirPath: string, name: string): Promise<void>;
+	removeFile(filePath: string): Promise<void>;
 }

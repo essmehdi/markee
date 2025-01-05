@@ -13,16 +13,18 @@ type Source = {
 type Selection = {
 	filePath: string | null;
 	vault: Vault | null;
-}
+};
 
 export type SourceState = {
 	/** Last save hash to track if the document is saved */
 	lastSaveHash: string | null;
 	/** True if the editor is loading the selection */
 	isLoadingSource: boolean;
+	/** Flag to indicate that the curren source has been deleted */
+	isCurrentSourceDeleted: boolean;
 	/** Current source of the document */
 	currentSource: Source | null;
-	/** Current selection of the vault */
+	/** Current selection of the vault browser */
 	currentSelection: Selection;
 
 	/** Utility function to serialize the doc to save it */
@@ -32,18 +34,20 @@ export type SourceState = {
 	/** isLoading setter */
 	setIsLoadingSource: (loading: boolean) => void;
 	/** currentSource setter */
-	changeCurrentSource: (vault: Vault, filePath: string) => void;
+	changeCurrentSource: (source: Source | null) => void;
 	/** currentSelection setter */
 	changeCurrentSelection: (
 		vault: Vault | null,
-		filePath: string | null
+		filePath: string | null,
 	) => void;
+	changeCurrentSourceDeletedFlag: (flag: boolean) => void;
 };
 
 export const useSourceManager = create<SourceState>()(
 	devtools<SourceState>((set, get) => ({
 		lastSaveHash: null,
 		isLoadingSource: false,
+		isCurrentSourceDeleted: false,
 		currentSource: null,
 		currentSelection: {
 			filePath: null,
@@ -81,20 +85,17 @@ export const useSourceManager = create<SourceState>()(
 				};
 			});
 		},
-		changeCurrentSource: (vault, filePath) => {
+		changeCurrentSource: (source) => {
 			if (
-				get().currentSource?.vault?.id === vault?.id &&
-				get().currentSource?.filePath === filePath
+				get().currentSource?.vault.id === source?.vault.id &&
+				get().currentSource?.filePath === source?.filePath
 			) {
 				return;
 			}
 			set((state) => {
 				return {
 					...state,
-					currentSource: {
-						filePath: filePath,
-						vault: vault,
-					},
+					currentSource: source,
 				};
 			});
 		},
@@ -115,5 +116,11 @@ export const useSourceManager = create<SourceState>()(
 				};
 			});
 		},
-	}))
+		changeCurrentSourceDeletedFlag: (flag) => {
+			set((state) => ({
+				...state,
+				isCurrentSourceDeleted: flag,
+			}));
+		},
+	})),
 );

@@ -1,7 +1,7 @@
 import { PromiseExtended } from "dexie";
 import { db, SavedVault } from "../db";
 import type { Vault, VaultDirectory, VaultItem } from "./types";
-import { PermissionNotGrantedError } from "./errors";
+import { ConflictError, PermissionNotGrantedError } from "./errors";
 
 /**
  * Local vault that represents a directory in the local file system
@@ -32,7 +32,7 @@ export default class LocalVault implements Vault {
 		return new LocalVault(
 			savedVault.id,
 			savedVault.name,
-			savedVault.rootHandle
+			savedVault.rootHandle,
 		);
 	}
 
@@ -42,11 +42,10 @@ export default class LocalVault implements Vault {
 	 */
 	static async getAllLocalVaultsFromIndexedDB(): Promise<LocalVault[]> {
 		const vaults: LocalVault[] = [];
-		await db.vaults.each(
-			(savedVault) =>
-				vaults.push(
-					new LocalVault(savedVault.id, savedVault.name, savedVault.rootHandle)
-				)
+		await db.vaults.each((savedVault) =>
+			vaults.push(
+				new LocalVault(savedVault.id, savedVault.name, savedVault.rootHandle),
+			),
 		);
 		return vaults;
 	}
@@ -79,7 +78,7 @@ export default class LocalVault implements Vault {
 	 * Updates the cached vault content tree and returns it
 	 * @returns The updated content tree
 	 */
-	public async getTree(): Promise<VaultItem[]> {
+	public async getCachedRootContent(): Promise<VaultItem[]> {
 		if (this.tree !== null) {
 			return this.tree;
 		}
@@ -113,7 +112,7 @@ export default class LocalVault implements Vault {
 	 */
 	private async getContent(
 		handle: FileSystemDirectoryHandle,
-		depth: string[]
+		depth: string[],
 	): Promise<VaultItem[]> {
 		const permission = await this.rootHandle.requestPermission();
 		if (permission !== "granted") {
@@ -124,7 +123,7 @@ export default class LocalVault implements Vault {
 		depth = [...depth];
 		for await (const entry of handle.values()) {
 			const absolutePathArray = depth.concat(entry.name);
-			const absolutePath = absolutePathArray.join('/');
+			const absolutePath = absolutePathArray.join("/");
 			if (entry.kind === "directory") {
 				items.push({
 					name: entry.name,
@@ -133,9 +132,9 @@ export default class LocalVault implements Vault {
 					absolutePath: absolutePath,
 					content: this.expandedDirs.has(absolutePath)
 						? await this.getContent(
-								await handle.getDirectoryHandle(entry.name),
-								absolutePathArray
-						  )
+							await handle.getDirectoryHandle(entry.name),
+							absolutePathArray,
+						)
 						: null,
 				} as VaultDirectory);
 			} else {
@@ -160,7 +159,7 @@ export default class LocalVault implements Vault {
 				return a.name.localeCompare(b.name);
 			}
 		});
-		
+
 		return items;
 	}
 
@@ -169,14 +168,16 @@ export default class LocalVault implements Vault {
 	 * @param filePath File to get
 	 */
 	private async getFileHandle(filePath: string): Promise<FileSystemFileHandle> {
-		const filePathSplit = filePath.split('/');
+		const filePathSplit = filePath.split("/");
 		const fileName = filePathSplit.pop()!;
 
 		let dirHandle;
-		if (filePathSplit.length === 0) { // If the file is inside the root
+		if (filePathSplit.length === 0) {
+			// If the file is inside the root
 			dirHandle = this.rootHandle;
-		} else { // Else get the directory handles
-			dirHandle = await this.rootHandle.getDirectoryHandle(filePathSplit[0]); 
+		} else {
+			// Else get the directory handles
+			dirHandle = await this.rootHandle.getDirectoryHandle(filePathSplit[0]);
 			for (let i = 1; i < filePathSplit.length; i++) {
 				const dir = filePathSplit[i];
 				dirHandle = await dirHandle.getDirectoryHandle(dir);
@@ -187,12 +188,42 @@ export default class LocalVault implements Vault {
 	}
 
 	/**
-	 * Reads a file in the vault and returns its bytes content 
+	 * Gets a directory in the vault and returns the file handle
+	 * @param dirPath File to get
+	 */
+	private async getDirectoryHandle(
+		dirPath: string,
+	): Promise<FileSystemDirectoryHandle> {
+		if (dirPath === "/") {
+			return this.rootHandle;
+		}
+
+		const filePathSplit = dirPath.split("/");
+		const fileName = filePathSplit.pop()!;
+
+		let dirHandle;
+		if (filePathSplit.length === 0) {
+			// If the file is inside the root
+			dirHandle = this.rootHandle;
+		} else {
+			// Else get the directory handles
+			dirHandle = await this.rootHandle.getDirectoryHandle(filePathSplit[0]);
+			for (let i = 1; i < filePathSplit.length; i++) {
+				const dir = filePathSplit[i];
+				dirHandle = await dirHandle.getDirectoryHandle(dir);
+			}
+		}
+
+		return await dirHandle.getDirectoryHandle(fileName);
+	}
+
+	/**
+	 * Reads a file in the vault and returns its bytes content
 	 * @param filePath The file to read
 	 * @returns The file content bytes
 	 */
 	public async getFileContent(filePath: string): Promise<string> {
-		const fileHandle = await this.getFileHandle(filePath)
+		const fileHandle = await this.getFileHandle(filePath);
 		const file = await fileHandle.getFile();
 		return await file.text();
 	}
@@ -204,9 +235,49 @@ export default class LocalVault implements Vault {
 	 */
 	public async writeToFile(filePath: string, content: string): Promise<void> {
 		const fileHandle = await this.getFileHandle(filePath);
-		const writableStream = await fileHandle.createWritable()
+		const writableStream = await fileHandle.createWritable();
 		await writableStream.truncate(0);
 		await writableStream.write(content);
 		await writableStream.close();
+	}
+
+	/**
+	 * Creates a file in the specified directory
+	 * @param dirPath Location where to create the file
+	 * @param name Name of the file
+	 */
+	public async createFile(dirPath: string, name: string): Promise<void> {
+		try {
+			await this.getFileHandle([dirPath, name].join("/"));
+			throw new ConflictError();
+		} catch {
+			const targetDirectoryHandle = await this.getDirectoryHandle(dirPath);
+			targetDirectoryHandle.getFileHandle(name, { create: true });
+		}
+	}
+
+	/**
+	 * Creates a directory in the specified directory
+	 * @param dirPath Location where to create the directory
+	 * @param name Name of the directory
+	 */
+	public async createDirectory(dirPath: string, name: string): Promise<void> {
+		try {
+			await this.getDirectoryHandle([dirPath, name].join("/"));
+			throw new ConflictError();
+		} catch {
+			const targetDirectoryHandle = await this.getDirectoryHandle(dirPath);
+			targetDirectoryHandle.getDirectoryHandle(name, { create: true });
+		}
+	}
+
+	/**
+	 * Removes a file in the vault
+	 * @param filePath Location of the file to remove
+	 */
+	public async removeFile(filePath: string): Promise<void> {
+		const fileHandle = await this.getFileHandle(filePath);
+		// @ts-expect-error This is apparently missing in types :/
+		await fileHandle.remove();
 	}
 }

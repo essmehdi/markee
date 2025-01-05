@@ -16,28 +16,26 @@ import { useQuery } from "@tanstack/react-query";
 import Browser from "./browser";
 import Message from "@/components/common/message";
 import { useSourceManager } from "@/lib/store/source-manager";
+import useDialog from "@/lib/store/dialog-manager";
 
 export default function VaultBrowser() {
 	const sourceManager = useSourceManager();
+	const showDialog = useDialog((state) => state.showDialog);
+	const closeDialog = useDialog((state) => state.closeDialog);
 
 	const { data: vaults, isLoading } = useQuery({
 		queryKey: ["vaults"],
 		queryFn: () => LocalVault.getAllLocalVaultsFromIndexedDB(),
 	});
-	const [newVaultDialogOpen, setNewVaultDialogOpen] = useState(false);
-
-	const showNewVaultDialog = useCallback(() => {
-		setNewVaultDialogOpen(true);
-	}, []);
-
-	const closeNewVaultDialog = useCallback(() => {
-		setNewVaultDialogOpen(false);
-	}, []);
 
 	const setSelectedVault = (vaultId: string) => {
 		const vault = vaults!.find((vault) => vault.id === vaultId)!;
 		sourceManager.changeCurrentSelection(vault, null);
-	}
+	};
+
+	const showNewVaultDialog = () => {
+		showDialog(<NewVaultDialog closeDialog={closeDialog} />);
+	};
 
 	return (
 		<div className="flex flex-col items-stretch grow">
@@ -59,24 +57,19 @@ export default function VaultBrowser() {
 						))}
 					</SelectContent>
 				</Select>
-				<Dialog open={newVaultDialogOpen} onOpenChange={setNewVaultDialogOpen}>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<DialogTrigger asChild>
-								<Button
-									className="shrink-0"
-									variant="ghost"
-									size="icon"
-									onClick={showNewVaultDialog}
-								>
-									<Plus />
-								</Button>
-							</DialogTrigger>
-						</TooltipTrigger>
-						<TooltipContent>Add vault</TooltipContent>
-					</Tooltip>
-					<NewVaultDialog closeDialog={closeNewVaultDialog} />
-				</Dialog>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Button
+							className="shrink-0"
+							variant="ghost"
+							size="icon"
+							onClick={showNewVaultDialog}
+						>
+							<Plus />
+						</Button>
+					</TooltipTrigger>
+					<TooltipContent>Add vault</TooltipContent>
+				</Tooltip>
 			</div>
 			{sourceManager.currentSelection.vault ? (
 				<Browser vault={sourceManager.currentSelection.vault} />

@@ -13,3 +13,7 @@ export class IOError extends Error {
 export class UnsupportedBrowserError extends Error {
 	public message: string = "Your browser does not support managing files";
 }
+
+export class ConflictError extends Error {
+	public message: string = "File or directory already exists";
+}

@@ -1,18 +1,22 @@
 import Message from "@/components/common/message";
+import { useSourceManager } from "@/lib/store/source-manager";
 import { Vault, VaultDirectory, VaultItem } from "@/lib/vaults/types";
+import { CircleNotch } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { NodeApi, Tree } from "react-arborist";
-import Item from "./item";
 import useResizeObserver from "use-resize-observer";
-import { useSourceManager } from "@/lib/store/source-manager";
-import { CircleNotch } from "@phosphor-icons/react";
+import BrowserItem from "./item";
 
 type BrowserProps = {
 	vault: Vault;
 };
 
 export default function Browser({ vault }: BrowserProps) {
-	const sourceStore = useSourceManager();
+	const changeCurrentSelection = useSourceManager(
+		(state) => state.changeCurrentSelection,
+	);
+	const currentSelection = useSourceManager((state) => state.currentSelection);
+
 	const {
 		ref: treeParentRef,
 		height,
@@ -26,7 +30,7 @@ export default function Browser({ vault }: BrowserProps) {
 		error,
 	} = useQuery({
 		queryKey: ["vault", vault.id],
-		queryFn: () => vault.getTree(),
+		queryFn: () => vault.getRootContent(),
 	});
 
 	const onItemActivate = async (selectedNode: NodeApi<VaultItem>) => {
@@ -41,7 +45,7 @@ export default function Browser({ vault }: BrowserProps) {
 		} else if (selectedNode.data.type === "file") {
 			// If it is a file, set it as the source for the editor
 			const filePath = selectedNode.data.absolutePath;
-			sourceStore.changeCurrentSelection(vault, filePath);
+			changeCurrentSelection(vault, filePath);
 		}
 	};
 
@@ -57,21 +61,27 @@ export default function Browser({ vault }: BrowserProps) {
 	if (error || !items) return <Message message="Could not fetch files" error />;
 
 	return (
-		<div ref={treeParentRef} className="grow">
+		<div className="grow">
 			{items.length > 0 ? (
-				<Tree
-					data={items}
-					openByDefault={false}
-					idAccessor="absolutePath"
-					childrenAccessor="content"
-					onActivate={onItemActivate}
-					width={width}
-					height={height}
-					rowHeight={40}
-					selection={sourceStore.currentSelection.filePath ?? undefined}
-				>
-					{Item}
-				</Tree>
+				<>
+					<p className="font-bold text-primary px-8">Files</p>
+					<div ref={treeParentRef}>
+						<Tree
+							data={items}
+							openByDefault={false}
+							idAccessor="absolutePath"
+							childrenAccessor="content"
+							onActivate={onItemActivate}
+							width={width}
+							height={height}
+							rowHeight={40}
+							// renderRow={CustomRow}
+							selection={currentSelection.filePath ?? undefined}
+						>
+							{BrowserItem}
+						</Tree>
+					</div>
+				</>
 			) : (
 				<Message message="No supported file found" />
 			)}

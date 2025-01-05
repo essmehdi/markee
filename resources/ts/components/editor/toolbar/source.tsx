@@ -25,7 +25,10 @@ const opacityAnimation = {
  * Component that displays the current source of the editor
  */
 export default function Source() {
-	const { currentSource, lastSaveHash, isLoadingSource } = useSourceManager();
+	const currentSource = useSourceManager((state) => state.currentSource);
+	const lastSaveHash = useSourceManager((state) => state.lastSaveHash);
+	const isLoadingSource = useSourceManager((state) => state.isLoadingSource);
+
 	const state = useEditorState();
 
 	const { data: isSaved } = useQuery({

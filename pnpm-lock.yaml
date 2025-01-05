@@ -158,6 +158,9 @@ importers:
       react-arborist:
         specifier: ^3.4.0
         version: 3.4.0(@types/node@22.10.2)(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-complex-tree:
+        specifier: ^2.4.6
+        version: 2.4.6(react@18.3.1)
       react-dom:
         specifier: ^18.3.1
         version: 18.3.1(react@18.3.1)
@@ -2925,6 +2928,11 @@ packages:
     peerDependencies:
       react: '>= 16.14'
       react-dom: '>= 16.14'
+
+  react-complex-tree@2.4.6:
+    resolution: {integrity: sha512-Akt55R8sI2r66ngxwU7lSgh0YxoBsQHjaVnLzRVCL3Xe+7vbrYfkRpdCK9i/Awga2vYkkdAh9z8etnO3PF/lAg==}
+    peerDependencies:
+      react: '>=16.0.0'
 
   react-dnd-html5-backend@14.1.0:
     resolution: {integrity: sha512-6ONeqEC3XKVf4eVmMTe0oPds+c5B9Foyj8p/ZKLb7kL2qh9COYxiBHv3szd6gztqi/efkmriywLUVlPotqoJyw==}
@@ -6651,6 +6659,10 @@ snapshots:
       - '@types/hoist-non-react-statics'
       - '@types/node'
       - '@types/react'
+
+  react-complex-tree@2.4.6(react@18.3.1):
+    dependencies:
+      react: 18.3.1
 
   react-dnd-html5-backend@14.1.0:
     dependencies:
