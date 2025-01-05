@@ -127,6 +127,7 @@ export default function Editor() {
 			plugins: editorPlugins,
 		});
 		setEditorState(newEditorState);
+		setLastSaveHash(null);
 		changeCurrentSource(null);
 		changeCurrentSourceDeletedFlag(false);
 	};

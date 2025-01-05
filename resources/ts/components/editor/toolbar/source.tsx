@@ -68,9 +68,9 @@ export default function Source() {
 							{fileName}
 							<span
 								className={clsx("text-green-400 pl-2", {
-									visible: !isLoadingSource && isSaved === false,
+									visible: !!currentSource && !isLoadingSource && isSaved === false,
 									invisible:
-										isLoadingSource || isSaved === undefined || isSaved,
+										!currentSource || isLoadingSource || isSaved === undefined || isSaved,
 								})}
 							>
 								•
