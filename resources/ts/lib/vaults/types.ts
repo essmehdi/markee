@@ -1,3 +1,5 @@
+import LocalVault from "./local-vault";
+
 export interface VaultItem {
 	name: string;
 	type: string;
@@ -16,10 +18,9 @@ export interface VaultDirectory extends VaultItem {
 	content: VaultItem[] | null;
 }
 
-export interface Vault {
+export interface BaseVault {
 	id: string;
 	name: string;
-	type: string;
 	getCachedRootContent(): Promise<VaultItem[]>;
 	getRootContent(): Promise<VaultItem[]>;
 	getFileContent(filePath: string): Promise<string>;
@@ -29,3 +30,5 @@ export interface Vault {
 	createDirectory(dirPath: string, name: string): Promise<void>;
 	removeFile(filePath: string): Promise<void>;
 }
+
+export type Vault = LocalVault;

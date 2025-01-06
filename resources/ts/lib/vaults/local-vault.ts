@@ -1,17 +1,17 @@
 import { PromiseExtended } from "dexie";
 import { db, SavedVault } from "../db";
-import type { Vault, VaultDirectory, VaultItem } from "./types";
+import type { BaseVault, VaultDirectory, VaultItem } from "./types";
 import { ConflictError, PermissionNotGrantedError } from "./errors";
 
 /**
  * Local vault that represents a directory in the local file system
  */
-export default class LocalVault implements Vault {
+export default class LocalVault implements BaseVault {
 	public static SUPPORTED_FILE_EXTENSIONS_REGEX = /\.(txt|md)$/i;
 
 	public id: string;
 	public name: string;
-	public type = "local";
+	public type = "local" as const;
 	private rootHandle: FileSystemDirectoryHandle;
 	private expandedDirs: Set<string> = new Set();
 	private tree: VaultItem[] | null = null;
