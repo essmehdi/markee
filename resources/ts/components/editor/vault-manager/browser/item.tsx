@@ -37,7 +37,7 @@ export default function BrowserItem({
 				<p className="line-clamp-1">{node.data.name}</p>
 			</div>
 			<DropdownMenu modal={false}>
-				<DropdownMenuTrigger asChild>
+				<DropdownMenuTrigger onClick={(e) => e.stopPropagation()} asChild>
 					<Button
 						size="icon"
 						variant="ghost"

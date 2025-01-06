@@ -61,27 +61,24 @@ export default function Browser({ vault }: BrowserProps) {
 	if (error || !items) return <Message message="Could not fetch files" error />;
 
 	return (
-		<div className="grow">
+		<div className="flex flex-col grow">
+			<p className="font-bold text-primary px-8">Files</p>
 			{items.length > 0 ? (
-				<>
-					<p className="font-bold text-primary px-8">Files</p>
-					<div ref={treeParentRef}>
-						<Tree
-							data={items}
-							openByDefault={false}
-							idAccessor="absolutePath"
-							childrenAccessor="content"
-							onActivate={onItemActivate}
-							width={width}
-							height={height}
-							rowHeight={40}
-							// renderRow={CustomRow}
-							selection={currentSelection.filePath ?? undefined}
-						>
-							{BrowserItem}
-						</Tree>
-					</div>
-				</>
+				<div className="grow" ref={treeParentRef}>
+					<Tree
+						data={items}
+						openByDefault={false}
+						idAccessor="absolutePath"
+						childrenAccessor="content"
+						onActivate={onItemActivate}
+						width={width}
+						height={height}
+						rowHeight={40}
+						selection={currentSelection.filePath ?? undefined}
+					>
+						{BrowserItem}
+					</Tree>
+				</div>
 			) : (
 				<Message message="No supported file found" />
 			)}

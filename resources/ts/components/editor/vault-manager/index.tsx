@@ -40,7 +40,7 @@ export default function VaultBrowser() {
 	};
 
 	return (
-		<div className="flex flex-col items-stretch grow">
+		<div className="flex flex-col items-stretch grow max-h-full">
 			<div className="flex gap-2 items-center p-5">
 				<Select
 					value={currentSelection.vault?.id ?? undefined}
