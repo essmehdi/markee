@@ -1,4 +1,10 @@
-import { useCallback, useState } from "react";
+import Message from "@/components/common/message";
+import useDialog from "@/lib/store/dialog-manager";
+import { useSourceManager } from "@/lib/store/source-manager";
+import LocalVault from "@/lib/vaults/local-vault";
+import { Plus, Vault } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "../../ui/button";
 import {
 	Select,
 	SelectContent,
@@ -7,19 +13,15 @@ import {
 	SelectValue,
 } from "../../ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
-import { Button } from "../../ui/button";
-import { Plus, Vault } from "@phosphor-icons/react";
-import { Dialog, DialogTrigger } from "../../ui/dialog";
-import NewVaultDialog from "./new-vault-dialog";
-import LocalVault from "@/lib/vaults/local-vault";
-import { useQuery } from "@tanstack/react-query";
 import Browser from "./browser";
-import Message from "@/components/common/message";
-import { useSourceManager } from "@/lib/store/source-manager";
-import useDialog from "@/lib/store/dialog-manager";
+import NewVaultDialog from "./new-vault-dialog";
+import VaultSelectItem from "./vault-select-item";
 
 export default function VaultBrowser() {
-	const sourceManager = useSourceManager();
+	const changeCurrentSelection = useSourceManager(
+		(state) => state.changeCurrentSelection,
+	);
+	const currentSelection = useSourceManager((state) => state.currentSelection);
 	const showDialog = useDialog((state) => state.showDialog);
 	const closeDialog = useDialog((state) => state.closeDialog);
 
@@ -30,7 +32,7 @@ export default function VaultBrowser() {
 
 	const setSelectedVault = (vaultId: string) => {
 		const vault = vaults!.find((vault) => vault.id === vaultId)!;
-		sourceManager.changeCurrentSelection(vault, null);
+		changeCurrentSelection(vault, null);
 	};
 
 	const showNewVaultDialog = () => {
@@ -41,7 +43,7 @@ export default function VaultBrowser() {
 		<div className="flex flex-col items-stretch grow">
 			<div className="flex gap-2 items-center p-5">
 				<Select
-					value={sourceManager.currentSelection.vault?.id ?? undefined}
+					value={currentSelection.vault?.id ?? undefined}
 					onValueChange={setSelectedVault}
 				>
 					<SelectTrigger className="w-96">
@@ -52,7 +54,9 @@ export default function VaultBrowser() {
 					<SelectContent position="popper">
 						{vaults?.map((vault) => (
 							<SelectItem key={vault.id} value={vault.id}>
-								{vault.name}
+								<VaultSelectItem
+									vault={vault}
+								/>
 							</SelectItem>
 						))}
 					</SelectContent>
@@ -71,8 +75,8 @@ export default function VaultBrowser() {
 					<TooltipContent>Add vault</TooltipContent>
 				</Tooltip>
 			</div>
-			{sourceManager.currentSelection.vault ? (
-				<Browser vault={sourceManager.currentSelection.vault} />
+			{currentSelection.vault ? (
+				<Browser vault={currentSelection.vault} />
 			) : (
 				<div className="relative grow">
 					<Message icon={<Vault size={30} />} message="Choose or add a vault" />
