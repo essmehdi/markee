@@ -1,8 +1,5 @@
-import { getNodeHash } from "@/lib/prosemirror/serialization/hash";
-import { useSourceManager } from "@/lib/store/source-manager";
-import { useEditorState } from "@nytimes/react-prosemirror";
+import { Source as SourceType } from "@/lib/store/source-manager";
 import { CaretDown } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 
@@ -21,25 +18,15 @@ const opacityAnimation = {
 	},
 };
 
+type SourceProps = {
+	saved: boolean | undefined;
+	currentSource: SourceType | null;
+};
+
 /**
  * Component that displays the current source of the editor
  */
-export default function Source() {
-	const currentSource = useSourceManager((state) => state.currentSource);
-	const lastSaveHash = useSourceManager((state) => state.lastSaveHash);
-	const isLoadingSource = useSourceManager((state) => state.isLoadingSource);
-
-	const state = useEditorState();
-
-	const { data: isSaved } = useQuery({
-		queryKey: ["doc-saved", lastSaveHash, state],
-		queryFn: async () => {
-			const contentHash = await getNodeHash(state.doc);
-			return contentHash === lastSaveHash;
-		},
-		enabled: !!currentSource,
-	});
-
+export default function Source({ saved, currentSource }: SourceProps) {
 	const fileName = currentSource?.filePath.split("/").pop() ?? "Draft";
 
 	return (
@@ -67,10 +54,9 @@ export default function Source() {
 						>
 							{fileName}
 							<span
-								className={clsx("text-green-400 pl-2", {
-									visible: !!currentSource && !isLoadingSource && isSaved === false,
-									invisible:
-										!currentSource || isLoadingSource || isSaved === undefined || isSaved,
+								className={clsx("text-primary pl-2", {
+									visible: saved === false,
+									invisible: saved || saved === undefined,
 								})}
 							>
 								•

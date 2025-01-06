@@ -192,7 +192,7 @@ const ACTIONS: ToolbarAction[] = [
 		onClick: (view) => {
 			setBlockType(mdSchema.nodes.code, { language: "" })(
 				view.state,
-				view.dispatch
+				view.dispatch,
 			);
 		},
 		shortcut: ["Ctrl", "Shift", "K"],
@@ -236,12 +236,12 @@ export default function Toolbar() {
 		(
 			view,
 			actionCallback: (view: EditorView) => void,
-			event: React.MouseEvent
+			event: React.MouseEvent,
 		) => {
 			event.preventDefault();
 			event.stopPropagation();
 			actionCallback(view);
-		}
+		},
 	);
 
 	const getToolbarActions = () => {
@@ -252,14 +252,16 @@ export default function Toolbar() {
 			if (action.type === "toggle") {
 				toggleGroup.push(
 					<Tooltip key={action.id}>
-						<TooltipTrigger>
-							<Toggle
-								key={action.id}
-								pressed={action.getActiveMarkup(editorState) !== null}
-								onMouseDown={(event) => applyAction(action.onClick, event)}
-							>
-								{action.icon}
-							</Toggle>
+						<TooltipTrigger asChild>
+							<>
+								<Toggle
+									key={action.id}
+									pressed={action.getActiveMarkup(editorState) !== null}
+									onMouseDown={(event) => applyAction(action.onClick, event)}
+								>
+									{action.icon}
+								</Toggle>
+							</>
 						</TooltipTrigger>
 						<TooltipContent className="flex flex-col items-center">
 							<p>{action.name}</p>
@@ -276,7 +278,7 @@ export default function Toolbar() {
 								</div>
 							)}
 						</TooltipContent>
-					</Tooltip>
+					</Tooltip>,
 				);
 			} else if (action.type === "action") {
 				actionGroup.push(
@@ -298,13 +300,15 @@ export default function Toolbar() {
 									{action.shortcut?.map((key, index) => (
 										<>
 											{index !== 0 && "+"}
-											<kbd className="px-1 bg-neutral-100 rounded-[0.3rem]">{key}</kbd>
+											<kbd className="px-1 bg-neutral-100 rounded-[0.3rem]">
+												{key}
+											</kbd>
 										</>
 									))}
 								</div>
 							)}
 						</TooltipContent>
-					</Tooltip>
+					</Tooltip>,
 				);
 			}
 		});

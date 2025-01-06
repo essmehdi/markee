@@ -4,7 +4,12 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { VaultDirectory, VaultFile, VaultItem } from "@/lib/vaults/types";
-import { DotsThreeVertical, File, Folder } from "@phosphor-icons/react";
+import {
+	DotsThreeVertical,
+	File,
+	Folder,
+	FolderOpen,
+} from "@phosphor-icons/react";
 import clsx from "clsx";
 import { NodeRendererProps } from "react-arborist";
 import BrowserDirectoryMenuContent from "./menu/directory-menu";
@@ -15,21 +20,38 @@ export default function BrowserItem({
 	style,
 }: NodeRendererProps<VaultItem>) {
 	const className = clsx(
-		"hover:bg-neutral-100 flex items-center justify-between rounded-lg h-full cursor-pointer mx-5",
+		"hover:bg-neutral-100 flex items-center justify-between rounded-lg h-full cursor-pointer mx-5 relative",
 		{
 			"bg-neutral-100": node.isSelected,
 		},
 	);
 
+	const alignmentIndicators = () => {
+		return new Array(node.level).fill(false).map((_, index) => {
+			return (
+				<div
+					key={index}
+					style={{
+						left: `calc(${index} * 24px + 0.75rem + 9px)`, // Level padding + item padding + half of icon size
+					}}
+					className={`absolute top-0 h-full w-0.5 bg-neutral-100 -translate-x-1/2`}
+				></div>
+			);
+		});
+	};
+
 	return (
 		<div style={style} className={className}>
+			{alignmentIndicators()}
 			<div
 				className="flex grow items-center gap-2 truncate p-3"
-				onClick={() => node.toggle()}
+				onClick={() => node.data.type === "directory" && node.toggle()}
 			>
 				<div className="shrink-0">
 					{node.data.type === "file" ? (
 						<File className="text-neutral-500" />
+					) : node.isOpen ? (
+						<FolderOpen className="text-primary" />
 					) : (
 						<Folder className="text-primary" />
 					)}

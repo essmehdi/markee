@@ -27,6 +27,7 @@ import {
 	textShortcuts,
 } from "./plugins/text-shortcuts";
 import { addRowBefore } from "./commands/tables";
+import { useSourceManager } from "../store/source-manager";
 
 export const editorActionKeybinds = {
 	CODE_BLOCK: "Mod-Shift-k",
@@ -48,6 +49,8 @@ export const editorActionKeybinds = {
 	STRIKETHROUGH_TOGGLE: "Mod-Shift-x",
 	INLINE_CODE_TOGGLE: "Mod-`",
 	INLINE_MATH_TOGGLE: "Mod-m",
+
+	SAVE: "Mod-s"
 } as const;
 
 /**
@@ -85,12 +88,20 @@ export default function editorKeymap(schema: typeof mdSchema) {
 	keys[editorActionKeybinds.INLINE_CODE_TOGGLE] = toggleBasicMarkup("codespan", "`");
 	keys[editorActionKeybinds.INLINE_MATH_TOGGLE] = toggleBasicMarkup("inlinemath", "$");
 
+	// Editor global shortcuts
+	keys[editorActionKeybinds.SAVE] = save;
+
 	keys["ArrowLeft"] = arrowHandler("left");
 	keys["ArrowRight"] = arrowHandler("right");
 	keys["ArrowUp"] = arrowHandler("up");
 	keys["ArrowDown"] = arrowHandler("down");
 
 	return keys;
+}
+
+function save(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
+	useSourceManager.getState().saveDocToSource(editorState);
+	return true;
 }
 
 function insertSoftBreak(

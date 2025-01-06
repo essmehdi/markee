@@ -12,6 +12,7 @@ import CodeBlockView from "@/lib/prosemirror/views/code-view";
 import HTMLView from "@/lib/prosemirror/views/html-view";
 import MathBlockView from "@/lib/prosemirror/views/math-block-view";
 import ParagraphView from "@/lib/prosemirror/views/paragraph-view";
+import useConfirmationAlert from "@/lib/store/confirmation-alert-manager";
 import { useSourceManager } from "@/lib/store/source-manager";
 import { ProseMirror } from "@nytimes/react-prosemirror";
 import "katex/dist/katex.min.css";
@@ -59,20 +60,19 @@ const editorInitialState = EditorState.create({
  * Main editor component
  */
 export default function Editor() {
-	const isCurrentSourceDeleted = useSourceManager(
-		(state) => state.isCurrentSourceDeleted,
-	);
-	const currentSelection = useSourceManager((state) => state.currentSelection);
-	const setIsLoadingSource = useSourceManager(
-		(state) => state.setIsLoadingSource,
-	);
-	const changeCurrentSource = useSourceManager(
-		(state) => state.changeCurrentSource,
-	);
-	const changeCurrentSourceDeletedFlag = useSourceManager(
-		(state) => state.changeCurrentSourceDeletedFlag,
-	);
-	const setLastSaveHash = useSourceManager((state) => state.setLastSaveHash);
+	const {
+		isCurrentSourceDeleted,
+		currentSelection,
+		currentSource,
+		lastSaveHash,
+		currentHash,
+		setIsLoadingSource,
+		changeCurrentSource,
+		changeCurrentSourceDeletedFlag,
+		setLastSaveHash,
+		setCurrentHash,
+	} = useSourceManager();
+	const { showConfirmationAlert } = useConfirmationAlert();
 
 	const [mount, setMount] = useState<HTMLElement | null>(null);
 	const [editorState, setEditorState] =
@@ -82,13 +82,13 @@ export default function Editor() {
 	 * Reads the selected file and sets it as the source of the
 	 * editor. Set the last save hash to the content of the file.
 	 */
-	const loadSource = useCallback(() => {
-		if (currentSelection.vault && currentSelection.filePath) {
+	const loadSource = () => {
+		const action = () => {
 			setIsLoadingSource(true);
 
 			const { vault, filePath } = currentSelection;
-			currentSelection.vault
-				.getFileContent(filePath)
+			vault!
+				.getFileContent(filePath!)
 				.then((decodedFileContent) => {
 					const doc = getNewDocFromMarkdown(decodedFileContent);
 					getNodeHash(doc).then((docHash) => {
@@ -103,8 +103,8 @@ export default function Editor() {
 					setEditorState(newEditorState);
 
 					changeCurrentSource({
-						vault,
-						filePath,
+						vault: vault!,
+						filePath: filePath!,
 					});
 				})
 				.catch((error) => {
@@ -114,8 +114,25 @@ export default function Editor() {
 				.finally(() => {
 					setIsLoadingSource(false);
 				});
+		};
+
+		if (
+			currentSelection.vault &&
+			currentSelection.filePath &&
+			(currentSelection.vault !== currentSource?.vault ||
+				currentSelection.filePath !== currentSource?.filePath)
+		) {
+			if (currentSource && lastSaveHash !== currentHash) {
+				showConfirmationAlert(
+					action,
+					"Are you sure?",
+					"This will replace the current document and all unsaved content will be lost and cannot be recovered. The history will be reset consequently.",
+				);
+			} else {
+				action();
+			}
 		}
-	}, [currentSelection]);
+	};
 
 	/**
 	 * Clears the editor when the current source is deleted.
@@ -141,6 +158,12 @@ export default function Editor() {
 			clearSource();
 		}
 	}, [isCurrentSourceDeleted]);
+
+	useEffect(() => {
+		if (editorState) {
+			getNodeHash(editorState.doc).then((hash) => setCurrentHash(hash));
+		}
+	}, [editorState]);
 
 	return (
 		<div className="max-w-7xl w-11/12 pt-10 mx-auto">

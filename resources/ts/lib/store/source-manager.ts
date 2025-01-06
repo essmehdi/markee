@@ -5,12 +5,12 @@ import { getMarkdownFromDocAsync } from "../prosemirror/serialization/serializer
 import { EditorState } from "prosemirror-state";
 import { getNodeHash } from "../prosemirror/serialization/hash";
 
-type Source = {
+export type Source = {
 	filePath: string;
 	vault: Vault;
 };
 
-type Selection = {
+export type Selection = {
 	filePath: string | null;
 	vault: Vault | null;
 };
@@ -18,6 +18,8 @@ type Selection = {
 export type SourceState = {
 	/** Last save hash to track if the document is saved */
 	lastSaveHash: string | null;
+	/** Current document state hash */
+	currentHash: string | null;
 	/** True if the editor is loading the selection */
 	isLoadingSource: boolean;
 	/** Flag to indicate that the curren source has been deleted */
@@ -31,6 +33,8 @@ export type SourceState = {
 	saveDocToSource: (editorState: EditorState) => void;
 	/** lastSaveHash setter */
 	setLastSaveHash: (hash: string | null) => void;
+	/** currentHash setter */
+	setCurrentHash: (hash: string | null) => void;
 	/** isLoading setter */
 	setIsLoadingSource: (loading: boolean) => void;
 	/** currentSource setter */
@@ -41,11 +45,13 @@ export type SourceState = {
 		filePath: string | null,
 	) => void;
 	changeCurrentSourceDeletedFlag: (flag: boolean) => void;
+	checkDocSavedState: (editorState: EditorState) => Promise<boolean>;
 };
 
 export const useSourceManager = create<SourceState>()(
 	devtools<SourceState>((set, get) => ({
 		lastSaveHash: null,
+		currentHash: null,
 		isLoadingSource: false,
 		isCurrentSourceDeleted: false,
 		currentSource: null,
@@ -70,10 +76,24 @@ export const useSourceManager = create<SourceState>()(
 			}));
 		},
 		setLastSaveHash: (hash) => {
+			if (get().lastSaveHash === hash) {
+				return;
+			}
 			set((state) => {
 				return {
 					...state,
 					lastSaveHash: hash,
+				};
+			});
+		},
+		setCurrentHash: (hash) => {
+			if (get().currentHash === hash) {
+				return;
+			}
+			set((state) => {
+				return {
+					...state,
+					currentHash: hash,
 				};
 			});
 		},
@@ -121,6 +141,10 @@ export const useSourceManager = create<SourceState>()(
 				...state,
 				isCurrentSourceDeleted: flag,
 			}));
+		},
+		checkDocSavedState: async (editorState) => {
+			const docHash = await getNodeHash(editorState.doc);
+			return docHash === get().lastSaveHash;
 		},
 	})),
 );
