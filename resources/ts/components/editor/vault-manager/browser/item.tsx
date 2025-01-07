@@ -27,12 +27,12 @@ export default function BrowserItem({
 	);
 
 	const alignmentIndicators = () => {
-		return new Array(node.level).fill(false).map((_, index) => {
+		return Array.from({ length: node.level }, (_, index) => {
 			return (
 				<div
 					key={index}
 					style={{
-						left: `calc(${index} * 24px + 0.75rem + 9px)`, // Level padding + item padding + half of icon size
+						left: `calc(${index} * 24px + 0.75rem + 9px)`, // Level padding + self padding + half of icon size
 					}}
 					className={`absolute top-0 h-full w-0.5 bg-neutral-100 -translate-x-1/2`}
 				></div>
