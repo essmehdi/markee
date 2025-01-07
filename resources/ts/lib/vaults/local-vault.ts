@@ -1,7 +1,7 @@
 import { PromiseExtended } from "dexie";
 import { db, SavedVault } from "../db";
 import type { BaseVault, VaultDirectory, VaultItem } from "./types";
-import { ConflictError, PermissionNotGrantedError } from "./errors";
+import { ConflictError, PermissionNotGrantedError, UnsupportedOperationError } from "./errors";
 
 /**
  * Local vault that represents a directory in the local file system
@@ -279,5 +279,21 @@ export default class LocalVault implements BaseVault {
 		const fileHandle = await this.getFileHandle(filePath);
 		// @ts-expect-error This is apparently missing in types :/
 		await fileHandle.remove();
+	}
+
+	/**
+	 * Copies a file in a specified directory
+	 */
+	public async copyFile(): Promise<void> {
+		throw new UnsupportedOperationError();
+	}
+
+	/**
+	 * Moves a file in the vault to another directory in the same vault
+	 * @param filePath Location of the file to move
+	 * @param destinationDirPath Location of the destination directory
+	 */
+	public async moveFile(): Promise<void> {
+		throw new UnsupportedOperationError();
 	}
 }

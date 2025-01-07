@@ -14,6 +14,10 @@ export class UnsupportedBrowserError extends Error {
 	public message: string = "Your browser does not support managing files";
 }
 
+export class UnsupportedOperationError extends Error {
+	public message: string = "This vault type does not support this operation"
+}
+
 export class ConflictError extends Error {
 	public message: string = "File or directory already exists";
 }

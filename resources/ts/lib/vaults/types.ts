@@ -28,6 +28,8 @@ export interface BaseVault {
 	expandDirectoryContent(dir: string): Promise<void>;
 	createFile(dirPath: string, name: string): Promise<void>;
 	createDirectory(dirPath: string, name: string): Promise<void>;
+	copyFile(filePath: string, destinationDirPath: string): Promise<void>;
+	moveFile(filePath: string, destinationDirPath: string): Promise<void>;
 	removeFile(filePath: string): Promise<void>;
 }
 
