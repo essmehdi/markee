@@ -5,10 +5,7 @@ import mdSchema from "@/lib/prosemirror/editor-schema";
 import { toggleListItemCheckbox, wrapInTable } from "@/lib/prosemirror/keymap";
 import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/parser";
 import { Markup } from "@/lib/prosemirror/types";
-import {
-	useEditorEventCallback,
-	useEditorState,
-} from "@nytimes/react-prosemirror";
+import { useEditorEventCallback, useEditorState } from "@nytimes/react-prosemirror";
 import {
 	Code,
 	CodeBlock,
@@ -29,11 +26,7 @@ import { wrapInList } from "prosemirror-schema-list";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import Menu from "./menu";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Fragment } from "react/jsx-runtime";
 
 type OptionWithId = {
@@ -191,10 +184,7 @@ const ACTIONS: ToolbarAction[] = [
 		name: "Code block",
 		description: "Makes the selected block a code block",
 		onClick: (view) => {
-			setBlockType(mdSchema.nodes.code, { language: "" })(
-				view.state,
-				view.dispatch,
-			);
+			setBlockType(mdSchema.nodes.code, { language: "" })(view.state, view.dispatch);
 		},
 		shortcut: ["Ctrl", "Shift", "K"],
 	},
@@ -234,15 +224,11 @@ export default function Toolbar() {
 	const editorState = useEditorState();
 
 	const applyAction = useEditorEventCallback(
-		(
-			view,
-			actionCallback: (view: EditorView) => void,
-			event: React.MouseEvent,
-		) => {
+		(view, actionCallback: (view: EditorView) => void, event: React.MouseEvent) => {
 			event.preventDefault();
 			event.stopPropagation();
 			actionCallback(view);
-		},
+		}
 	);
 
 	const getToolbarActions = () => {
@@ -270,7 +256,7 @@ export default function Toolbar() {
 									{action.shortcut?.map((key, index) => (
 										<Fragment key={key}>
 											{index !== 0 && "+"}
-											<kbd key={key} className="px-1 bg-neutral-100 rounded-[0.3rem]">
+											<kbd key={key} className="rounded-[0.3rem] bg-neutral-100 px-1">
 												{key}
 											</kbd>
 										</Fragment>
@@ -278,7 +264,7 @@ export default function Toolbar() {
 								</div>
 							)}
 						</TooltipContent>
-					</Tooltip>,
+					</Tooltip>
 				);
 			} else if (action.type === "action") {
 				actionGroup.push(
@@ -300,15 +286,13 @@ export default function Toolbar() {
 									{action.shortcut?.map((key, index) => (
 										<Fragment key={key}>
 											{index !== 0 && "+"}
-											<kbd className="px-1 bg-neutral-100 rounded-[0.3rem]">
-												{key}
-											</kbd>
+											<kbd className="rounded-[0.3rem] bg-neutral-100 px-1">{key}</kbd>
 										</Fragment>
 									))}
 								</div>
 							)}
 						</TooltipContent>
-					</Tooltip>,
+					</Tooltip>
 				);
 			}
 		});
@@ -321,7 +305,7 @@ export default function Toolbar() {
 
 	const toolbarActions = getToolbarActions();
 	return (
-		<div className="@6xl/main:flex @6xl/main:justify-between sticky @6xl/main:top-5 w-full @6xl/main:w-11/12 @6xl/main:max-w-6xl items-center gap-1 text-neutral-700 mb-5 @6xl/main:mt-10 bg-white border-b @6xl/main:border border-neutral-100 @6xl/main:rounded-[calc(theme(borderRadius.lg)+0.25rem)] p-1 shadow-md shadow-gray-100 mx-auto z-[1]">
+		<div className="sticky z-[1] mx-auto mb-5 w-full items-center gap-1 border-b border-neutral-100 bg-white p-1 text-neutral-700 shadow-md shadow-gray-100 @6xl/main:top-5 @6xl/main:mt-10 @6xl/main:flex @6xl/main:w-11/12 @6xl/main:max-w-6xl @6xl/main:justify-between @6xl/main:rounded-[calc(theme(borderRadius.lg)+0.25rem)] @6xl/main:border">
 			<Menu />
 			<div id="editor-toolbar" className="flex items-center gap-1">
 				{toolbarActions.toggles}

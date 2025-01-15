@@ -3,7 +3,7 @@
 }
 
 .md-editor {
-	@apply mx-auto w-full rounded-md bg-white px-10 py-4 text-[14pt] outline-none @6xl/main:w-11/12 @6xl/main:max-w-7xl @6xl/main:px-24 @6xl/main:py-10;
+	@apply mx-auto w-full rounded-md bg-white px-8 py-4 text-[12pt] outline-none @4xl/main:text-[14pt] @6xl/main:w-11/12 @6xl/main:max-w-7xl @6xl/main:px-24 @6xl/main:py-10;
 }
 .exported {
 	@apply text-[8pt];
@@ -114,31 +114,31 @@
 
 /* Titles */
 .md-title {
-	@apply mb-3 font-bold;
+	@apply mb-2 @4xl/main:mb-3 font-bold;
 }
 
 .md-title-1 {
-	@apply mb-7 text-6xl;
+	@apply mb-4 text-5xl @4xl/main:mb-7 @4xl/main:text-6xl;
 }
 
 .md-title-2 {
-	@apply text-5xl;
+	@apply text-3xl @4xl/main:text-5xl;
 }
 
 .md-title-3 {
-	@apply text-4xl;
+	@apply text-2xl @4xl/main:text-4xl;
 }
 
 .md-title-4 {
-	@apply text-3xl;
+	@apply text-xl @4xl/main:text-3xl;
 }
 
 .md-title-5 {
-	@apply text-2xl;
+	@apply text-lg @4xl/main:text-2xl;
 }
 
 .md-title-6 {
-	@apply text-lg;
+	@apply text-base @4xl/main:text-lg;
 }
 
 .exported .md-title {
@@ -174,7 +174,7 @@
 .ProseMirror > ul:not(:first-child),
 .ProseMirror > ol:not(:first-child),
 .ProseMirror > .cm-editor:not(:first-child) {
-	@apply mt-5;
+	@apply mt-4 @4xl/main:mt-5;
 }
 
 .exported.ProseMirror > .md-block:not(.md-extended-block):not(:first-child),
@@ -186,7 +186,7 @@
 
 /* Code mirror styling */
 .cm-editor {
-	@apply overflow-hidden rounded-md bg-gray-100;
+	@apply overflow-hidden -mx-8 @4xl/main:mx-0 @4xl/main:rounded-md bg-gray-100;
 }
 
 .cm-editor * {
