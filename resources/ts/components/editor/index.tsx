@@ -22,7 +22,7 @@ import { EditorState } from "prosemirror-state";
 import { tableEditing } from "prosemirror-tables";
 import { NodeViewConstructor } from "prosemirror-view";
 import "prosemirror-view/style/prosemirror.css";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "~/css/editor.css";
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
@@ -75,8 +75,7 @@ export default function Editor() {
 	const { showConfirmationAlert } = useConfirmationAlert();
 
 	const [mount, setMount] = useState<HTMLElement | null>(null);
-	const [editorState, setEditorState] =
-		useState<EditorState>(editorInitialState);
+	const [editorState, setEditorState] = useState<EditorState>(editorInitialState);
 
 	/**
 	 * Reads the selected file and sets it as the source of the
@@ -108,7 +107,7 @@ export default function Editor() {
 					});
 				})
 				.catch((error) => {
-					console.error("Source manager plugin: Could not read file", error);
+					console.error("Could not read file", error);
 					setLastSaveHash(null);
 				})
 				.finally(() => {
@@ -119,14 +118,13 @@ export default function Editor() {
 		if (
 			currentSelection.vault &&
 			currentSelection.filePath &&
-			(currentSelection.vault !== currentSource?.vault ||
-				currentSelection.filePath !== currentSource?.filePath)
+			(currentSelection.vault !== currentSource?.vault || currentSelection.filePath !== currentSource?.filePath)
 		) {
 			if (currentSource && lastSaveHash !== currentHash) {
 				showConfirmationAlert(
 					action,
 					"Are you sure?",
-					"This will replace the current document and all unsaved content will be lost and cannot be recovered. The history will be reset consequently.",
+					"This will replace the current document and all unsaved content will be lost and cannot be recovered. The history will be reset consequently."
 				);
 			} else {
 				action();
@@ -166,18 +164,16 @@ export default function Editor() {
 	}, [editorState]);
 
 	return (
-		<div className="max-w-7xl w-11/12 pt-10 mx-auto">
-			<ProseMirror
-				mount={mount}
-				state={editorState}
-				dispatchTransaction={(tr) => {
-					setEditorState((oldState) => oldState.apply(tr));
-				}}
-				nodeViews={nodeViews}
-			>
-				<Toolbar />
-				<div className="md-editor" ref={setMount} />
-			</ProseMirror>
-		</div>
+		<ProseMirror
+			mount={mount}
+			state={editorState}
+			dispatchTransaction={(tr) => {
+				setEditorState((oldState) => oldState.apply(tr));
+			}}
+			nodeViews={nodeViews}
+		>
+			<Toolbar />
+			<div className="md-editor" ref={setMount} />
+		</ProseMirror>
 	);
 }

@@ -130,7 +130,7 @@ function decorate(node: Node): ParsingResult {
 		markups.push(...processHTMLTokens(htmlStack));
 		return false;
 	});
-	console.log(markups);
+
 	return {
 		markups: markups,
 		htmlTransforms: transforms,

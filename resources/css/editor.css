@@ -3,7 +3,7 @@
 }
 
 .md-editor {
-	@apply bg-white rounded-md py-10 px-24 text-[14pt] outline-none;
+	@apply mx-auto w-full rounded-md bg-white px-10 py-4 text-[14pt] outline-none @6xl/main:w-11/12 @6xl/main:max-w-7xl @6xl/main:px-24 @6xl/main:py-10;
 }
 .exported {
 	@apply text-[8pt];
@@ -26,7 +26,7 @@
 
 /* Style for inline code: `text` */
 .md-codespan {
-	@apply font-mono px-2 rounded-md bg-gray-100;
+	@apply rounded-md bg-gray-100 px-2 font-mono;
 }
 
 /* Style for inline math source: $x^2+1=0$ */
@@ -38,8 +38,8 @@
 	@apply relative w-0;
 }
 
-.md-inlinemath-preview>div {
-	@apply absolute bottom-7 py-2 px-4 border border-neutral-100 rounded-lg bg-white shadow-md w-max max-w-2xl left-1/2 overflow-hidden select-none;
+.md-inlinemath-preview > div {
+	@apply absolute bottom-7 left-1/2 w-max max-w-2xl select-none overflow-hidden rounded-lg border border-neutral-100 bg-white px-4 py-2 shadow-md;
 }
 
 .ProseMirror img {
@@ -51,13 +51,13 @@
 }
 
 /* Style for footnote reference */
-.md-punctuation.md-hidden+.md-footnoteref {
-	@apply align-super text-xs bg-blue-100 text-blue-500 underline px-1 rounded-md cursor-pointer;
+.md-punctuation.md-hidden + .md-footnoteref {
+	@apply cursor-pointer rounded-md bg-blue-100 px-1 align-super text-xs text-blue-500 underline;
 }
 
 /* Style for links */
 .md-link {
-	@apply cursor-pointer underline text-blue-400;
+	@apply cursor-pointer text-blue-400 underline;
 }
 
 /* Style for style punctuation */
@@ -66,37 +66,37 @@
 }
 
 .md-code-block {
-	@apply bg-gray-100 rounded-md p-5;
+	@apply rounded-md bg-gray-100 p-5;
 }
 
 .ProseMirror ul {
-	@apply list-none ml-9;
+	@apply ml-9 list-none;
 }
 
 .ProseMirror ol {
-	@apply list-decimal ml-[3.5rem];
+	@apply ml-[3.5rem] list-decimal;
 }
 
-.ProseMirror ul>li {
+.ProseMirror ul > li {
 	@apply relative pl-5;
 }
 
-.ProseMirror ul>li.md-list-item::before,
-.ProseMirror ul>li.md-checklist-item div {
-	@apply block absolute top-0 left-0;
+.ProseMirror ul > li.md-list-item::before,
+.ProseMirror ul > li.md-checklist-item div {
+	@apply absolute left-0 top-0 block;
 }
 
-.ProseMirror ul>li.md-list-item::before {
+.ProseMirror ul > li.md-list-item::before {
 	content: "•";
 }
 
 .ProseMirror table {
-	@apply border-collapse mx-auto;
+	@apply mx-auto border-collapse;
 }
 
 .ProseMirror th,
 .ProseMirror td {
-	@apply border border-neutral-800 py-1 px-2;
+	@apply border border-neutral-800 px-2 py-1;
 }
 
 .ProseMirror th {
@@ -104,7 +104,7 @@
 }
 
 .ProseMirror blockquote {
-	@apply border-l-2 border-primary text-neutral-600 italic pl-5;
+	@apply border-l-2 border-primary pl-5 italic text-neutral-600;
 }
 
 /* Style to hide hidden elements (e.g. punctuation when cursor is near) */
@@ -114,11 +114,11 @@
 
 /* Titles */
 .md-title {
-	@apply font-bold mb-3;
+	@apply mb-3 font-bold;
 }
 
 .md-title-1 {
-	@apply text-6xl mb-7;
+	@apply mb-7 text-6xl;
 }
 
 .md-title-2 {
@@ -142,11 +142,11 @@
 }
 
 .exported .md-title {
-	@apply font-bold mb-1;
+	@apply mb-1 font-bold;
 }
 
 .exported .md-title-1 {
-	@apply text-2xl mb-3;
+	@apply mb-3 text-2xl;
 }
 
 .exported .md-title-2 {
@@ -170,23 +170,23 @@
 }
 
 /* Block spacing */
-.ProseMirror>.md-block:not(.md-extended-block):not(:first-child),
-.ProseMirror>ul:not(:first-child),
-.ProseMirror>ol:not(:first-child),
-.ProseMirror>.cm-editor:not(:first-child) {
+.ProseMirror > .md-block:not(.md-extended-block):not(:first-child),
+.ProseMirror > ul:not(:first-child),
+.ProseMirror > ol:not(:first-child),
+.ProseMirror > .cm-editor:not(:first-child) {
 	@apply mt-5;
 }
 
-.exported.ProseMirror>.md-block:not(.md-extended-block):not(:first-child),
-.exported.ProseMirror>ul:not(:first-child),
-.exported.ProseMirror>ol:not(:first-child),
-.exported.ProseMirror>.cm-editor:not(:first-child) {
+.exported.ProseMirror > .md-block:not(.md-extended-block):not(:first-child),
+.exported.ProseMirror > ul:not(:first-child),
+.exported.ProseMirror > ol:not(:first-child),
+.exported.ProseMirror > .cm-editor:not(:first-child) {
 	@apply mt-2;
 }
 
 /* Code mirror styling */
 .cm-editor {
-	@apply bg-gray-100 rounded-md overflow-hidden;
+	@apply overflow-hidden rounded-md bg-gray-100;
 }
 
 .cm-editor * {
@@ -202,7 +202,7 @@
 }
 
 .cm-panels.cm-panels-bottom {
-	@apply bg-gray-100 flex justify-end p-2 border-t border-dashed z-0;
+	@apply z-0 flex justify-end border-t border-dashed bg-gray-100 p-2;
 }
 
 .exported .cm-panels.cm-panels-bottom {
@@ -214,26 +214,26 @@
 } */
 
 .cm-code-lang {
-	@apply px-3 py-1 rounded-sm bg-gray-200 text-xs text-gray-600 font-mono text-center;
+	@apply rounded-sm bg-gray-200 px-3 py-1 text-center font-mono text-xs text-gray-600;
 }
 
-.md-html-block-editor>.cm-editor:not(.cm-focused),
-.md-html-block-editor>.cm-editor:not(.cm-focused) *,
-.md-math-block-editor>.cm-editor:not(.cm-focused),
-.md-math-block-editor>.cm-editor:not(.cm-focused) * {
+.md-html-block-editor > .cm-editor:not(.cm-focused),
+.md-html-block-editor > .cm-editor:not(.cm-focused) *,
+.md-math-block-editor > .cm-editor:not(.cm-focused),
+.md-math-block-editor > .cm-editor:not(.cm-focused) * {
 	@apply !h-0 overflow-hidden;
 }
 
 .md-html-block-editor {
-	@apply min-h-3 hover:bg-neutral-100 hover:rounded-md transition-all cursor-pointer;
+	@apply min-h-3 cursor-pointer transition-all hover:rounded-md hover:bg-neutral-100;
 }
 
 .md-toolbar {
-	@apply sticky top-5 flex items-center gap-1 text-neutral-700 mb-5 bg-white border border-neutral-100 rounded-[calc(theme(borderRadius.lg)+0.25rem)] p-1 shadow-md shadow-gray-100 mx-auto;
+	@apply sticky top-5 mx-auto mb-5 flex items-center gap-1 rounded-[calc(theme(borderRadius.lg)+0.25rem)] border border-neutral-100 bg-white p-1 text-neutral-700 shadow-md shadow-gray-100;
 }
 
 .md-toolbar-action {
-	@apply py-1 px-2 rounded-lg hover:bg-neutral-100 cursor-pointer flex justify-center items-center w-10 aspect-square text-lg;
+	@apply flex aspect-square w-10 cursor-pointer items-center justify-center rounded-lg px-2 py-1 text-lg hover:bg-neutral-100;
 }
 
 .md-toolbar-action.active {
@@ -250,16 +250,16 @@
 	}
 
 	@page :footer {
-        display: none
-    }
- 
-    @page :header {
-        display: none
-    }
+		display: none;
+	}
+
+	@page :header {
+		display: none;
+	}
 }
 
 * {
-	-webkit-print-color-adjust: exact !important;   /* Chrome, Safari 6 – 15.3, Edge */
-    color-adjust: exact !important;                 /* Firefox 48 – 96 */
-    print-color-adjust: exact !important;           /* Firefox 97+, Safari 15.4+ */
+	-webkit-print-color-adjust: exact !important; /* Chrome, Safari 6 – 15.3, Edge */
+	color-adjust: exact !important; /* Firefox 48 – 96 */
+	print-color-adjust: exact !important; /* Firefox 97+, Safari 15.4+ */
 }

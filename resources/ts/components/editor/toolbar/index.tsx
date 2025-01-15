@@ -34,6 +34,7 @@ import {
 	TooltipContent,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Fragment } from "react/jsx-runtime";
 
 type OptionWithId = {
 	id: string;
@@ -255,7 +256,6 @@ export default function Toolbar() {
 						<TooltipTrigger asChild>
 							<>
 								<Toggle
-									key={action.id}
 									pressed={action.getActiveMarkup(editorState) !== null}
 									onMouseDown={(event) => applyAction(action.onClick, event)}
 								>
@@ -268,12 +268,12 @@ export default function Toolbar() {
 							{action.shortcut && (
 								<div className="text-sm">
 									{action.shortcut?.map((key, index) => (
-										<>
+										<Fragment key={key}>
 											{index !== 0 && "+"}
-											<kbd className="px-1 bg-neutral-100 rounded-[0.3rem]">
+											<kbd key={key} className="px-1 bg-neutral-100 rounded-[0.3rem]">
 												{key}
 											</kbd>
-										</>
+										</Fragment>
 									))}
 								</div>
 							)}
@@ -283,7 +283,7 @@ export default function Toolbar() {
 			} else if (action.type === "action") {
 				actionGroup.push(
 					<Tooltip key={action.id}>
-						<TooltipTrigger>
+						<TooltipTrigger asChild>
 							<Button
 								key={action.id}
 								variant="ghost"
@@ -298,12 +298,12 @@ export default function Toolbar() {
 							{action.shortcut && (
 								<div className="text-sm">
 									{action.shortcut?.map((key, index) => (
-										<>
+										<Fragment key={key}>
 											{index !== 0 && "+"}
 											<kbd className="px-1 bg-neutral-100 rounded-[0.3rem]">
 												{key}
 											</kbd>
-										</>
+										</Fragment>
 									))}
 								</div>
 							)}
@@ -321,7 +321,7 @@ export default function Toolbar() {
 
 	const toolbarActions = getToolbarActions();
 	return (
-		<div className="flex justify-between sticky top-5 w-full max-w-6xl items-center gap-1 text-neutral-700 mb-5 bg-white border border-neutral-100 rounded-[calc(theme(borderRadius.lg)+0.25rem)] p-1 shadow-md shadow-gray-100 mx-auto z-[1]">
+		<div className="@6xl/main:flex @6xl/main:justify-between sticky @6xl/main:top-5 w-full @6xl/main:w-11/12 @6xl/main:max-w-6xl items-center gap-1 text-neutral-700 mb-5 @6xl/main:mt-10 bg-white border-b @6xl/main:border border-neutral-100 @6xl/main:rounded-[calc(theme(borderRadius.lg)+0.25rem)] p-1 shadow-md shadow-gray-100 mx-auto z-[1]">
 			<Menu />
 			<div id="editor-toolbar" className="flex items-center gap-1">
 				{toolbarActions.toggles}

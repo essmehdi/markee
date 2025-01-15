@@ -40,14 +40,7 @@ export default function BaseLayout({ children }: PropsWithChildren) {
 }
 
 function AlertManager() {
-	const {
-		open,
-		action,
-		title,
-		description,
-		closeConfirmationAlert,
-		_onChangeOpen,
-	} = useConfirmationAlert();
+	const { open, action, title, description, closeConfirmationAlert, _onChangeOpen } = useConfirmationAlert();
 	const [isLoading, setIsLoading] = useState(false);
 
 	const confirmAction = () => {
@@ -68,14 +61,10 @@ function AlertManager() {
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>{title ?? "Are you sure?"}</AlertDialogTitle>
-					<AlertDialogDescription>
-						{description ?? "This action is irreversible."}
-					</AlertDialogDescription>
+					<AlertDialogDescription>{description ?? "This action is irreversible."}</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>
-					<AlertDialogCancel onClick={closeConfirmationAlert}>
-						Cancel
-					</AlertDialogCancel>
+					<AlertDialogCancel onClick={closeConfirmationAlert}>Cancel</AlertDialogCancel>
 					<Button onClick={confirmAction}>
 						{isLoading && <CircleNotch />}
 						Confirm
