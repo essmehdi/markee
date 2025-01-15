@@ -5,9 +5,9 @@
 .md-editor {
 	@apply mx-auto w-full rounded-md bg-white px-8 py-4 text-[12pt] outline-none @4xl/main:text-[14pt] @6xl/main:w-11/12 @6xl/main:max-w-7xl @6xl/main:px-24 @6xl/main:py-10;
 }
-.exported {
+/* .exported {
 	@apply text-[8pt];
-}
+} */
 
 /* Style for bold markup: **text** */
 .md-strong {
@@ -187,6 +187,9 @@
 /* Code mirror styling */
 .cm-editor {
 	@apply overflow-hidden -mx-8 @4xl/main:mx-0 @4xl/main:rounded-md bg-gray-100;
+}
+.exported .cm-editor {
+	@apply mx-0 rounded-md
 }
 
 .cm-editor * {

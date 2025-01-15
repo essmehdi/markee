@@ -1,14 +1,18 @@
 import { DropdownMenuItem, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@/components/ui/dropdown-menu";
-import { browserPrint, generatePDF } from "@/lib/prosemirror/export/pdf";
+import { browserPrint } from "@/lib/prosemirror/export/print";
 import { getMarkdownFromDocAsync } from "@/lib/prosemirror/serialization/serializer";
 import { useEditorEventCallback } from "@nytimes/react-prosemirror";
-import { Export, FileMd, FilePdf, Printer } from "@phosphor-icons/react";
+import { Export, FileMd, Printer } from "@phosphor-icons/react";
 import { EditorState } from "prosemirror-state";
 import { useCallback } from "react";
 
 type ExportSubMenu = {
 	editorState: EditorState;
 };
+
+/**
+ * The export submenu component
+ */
 export default function ExportSubMenu({ editorState }: ExportSubMenu) {
 	/**
 	 * Prints the editor content using the browser print feature
@@ -33,13 +37,6 @@ export default function ExportSubMenu({ editorState }: ExportSubMenu) {
 		});
 	}, [editorState]);
 
-	/**
-	 * Generate the PDF from the editor content
-	 */
-	const exportToPDF = useEditorEventCallback((view) => {
-		generatePDF(view);
-	});
-
 	return (
 		<DropdownMenuSub>
 			<DropdownMenuSubTrigger>
@@ -51,10 +48,6 @@ export default function ExportSubMenu({ editorState }: ExportSubMenu) {
 					<DropdownMenuItem onSelect={printDocument}>
 						<Printer />
 						Print
-					</DropdownMenuItem>
-					<DropdownMenuItem onSelect={exportToPDF}>
-						<FilePdf />
-						PDF
 					</DropdownMenuItem>
 					<DropdownMenuItem onSelect={exportToMarkdown}>
 						<FileMd />

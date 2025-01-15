@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import { getNewDocFromMarkdown } from "@/lib/prosemirror/serialization/deserializer";
-import { getNodeHash } from "@/lib/prosemirror/serialization/hash";
 import useConfirmationAlert from "@/lib/store/confirmation-alert-manager";
 import { useSourceManager } from "@/lib/store/source-manager";
 import {
@@ -16,7 +15,6 @@ import {
 	useEditorState,
 } from "@nytimes/react-prosemirror";
 import { File } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
 import { Node, Slice } from "prosemirror-model";
 import { ChangeEvent, useRef } from "react";
 import SidebarToggle from "../sidebar-toggle";
