@@ -240,14 +240,15 @@ export default function Toolbar() {
 				toggleGroup.push(
 					<Tooltip key={action.id}>
 						<TooltipTrigger asChild>
-							<>
+							{/* Workaround asChild props */}
+							<div>
 								<Toggle
 									pressed={action.getActiveMarkup(editorState) !== null}
 									onMouseDown={(event) => applyAction(action.onClick, event)}
 								>
 									{action.icon}
 								</Toggle>
-							</>
+							</div>
 						</TooltipTrigger>
 						<TooltipContent className="flex flex-col items-center">
 							<p>{action.name}</p>
