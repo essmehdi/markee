@@ -2,7 +2,6 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Source, useSourceManager } from "@/lib/store/source-manager";
 import { FloppyDisk } from "@phosphor-icons/react";
 import { EditorState } from "prosemirror-state";
-import { useCallback, useEffect } from "react";
 
 type SaveMenuItemProps = {
 	editorState: EditorState;

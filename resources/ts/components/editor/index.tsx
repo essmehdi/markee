@@ -77,6 +77,11 @@ export default function Editor() {
 	const [mount, setMount] = useState<HTMLElement | null>(null);
 	const [editorState, setEditorState] = useState<EditorState>(editorInitialState);
 
+	const mountEditor = (element: HTMLElement | null) => {
+		element?.focus();
+		setMount(element);
+	}
+
 	/**
 	 * Reads the selected file and sets it as the source of the
 	 * editor. Set the last save hash to the content of the file.
@@ -173,7 +178,7 @@ export default function Editor() {
 			nodeViews={nodeViews}
 		>
 			<Toolbar />
-			<div className="md-editor" ref={setMount} />
+			<div className="md-editor" ref={mountEditor} />
 		</ProseMirror>
 	);
 }

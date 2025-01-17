@@ -43,7 +43,7 @@
 }
 
 .ProseMirror img {
-	@apply inline;
+	@apply inline-block;
 }
 
 .md-rendered-image {
@@ -229,6 +229,10 @@
 
 .md-html-block-editor {
 	@apply min-h-3 cursor-pointer transition-all hover:rounded-md hover:bg-neutral-100;
+}
+
+.md-html-block-render {
+	@apply whitespace-normal;
 }
 
 .md-toolbar {
