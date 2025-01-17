@@ -10,8 +10,7 @@ import {
 	Command,
 	EditorState,
 	Selection,
-	TextSelection,
-	Transaction,
+	Transaction
 } from "prosemirror-state";
 import {
 	addColumnAfter,
@@ -21,13 +20,13 @@ import {
 	deleteRow,
 } from "prosemirror-tables";
 import { EditorView } from "prosemirror-view";
+import { useSourceManager } from "../store/source-manager";
 import { toggleBasicMarkup } from "./commands/markup";
+import { addRowBefore } from "./commands/tables";
 import mdSchema from "./editor-schema";
 import {
 	textShortcuts,
 } from "./plugins/text-shortcuts";
-import { addRowBefore } from "./commands/tables";
-import { useSourceManager } from "../store/source-manager";
 
 export const editorActionKeybinds = {
 	CODE_BLOCK: "Mod-Shift-k",
@@ -99,7 +98,7 @@ export default function editorKeymap(schema: typeof mdSchema) {
 	return keys;
 }
 
-function save(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
+function save(editorState: EditorState): boolean {
 	useSourceManager.getState().saveDocToSource(editorState);
 	return true;
 }
@@ -125,7 +124,7 @@ export function wrapInTable(
 	editorState: EditorState,
 	dispatch?: EditorView["dispatch"]
 ): boolean {
-	const offset = editorState.tr.selection.anchor + 1;
+	// const offset = editorState.tr.selection.anchor + 1;
 	const transaction = editorState.tr;
 	const cell = editorState.schema.nodes.table_cell.createAndFill()!;
 	const headCell = editorState.schema.nodes.table_header.createAndFill()!;
@@ -184,8 +183,7 @@ export function toggleListItemCheckbox(
  */
 function checkForTextShortcuts(
 	editorState: EditorState,
-	_dispatch?: EditorView["dispatch"],
-	editorView?: EditorView
+	dispatch?: EditorView["dispatch"],
 ): boolean {
 	const selection = editorState.selection;
 
@@ -214,20 +212,20 @@ function checkForTextShortcuts(
 
 		const match = currentNode.textContent.match(textShortcut.regex);
 
-		if (match && editorView) {
-			const selection = editorView.state.selection;
+		if (match) {
+			const selection = editorState.selection;
 			const currentNode = selection.$from.node();
 			const currentNodePosition = selection.$from.before();
 
 			const newCodeNode = textShortcut.enterNode(match);
 
-			const transaction = editorView.state.tr.replaceWith(
+			const transaction = editorState.tr.replaceWith(
 				currentNodePosition,
 				currentNodePosition + currentNode.nodeSize,
 				newCodeNode
 			);
 
-			editorView.dispatch(transaction);
+			dispatch?.(transaction);
 			return true;
 		}
 	}
