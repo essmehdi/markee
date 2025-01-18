@@ -16,14 +16,17 @@ import useConfirmationAlert from "@/lib/store/confirmation-alert-manager";
 import { useSourceManager } from "@/lib/store/source-manager";
 import { ProseMirror } from "@nytimes/react-prosemirror";
 import "katex/dist/katex.min.css";
+import { gapCursor } from "prosemirror-gapcursor";
 import { history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { EditorState } from "prosemirror-state";
 import { tableEditing } from "prosemirror-tables";
 import { NodeViewConstructor } from "prosemirror-view";
 import "prosemirror-view/style/prosemirror.css";
+import "prosemirror-gapcursor/style/gapcursor.css";
 import { useEffect, useState } from "react";
 import "~/css/editor.css";
+import "prosemirror-tables/style/tables.css"
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
 	paragraph(node, view, getPos) {
@@ -48,7 +51,8 @@ export const editorPlugins = [
 	textShortcutPlugin,
 	listItemDecorator,
 	footnoter,
-	tableEditing(),
+	tableEditing({ allowTableNodeSelection: true }),
+	// gapCursor()
 ];
 
 const editorInitialState = EditorState.create({

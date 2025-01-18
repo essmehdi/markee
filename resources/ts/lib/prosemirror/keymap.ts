@@ -18,11 +18,12 @@ import {
 	addRowAfter,
 	deleteColumn,
 	deleteRow,
+	deleteTable,
 } from "prosemirror-tables";
 import { EditorView } from "prosemirror-view";
 import { useSourceManager } from "../store/source-manager";
 import { toggleBasicMarkup } from "./commands/markup";
-import { addRowBefore } from "./commands/tables";
+import { addRowBefore, maybeDeleteTable } from "./commands/tables";
 import mdSchema from "./editor-schema";
 import {
 	textShortcuts,
@@ -65,6 +66,10 @@ export default function editorKeymap(schema: typeof mdSchema) {
 		liftListItem(schema.nodes.list_item),
 		baseKeymap["Enter"]
 	);
+	keys["Backspace"] = chainCommands(
+		maybeDeleteTable,
+		baseKeymap["Backspace"]
+	)
 	keys["Shift-Enter"] = insertSoftBreak;
 	keys[editorActionKeybinds.BULLET_LIST] = wrapInList(schema.nodes.bullet_list);
 	keys[editorActionKeybinds.ORDERED_LIST] = wrapInList(schema.nodes.ordered_list);
@@ -124,7 +129,10 @@ export function wrapInTable(
 	editorState: EditorState,
 	dispatch?: EditorView["dispatch"]
 ): boolean {
-	// const offset = editorState.tr.selection.anchor + 1;
+	if (editorState.selection.$from.node().type === mdSchema.nodes.table_cell) {
+		return false;
+	} 
+
 	const transaction = editorState.tr;
 	const cell = editorState.schema.nodes.table_cell.createAndFill()!;
 	const headCell = editorState.schema.nodes.table_header.createAndFill()!;

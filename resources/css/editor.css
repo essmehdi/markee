@@ -90,13 +90,17 @@
 	content: "•";
 }
 
-.ProseMirror table {
-	@apply mx-auto border-collapse;
+.md-editor.ProseMirror table {
+	@apply mx-auto w-auto;
 }
 
 .ProseMirror th,
 .ProseMirror td {
 	@apply border border-neutral-800 px-2 py-1;
+}
+
+.ProseMirror td {
+	@apply min-w-10;
 }
 
 .ProseMirror th {
