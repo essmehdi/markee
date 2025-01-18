@@ -190,7 +190,7 @@
 
 /* Code mirror styling */
 .cm-editor {
-	@apply overflow-hidden -mx-8 @4xl/main:mx-0 @4xl/main:rounded-md bg-gray-100;
+	@apply overflow-hidden -mx-8 @4xl/main:mx-0 @4xl/main:rounded-md bg-secondary;
 }
 .exported .cm-editor {
 	@apply mx-0 rounded-md
@@ -205,7 +205,7 @@
 }
 
 .cm-editor.cm-focused {
-	outline: 1px solid cyan;
+	outline: 1px solid hsl(var(--primary));
 }
 
 .cm-panels.cm-panels-bottom {

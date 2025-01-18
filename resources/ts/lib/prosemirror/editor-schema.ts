@@ -62,6 +62,9 @@ const mdSchema = new Schema({
 					preserveWhitespace: "full",
 				},
 			],
+			toDOM() {
+				return ["p", { class: "md-block" }, 0];
+			},
 		},
 		code: {
 			group: "block",

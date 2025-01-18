@@ -1,33 +1,15 @@
 import { baseKeymap, chainCommands, setBlockType, wrapIn } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { Fragment } from "prosemirror-model";
-import {
-	liftListItem,
-	splitListItem,
-	wrapInList,
-} from "prosemirror-schema-list";
-import {
-	Command,
-	EditorState,
-	Selection,
-	Transaction
-} from "prosemirror-state";
-import {
-	addColumnAfter,
-	addColumnBefore,
-	addRowAfter,
-	deleteColumn,
-	deleteRow,
-	deleteTable,
-} from "prosemirror-tables";
+import { liftListItem, splitListItem, wrapInList } from "prosemirror-schema-list";
+import { Command, EditorState, Selection, Transaction } from "prosemirror-state";
+import { addColumnAfter, addColumnBefore, addRowAfter, deleteColumn, deleteRow } from "prosemirror-tables";
 import { EditorView } from "prosemirror-view";
 import { useSourceManager } from "../store/source-manager";
 import { toggleBasicMarkup } from "./commands/markup";
 import { addRowBefore, maybeDeleteTable } from "./commands/tables";
 import mdSchema from "./editor-schema";
-import {
-	textShortcuts,
-} from "./plugins/text-shortcuts";
+import { textShortcuts } from "./plugins/text-shortcuts";
 
 export const editorActionKeybinds = {
 	CODE_BLOCK: "Mod-Shift-k",
@@ -50,7 +32,7 @@ export const editorActionKeybinds = {
 	INLINE_CODE_TOGGLE: "Mod-`",
 	INLINE_MATH_TOGGLE: "Mod-m",
 
-	SAVE: "Mod-s"
+	SAVE: "Mod-s",
 } as const;
 
 /**
@@ -66,10 +48,7 @@ export default function editorKeymap(schema: typeof mdSchema) {
 		liftListItem(schema.nodes.list_item),
 		baseKeymap["Enter"]
 	);
-	keys["Backspace"] = chainCommands(
-		maybeDeleteTable,
-		baseKeymap["Backspace"]
-	)
+	keys["Backspace"] = chainCommands(maybeDeleteTable, baseKeymap["Backspace"]);
 	keys["Shift-Enter"] = insertSoftBreak;
 	keys[editorActionKeybinds.BULLET_LIST] = wrapInList(schema.nodes.bullet_list);
 	keys[editorActionKeybinds.ORDERED_LIST] = wrapInList(schema.nodes.ordered_list);
@@ -108,16 +87,9 @@ function save(editorState: EditorState): boolean {
 	return true;
 }
 
-function insertSoftBreak(
-	editorState: EditorState,
-	dispatch?: EditorView["dispatch"]
-): boolean {
+function insertSoftBreak(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
 	dispatch?.(
-		editorState.tr.replaceWith(
-			editorState.selection.from,
-			editorState.selection.to,
-			mdSchema.nodes.soft_break.create()
-		)
+		editorState.tr.replaceWith(editorState.selection.from, editorState.selection.to, mdSchema.nodes.soft_break.create())
 	);
 	return true;
 }
@@ -125,13 +97,10 @@ function insertSoftBreak(
 /**
  * Create a table with the cursor content as the first cell
  */
-export function wrapInTable(
-	editorState: EditorState,
-	dispatch?: EditorView["dispatch"]
-): boolean {
+export function wrapInTable(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
 	if (editorState.selection.$from.node().type === mdSchema.nodes.table_cell) {
 		return false;
-	} 
+	}
 
 	const transaction = editorState.tr;
 	const cell = editorState.schema.nodes.table_cell.createAndFill()!;
@@ -139,22 +108,14 @@ export function wrapInTable(
 	const node = editorState.schema.nodes.table.create(
 		null,
 		Fragment.fromArray([
-			editorState.schema.nodes.table_row.create(
-				null,
-				Fragment.fromArray([headCell, headCell, headCell])
-			),
-			editorState.schema.nodes.table_row.create(
-				null,
-				Fragment.fromArray([cell, cell, cell])
-			),
+			editorState.schema.nodes.table_row.create(null, Fragment.fromArray([headCell, headCell, headCell])),
+			editorState.schema.nodes.table_row.create(null, Fragment.fromArray([cell, cell, cell])),
 		])
 	);
 
 	dispatch?.(
-		transaction
-			.replaceSelectionWith(node)
-			.scrollIntoView()
-			// .setSelection(TextSelection.near(transaction.doc.resolve(offset)))
+		transaction.replaceSelectionWith(node).scrollIntoView()
+		// .setSelection(TextSelection.near(transaction.doc.resolve(offset)))
 	);
 	return true;
 }
@@ -162,24 +123,13 @@ export function wrapInTable(
 /**
  * Toggles the list item into a checkbox
  */
-export function toggleListItemCheckbox(
-	editorState: EditorState,
-	dispatch?: EditorView["dispatch"]
-): boolean {
+export function toggleListItemCheckbox(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
 	const selectionFrom = editorState.selection.$from;
 	const currentNodePosition = selectionFrom.before(selectionFrom.depth - 1);
 	const currentNode = selectionFrom.node(selectionFrom.depth - 1);
-	if (
-		currentNode.type === (editorState.schema as typeof mdSchema).nodes.list_item
-	) {
+	if (currentNode.type === (editorState.schema as typeof mdSchema).nodes.list_item) {
 		const newCheckedValue = currentNode.attrs.checked === null ? false : null;
-		dispatch?.(
-			editorState.tr.setNodeAttribute(
-				currentNodePosition,
-				"checked",
-				newCheckedValue
-			)
-		);
+		dispatch?.(editorState.tr.setNodeAttribute(currentNodePosition, "checked", newCheckedValue));
 		return true;
 	}
 	return false;
@@ -189,10 +139,7 @@ export function toggleListItemCheckbox(
  * Checks for text shortcuts that should have special handling for the `Enter`
  * key. See {@link textShortcuts}
  */
-function checkForTextShortcuts(
-	editorState: EditorState,
-	dispatch?: EditorView["dispatch"],
-): boolean {
+function checkForTextShortcuts(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
 	const selection = editorState.selection;
 
 	if (selection.from !== selection.to) return false;
@@ -201,12 +148,9 @@ function checkForTextShortcuts(
 	const parentNode = selection.$from.node(selection.$from.depth - 1);
 
 	if (
-		currentNode.type !==
-			(editorState.schema as typeof mdSchema).nodes.paragraph ||
-		(parentNode.type !==
-			(editorState.schema as typeof mdSchema).nodes.paragraph &&
-			parentNode.type !==
-				(editorState.schema as typeof mdSchema).nodes.list_item &&
+		currentNode.type !== (editorState.schema as typeof mdSchema).nodes.paragraph ||
+		(parentNode.type !== (editorState.schema as typeof mdSchema).nodes.paragraph &&
+			parentNode.type !== (editorState.schema as typeof mdSchema).nodes.list_item &&
 			parentNode.type.name !== "doc")
 	)
 		return false;
@@ -242,18 +186,11 @@ function checkForTextShortcuts(
 }
 
 function arrowHandler(dir: "up" | "down" | "right" | "left") {
-	return (
-		state: EditorState,
-		dispatch?: (tr: Transaction) => void,
-		view?: EditorView
-	) => {
+	return (state: EditorState, dispatch?: (tr: Transaction) => void, view?: EditorView) => {
 		if (state.selection.empty && view!.endOfTextblock(dir)) {
 			const side = dir == "left" || dir == "up" ? -1 : 1;
 			const $head = state.selection.$head;
-			const nextPos = Selection.near(
-				state.doc.resolve(side > 0 ? $head.after() : $head.before()),
-				side
-			);
+			const nextPos = Selection.near(state.doc.resolve(side > 0 ? $head.after() : $head.before()), side);
 			if (nextPos.$head && nextPos.$head.parent.type.name === "code") {
 				dispatch!(state.tr.setSelection(nextPos));
 				return true;

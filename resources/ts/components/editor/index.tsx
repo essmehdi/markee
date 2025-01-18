@@ -11,12 +11,10 @@ import { getNodeHash } from "@/lib/prosemirror/serialization/hash";
 import CodeBlockView from "@/lib/prosemirror/views/code-view";
 import HTMLView from "@/lib/prosemirror/views/html-view";
 import MathBlockView from "@/lib/prosemirror/views/math-block-view";
-import ParagraphView from "@/lib/prosemirror/views/paragraph-view";
 import useConfirmationAlert from "@/lib/store/confirmation-alert-manager";
 import { useSourceManager } from "@/lib/store/source-manager";
 import { ProseMirror } from "@nytimes/react-prosemirror";
 import "katex/dist/katex.min.css";
-import { gapCursor } from "prosemirror-gapcursor";
 import { history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { EditorState } from "prosemirror-state";
@@ -29,9 +27,6 @@ import "~/css/editor.css";
 import "prosemirror-tables/style/tables.css"
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
-	paragraph(node, view, getPos) {
-		return new ParagraphView(node, view, getPos);
-	},
 	code(node, view, getPos) {
 		return new CodeBlockView(node, view, getPos, mdSchema);
 	},
@@ -81,17 +76,12 @@ export default function Editor() {
 	const [mount, setMount] = useState<HTMLElement | null>(null);
 	const [editorState, setEditorState] = useState<EditorState>(editorInitialState);
 
-	const mountEditor = (element: HTMLElement | null) => {
-		element?.focus();
-		setMount(element);
-	}
-
 	/**
 	 * Reads the selected file and sets it as the source of the
 	 * editor. Set the last save hash to the content of the file.
 	 */
 	const loadSource = () => {
-		const action = () => {
+		const doLoadSource = () => {
 			setIsLoadingSource(true);
 
 			const { vault, filePath } = currentSelection;
@@ -131,12 +121,12 @@ export default function Editor() {
 		) {
 			if (currentSource && lastSaveHash !== currentHash) {
 				showConfirmationAlert(
-					action,
+					doLoadSource,
 					"Are you sure?",
 					"This will replace the current document and all unsaved content will be lost and cannot be recovered. The history will be reset consequently."
 				);
 			} else {
-				action();
+				doLoadSource();
 			}
 		}
 	};
@@ -182,7 +172,7 @@ export default function Editor() {
 			nodeViews={nodeViews}
 		>
 			<Toolbar />
-			<div className="md-editor" ref={mountEditor} />
+			<div className="md-editor" ref={setMount} />
 		</ProseMirror>
 	);
 }
