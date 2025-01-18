@@ -10,7 +10,7 @@ import { Node } from "prosemirror-model";
  */
 export function addRowBefore(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
 	const selection = editorState.selection;
-	const currentNode = selection.$from.node();
+	const currentNode = selection.$from.parent;
 	if (currentNode.type === mdSchema.nodes.table_header) {
 		return false;
 	}

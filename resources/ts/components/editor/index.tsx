@@ -25,6 +25,7 @@ import "prosemirror-gapcursor/style/gapcursor.css";
 import { useEffect, useState } from "react";
 import "~/css/editor.css";
 import "prosemirror-tables/style/tables.css"
+import { gapCursor } from "prosemirror-gapcursor"
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
 	code(node, view, getPos) {

@@ -2,7 +2,7 @@ import { baseKeymap, chainCommands, setBlockType, wrapIn } from "prosemirror-com
 import { redo, undo } from "prosemirror-history";
 import { Fragment } from "prosemirror-model";
 import { liftListItem, splitListItem, wrapInList } from "prosemirror-schema-list";
-import { Command, EditorState, Selection, Transaction } from "prosemirror-state";
+import { Command, EditorState, Selection, TextSelection, Transaction } from "prosemirror-state";
 import { addColumnAfter, addColumnBefore, addRowAfter, deleteColumn, deleteRow } from "prosemirror-tables";
 import { EditorView } from "prosemirror-view";
 import { useSourceManager } from "../store/source-manager";
@@ -48,7 +48,7 @@ export default function editorKeymap(schema: typeof mdSchema) {
 		liftListItem(schema.nodes.list_item),
 		baseKeymap["Enter"]
 	);
-	keys["Backspace"] = chainCommands(maybeDeleteTable, baseKeymap["Backspace"]);
+	keys["Backspace"] = chainCommands(deleteFirstEmptyBlock, maybeDeleteTable, baseKeymap["Backspace"]);
 	keys["Shift-Enter"] = insertSoftBreak;
 	keys[editorActionKeybinds.BULLET_LIST] = wrapInList(schema.nodes.bullet_list);
 	keys[editorActionKeybinds.ORDERED_LIST] = wrapInList(schema.nodes.ordered_list);
@@ -87,6 +87,23 @@ function save(editorState: EditorState): boolean {
 	return true;
 }
 
+/**
+ * Deletes a paragrah if it is the first one and empty
+ */
+function deleteFirstEmptyBlock(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
+	const currentNode = editorState.selection.$from.parent;
+	if (
+		currentNode.type === mdSchema.nodes.paragraph &&
+		currentNode.textContent.trim() === "" &&
+		editorState.selection.$from.node(editorState.selection.$from.depth - 1).type === mdSchema.nodes.doc &&
+		editorState.selection.$from.index(editorState.selection.$from.depth - 1) === 0
+	) {
+		dispatch?.(editorState.tr.deleteRange(0, currentNode.nodeSize));
+		return true;
+	}
+	return false;
+}
+
 function insertSoftBreak(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
 	dispatch?.(
 		editorState.tr.replaceWith(editorState.selection.from, editorState.selection.to, mdSchema.nodes.soft_break.create())
@@ -98,10 +115,14 @@ function insertSoftBreak(editorState: EditorState, dispatch?: EditorView["dispat
  * Create a table with the cursor content as the first cell
  */
 export function wrapInTable(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
-	if (editorState.selection.$from.node().type === mdSchema.nodes.table_cell) {
+	if (
+		editorState.selection.$from.node().type === mdSchema.nodes.table_cell ||
+		editorState.selection.$from.node().type === mdSchema.nodes.table_header
+	) {
 		return false;
 	}
 
+	const newSelectionPosition = editorState.tr.selection.anchor + 1;
 	const transaction = editorState.tr;
 	const cell = editorState.schema.nodes.table_cell.createAndFill()!;
 	const headCell = editorState.schema.nodes.table_header.createAndFill()!;
@@ -114,8 +135,10 @@ export function wrapInTable(editorState: EditorState, dispatch?: EditorView["dis
 	);
 
 	dispatch?.(
-		transaction.replaceSelectionWith(node).scrollIntoView()
-		// .setSelection(TextSelection.near(transaction.doc.resolve(offset)))
+		transaction
+			.replaceSelectionWith(node)
+			.scrollIntoView()
+			.setSelection(TextSelection.near(transaction.doc.resolve(newSelectionPosition)))
 	);
 	return true;
 }
@@ -187,6 +210,22 @@ function checkForTextShortcuts(editorState: EditorState, dispatch?: EditorView["
 
 function arrowHandler(dir: "up" | "down" | "right" | "left") {
 	return (state: EditorState, dispatch?: (tr: Transaction) => void, view?: EditorView) => {
+		// Creates a new paragraph in the line before if the
+		// current block is a table when pressing "Up" key
+		const currentNode = state.selection.$from.node();
+		const selection = state.selection;
+
+		if (dir === "up" && currentNode.type === mdSchema.nodes.table_header) {
+			const tableDocIndex = selection.$from.index(selection.$from.depth - 3);
+			if (selection.$from.node(selection.$from.depth - 3)?.type === mdSchema.nodes.doc && tableDocIndex === 0) {
+				let transaction = state.tr.insert(0, mdSchema.nodes.paragraph.create());
+				transaction = transaction.setSelection(TextSelection.create(transaction.doc, 1));
+				dispatch?.(transaction);
+				return true;
+			}
+		}
+
+		// Provided by ProseMirror
 		if (state.selection.empty && view!.endOfTextblock(dir)) {
 			const side = dir == "left" || dir == "up" ? -1 : 1;
 			const $head = state.selection.$head;
