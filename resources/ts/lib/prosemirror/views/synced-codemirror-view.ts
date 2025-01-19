@@ -4,7 +4,7 @@ import { Compartment } from "@codemirror/state";
 import { exitCode } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { Node, Schema } from "prosemirror-model";
-import { Selection, TextSelection } from "prosemirror-state";
+import { Selection, TextSelection, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import mdSchema from "../editor-schema";
 
@@ -106,7 +106,21 @@ export default abstract class SyncedCodeMirrorView {
 		if (dir < 0 ? main.from > 0 : main.to < state.doc.length) return false;
 		const targetPos = (this.getPos() ?? 0) + (dir < 0 ? 0 : this.node.nodeSize);
 		const selection = Selection.near(this.view.state.doc.resolve(targetPos), dir);
-		const tr = this.view.state.tr.setSelection(selection).scrollIntoView();
+		let tr: Transaction;
+
+		// Creates a paragraph when trying to escape one line before
+		// and no node is present.
+		const mainEditorSelection = this.view.state.selection;
+		if (
+			mainEditorSelection.$from.index(0) === 0 &&
+			mainEditorSelection.$from.node(mainEditorSelection.$from.depth - 1)
+		) {
+			tr = this.view.state.tr.insert(0, mdSchema.nodes.paragraph.create());
+			tr = tr.setSelection(TextSelection.create(tr.doc, 1)).scrollIntoView();
+		} else {
+			tr = this.view.state.tr.setSelection(selection).scrollIntoView();
+		}
+
 		this.view.dispatch(tr);
 		this.view.focus();
 	}
@@ -124,11 +138,7 @@ export default abstract class SyncedCodeMirrorView {
 			while (start < curEnd && curText.charCodeAt(start) == newText.charCodeAt(start)) {
 				++start;
 			}
-			while (
-				curEnd > start &&
-				newEnd > start &&
-				curText.charCodeAt(curEnd - 1) == newText.charCodeAt(newEnd - 1)
-			) {
+			while (curEnd > start && newEnd > start && curText.charCodeAt(curEnd - 1) == newText.charCodeAt(newEnd - 1)) {
 				curEnd--;
 				newEnd--;
 			}

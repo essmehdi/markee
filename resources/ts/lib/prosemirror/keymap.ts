@@ -210,21 +210,6 @@ function checkForTextShortcuts(editorState: EditorState, dispatch?: EditorView["
 
 function arrowHandler(dir: "up" | "down" | "right" | "left") {
 	return (state: EditorState, dispatch?: (tr: Transaction) => void, view?: EditorView) => {
-		// Creates a new paragraph in the line before if the
-		// current block is a table when pressing "Up" key
-		const currentNode = state.selection.$from.node();
-		const selection = state.selection;
-
-		if (dir === "up" && currentNode.type === mdSchema.nodes.table_header) {
-			const tableDocIndex = selection.$from.index(selection.$from.depth - 3);
-			if (selection.$from.node(selection.$from.depth - 3)?.type === mdSchema.nodes.doc && tableDocIndex === 0) {
-				let transaction = state.tr.insert(0, mdSchema.nodes.paragraph.create());
-				transaction = transaction.setSelection(TextSelection.create(transaction.doc, 1));
-				dispatch?.(transaction);
-				return true;
-			}
-		}
-
 		// Provided by ProseMirror
 		if (state.selection.empty && view!.endOfTextblock(dir)) {
 			const side = dir == "left" || dir == "up" ? -1 : 1;
@@ -232,6 +217,36 @@ function arrowHandler(dir: "up" | "down" | "right" | "left") {
 			const nextPos = Selection.near(state.doc.resolve(side > 0 ? $head.after() : $head.before()), side);
 			if (nextPos.$head && nextPos.$head.parent.type.name === "code") {
 				dispatch!(state.tr.setSelection(nextPos));
+				return true;
+			}
+		}
+
+		// Creates a new paragraph in the line before if the
+		// current block is a table when pressing "Up" key
+		const currentNode = state.selection.$from.parent;
+		const parentNode = state.selection.$from.node(state.selection.$from.depth - 1);
+		const selection = state.selection;
+		if (dir === "up") {
+			if (
+				// A block that relies on CodeMirror
+				((currentNode.type === mdSchema.nodes.code ||
+					currentNode.type === mdSchema.nodes.html ||
+					currentNode.type === mdSchema.nodes.math_block) &&
+					parentNode?.type === mdSchema.nodes.doc &&
+					selection.$from.index(selection.$from.depth - 1) === 0) ||
+				// A blockquote
+				(currentNode.type === mdSchema.nodes.paragraph &&
+					parentNode?.type === mdSchema.nodes.blockquote &&
+					selection.$from.node(selection.$from.depth - 2)?.type === mdSchema.nodes.doc &&
+					selection.$from.index(selection.$from.depth - 2) === 0) ||
+				// A table
+				(currentNode.type === mdSchema.nodes.table_header &&
+					selection.$from.node(selection.$from.depth - 3)?.type === mdSchema.nodes.doc &&
+					selection.$from.index(selection.$from.depth - 3) === 0)
+			) {
+				let transaction = state.tr.insert(0, mdSchema.nodes.paragraph.create());
+				transaction = transaction.setSelection(TextSelection.create(transaction.doc, 1));
+				dispatch?.(transaction);
 				return true;
 			}
 		}
