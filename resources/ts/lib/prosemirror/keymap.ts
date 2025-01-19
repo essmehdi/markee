@@ -1,9 +1,24 @@
-import { baseKeymap, chainCommands, setBlockType, wrapIn } from "prosemirror-commands";
+import {
+	baseKeymap,
+	chainCommands,
+	createParagraphNear,
+	liftEmptyBlock,
+	newlineInCode,
+	setBlockType,
+	splitBlock,
+	wrapIn,
+} from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { Fragment } from "prosemirror-model";
 import { liftListItem, splitListItem, wrapInList } from "prosemirror-schema-list";
 import { Command, EditorState, Selection, TextSelection, Transaction } from "prosemirror-state";
-import { addColumnAfter, addColumnBefore, addRowAfter, deleteColumn, deleteRow } from "prosemirror-tables";
+import {
+	addColumnAfter,
+	addColumnBefore,
+	addRowAfter,
+	deleteColumn,
+	deleteRow,
+} from "prosemirror-tables";
 import { EditorView } from "prosemirror-view";
 import { useSourceManager } from "../store/source-manager";
 import { toggleBasicMarkup } from "./commands/markup";
@@ -46,7 +61,10 @@ export default function editorKeymap(schema: typeof mdSchema) {
 		checkForTextShortcuts,
 		splitListItem(schema.nodes.list_item),
 		liftListItem(schema.nodes.list_item),
-		baseKeymap["Enter"]
+		newlineInCode,
+		createParagraphNear,
+		liftEmptyBlock,
+		escapeOrSplitBlock
 	);
 	keys["Backspace"] = chainCommands(deleteFirstEmptyBlock, maybeDeleteTable, baseKeymap["Backspace"]);
 	keys["Shift-Enter"] = insertSoftBreak;
@@ -85,6 +103,30 @@ export default function editorKeymap(schema: typeof mdSchema) {
 function save(editorState: EditorState): boolean {
 	useSourceManager.getState().saveDocToSource(editorState);
 	return true;
+}
+
+/**
+ * Modified version of splitBlock command to prevent it in specific cases
+ */
+function escapeOrSplitBlock(editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean {
+	const selectionFrom = editorState.selection.$from;
+	if (
+		selectionFrom.parent.type === mdSchema.nodes.table_cell ||
+		selectionFrom.parent.type === mdSchema.nodes.table_header
+	) {
+		if (selectionFrom.index(selectionFrom.depth - 2) === selectionFrom.node(selectionFrom.depth - 2).childCount - 1) {
+			const newPosition = selectionFrom.after(selectionFrom.depth - 2);
+			const transaction = editorState.tr;
+			dispatch?.(
+				transaction
+					.insert(newPosition, mdSchema.nodes.paragraph.createAndFill()!)
+					.setSelection(TextSelection.near(transaction.doc.resolve(newPosition)))
+			);
+			return true;
+		}
+		return false;
+	}
+	return splitBlock(editorState, dispatch);
 }
 
 /**
