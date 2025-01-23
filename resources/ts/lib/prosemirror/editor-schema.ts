@@ -5,7 +5,7 @@ const cellAttrs: Record<string, AttributeSpec> = {
 	colspan: { default: 1 },
 	rowspan: { default: 1 },
 	colwidth: { default: null },
-	align: { default: "start" }, // start - center - end
+	align: { default: null }, // start - center - end
 };
 
 function getCellAttrs(dom: HTMLElement | string, extraAttrs: Attrs): Attrs {
@@ -36,7 +36,7 @@ function setCellAttrs(node: Node, extraAttrs: Attrs, skipAlignment?: boolean): A
 	if (node.attrs.colspan != 1) attrs.colspan = node.attrs.colspan;
 	if (node.attrs.rowspan != 1) attrs.rowspan = node.attrs.rowspan;
 	if (node.attrs.colwidth) attrs["data-colwidth"] = node.attrs.colwidth.join(",");
-	if (!skipAlignment) {
+	if (!skipAlignment && node.attrs.align) {
 		attrs.align = node.attrs.align;
 	}
 	for (const prop in extraAttrs) {

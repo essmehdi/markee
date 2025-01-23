@@ -6,6 +6,12 @@ type MarkdownNodeHandlers = {
 	[key: string]: (node: Node, parent?: Node, childIndex?: number) => string;
 };
 
+const ALIGNMENT_TO_MD_MAP = {
+	"start": ":--",
+	"center": ":-:",
+	"end": "--:"
+} as const;
+
 const MD_NODE_HANDLERS: MarkdownNodeHandlers = {
 	paragraph: (node) => {
 		const nodeText = node.textBetween(0, node.nodeSize - 2, null, (leaf) =>
@@ -84,21 +90,23 @@ const MD_NODE_HANDLERS: MarkdownNodeHandlers = {
 	},
 	table_row: (node, _, childIndex) => {
 		let buffer = "| ";
-		let cellsCount = 0;
+		const colsAlignment: ("start" | "center" | "end" | null)[] = [];
 		node.descendants((rowNode, _, __, index) => {
+			if (childIndex === 0) {
+				colsAlignment.push(rowNode.attrs.align ?? null);
+			}
 			const cellCode = handleNode(rowNode, node, index);
 			if (index === 0) {
 				buffer += cellCode;
 			} else {
 				buffer += " | " + cellCode;
 			}
-			cellsCount++;
 			return false;
 		});
 		buffer += " |"
 		if (childIndex === 0) {
 			buffer += '\n| ';
-			buffer += new Array(cellsCount).fill("---").join(" | ");
+			buffer += colsAlignment.map((alignment) => alignment ? ALIGNMENT_TO_MD_MAP[alignment] : "---").join(" | ")
 			buffer += ' |';
 		}
 		return buffer;

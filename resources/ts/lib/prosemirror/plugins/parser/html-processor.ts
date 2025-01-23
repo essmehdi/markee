@@ -11,7 +11,7 @@ export type HTMLToken = {
 };
 
 const UNSUPPORTED_HTML_TAGS = ["input", "textarea", "form", "select", "option", "script", "style"];
-const SUPPORTED_HTML_TAGS = ["img", "br", "hr", "span"];
+const SUPPORTED_HTML_TAGS = ["img", "br", "hr", "span", "a"];
 const VOID_HTML_TAGS = ["br", "img", "hr"];
 
 /**
@@ -63,9 +63,9 @@ export function processHTMLTokens(tokens: HTMLToken[]): Markup[] {
 					punctuation:
 						style !== null
 							? [
-								[startingTag.position, startingTag.position + startingTag.token.raw.length],
-								[tag.position, tag.position + tag.token.raw.length],
-							]
+									[startingTag.position, startingTag.position + startingTag.token.raw.length],
+									[tag.position, tag.position + tag.token.raw.length],
+								]
 							: [],
 					context: [startingTag.position, tag.position + tag.token.raw.length],
 					decorations: startingTag.decorations,

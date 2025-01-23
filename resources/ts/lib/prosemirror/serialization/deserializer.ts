@@ -1,12 +1,18 @@
-import { MarkedToken, Token, Tokens } from "marked";
+import type { CustomMarkedToken } from "@/lib/marked";
 import marked from "@/lib/marked";
+import { MarkedToken, Tokens } from "marked";
 import { Node } from "prosemirror-model";
 import mdSchema from "../editor-schema";
-import type { CustomMarkedToken } from "@/lib/marked";
 
 type TokenHandlerMap = {
 	[K in CustomMarkedToken["type"]]?: <T extends Extract<CustomMarkedToken, { type: K }>>(token: T) => Node;
 };
+
+const TABLE_CELL_ALIGNMENT_MAP = {
+	left: "start",
+	center: "center",
+	right: "end",
+} as const;
 
 const TOKEN_HANDLER_MAP: TokenHandlerMap = {
 	code: (token) => {
@@ -22,16 +28,24 @@ const TOKEN_HANDLER_MAP: TokenHandlerMap = {
 		return mdSchema.nodes.table.create(null, [
 			mdSchema.nodes.table_row.create(
 				null,
-				token.header.map((headerCell) => mdSchema.nodes.table_header.create(null, mdSchema.text(headerCell.text)))
+				token.header.map((headerCell, index) => {
+					const cellAttrs = {
+						align: token.align[index] ? TABLE_CELL_ALIGNMENT_MAP[token.align[index]] : "start",
+					};
+					return mdSchema.nodes.table_header.create(cellAttrs, mdSchema.text(headerCell.text));
+				})
 			),
 			...token.rows.map((tableRow) =>
 				mdSchema.nodes.table_row.create(
 					null,
-					tableRow.map((tableCell) =>
-						tableCell.text === ""
-							? mdSchema.nodes.table_cell.createAndFill()!
-							: mdSchema.nodes.table_cell.create(null, mdSchema.text(tableCell.text))
-					)
+					tableRow.map((tableCell, index) => {
+						const cellAttrs = {
+							align: token.align[index] ? TABLE_CELL_ALIGNMENT_MAP[token.align[index]] : "start",
+						};
+						return tableCell.text === ""
+							? mdSchema.nodes.table_cell.createAndFill(cellAttrs)!
+							: mdSchema.nodes.table_cell.create(cellAttrs, mdSchema.text(tableCell.text));
+					})
 				)
 			),
 		]);
