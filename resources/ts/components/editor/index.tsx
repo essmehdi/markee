@@ -24,14 +24,10 @@ import "prosemirror-view/style/prosemirror.css";
 import "prosemirror-gapcursor/style/gapcursor.css";
 import { useEffect, useState } from "react";
 import "~/css/editor.css";
-import "prosemirror-tables/style/tables.css"
-import TableView from "@/lib/prosemirror/views/table-view";
+import "prosemirror-tables/style/tables.css";
 import TableToolbar from "./node-widgets/table-toolbar";
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
-	// table(node, view, getPos) {
-	// 	return new TableView(node, view, getPos);
-	// },
 	code(node, view, getPos) {
 		return new CodeBlockView(node, view, getPos, mdSchema);
 	},
@@ -51,7 +47,7 @@ export const editorPlugins = [
 	textShortcutPlugin,
 	listItemDecorator,
 	footnoter,
-	tableEditing({ allowTableNodeSelection: true })
+	tableEditing({ allowTableNodeSelection: true }),
 ];
 
 const editorInitialState = EditorState.create({
