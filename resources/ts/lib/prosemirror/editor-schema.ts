@@ -139,7 +139,7 @@ const mdSchema = new Schema({
 			group: "block",
 			parseDOM: [{ tag: "table" }],
 			toDOM() {
-				return ["table", { class: "md-block" }, ["tbody", 0]];
+				return ["div", { class: "md-block md-table" }, ["table", ["tbody", 0]]];
 			},
 		},
 		table_row: {

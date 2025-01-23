@@ -1,8 +1,12 @@
-import { useEditorEffect } from "@nytimes/react-prosemirror";
-import { useRef } from "react";
-import StatelessTableActions from "./stateless-actions";
-import StatefulTableActions from "./stateful-actions";
+import { useEditorEffect, useEditorEventCallback } from "@nytimes/react-prosemirror";
 import { LineVertical } from "@phosphor-icons/react";
+import { useRef } from "react";
+import StatefulTableActions from "./stateful-actions";
+import StatelessTableActions from "./stateless-actions";
+
+let tableToolbarHideTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const TOOLBAR_HIDE_TIMEOUT = 5000; // ms
 
 /**
  * Toolbar for tables
@@ -10,20 +14,36 @@ import { LineVertical } from "@phosphor-icons/react";
 export default function TableToolbar() {
 	const toolbarContainerRef = useRef<HTMLDivElement>(null);
 
-	useEditorEffect((view) => {
+	const updateToolbarPosition = useEditorEventCallback((view, setHideTimeout: boolean) => {
 		if (!toolbarContainerRef.current) {
 			return;
 		}
+		if (tableToolbarHideTimeout) {
+			clearTimeout(tableToolbarHideTimeout);
+		}
+
 		const { $from, $to } = view.state.selection;
 		const hidden = !$from.parent.type.spec.isCell || !$from.sameParent($to);
 
 		if (hidden) {
 			toolbarContainerRef.current.style.display = "none";
 		} else {
+			if (setHideTimeout) {
+				tableToolbarHideTimeout = setTimeout(() => {
+					if (toolbarContainerRef.current) {
+						toolbarContainerRef.current.style.display = "none";
+					}
+				}, TOOLBAR_HIDE_TIMEOUT);
+			}
 			toolbarContainerRef.current.style.display = "flex";
-			const tableCoords = view.coordsAtPos($from.before($from.depth - 1));
+			const tablePosition = $from.before($from.depth - 1);
+			const tableCoords = view.coordsAtPos(tablePosition);
 			toolbarContainerRef.current.style.top = `${tableCoords.top + window.scrollY}px`;
 		}
+	});
+
+	useEditorEffect(() => {
+		updateToolbarPosition(true);
 	});
 
 	return (

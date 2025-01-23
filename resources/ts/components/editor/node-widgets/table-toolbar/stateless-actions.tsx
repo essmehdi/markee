@@ -60,11 +60,10 @@ export default function StatelessTableActions() {
 	return (
 		<>
 			{TOOLBAR_STATELESS_ACTIONS.map((action) => (
-				<Tooltip>
+				<Tooltip key={action.id}>
 					<TooltipTrigger asChild>
 						<Button
 							id={action.id}
-							key={action.id}
 							className="size-8"
 							size="icon"
 							variant="outline"

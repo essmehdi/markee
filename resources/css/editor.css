@@ -90,8 +90,12 @@
 	content: "•";
 }
 
-.md-editor.ProseMirror table.md-block {
-	@apply mx-auto w-auto min-w-60;
+.md-editor div.md-table {
+	@apply overflow-x-auto;
+}
+
+.md-editor.ProseMirror div.md-table > table {
+	@apply mx-auto w-auto min-w-60 max-w-full overflow-x-scroll;
 }
 
 .ProseMirror th,
