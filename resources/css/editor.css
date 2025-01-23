@@ -90,8 +90,8 @@
 	content: "•";
 }
 
-.md-editor.ProseMirror table {
-	@apply mx-auto w-auto;
+.md-editor.ProseMirror table.md-block {
+	@apply mx-auto w-auto min-w-60;
 }
 
 .ProseMirror th,
@@ -107,6 +107,18 @@
 	@apply font-bold;
 }
 
+.md-table-toolbar {
+	@apply absolute justify-center gap-2 left-1/2 top-0 -translate-x-1/2 -translate-y-full p-2 bg-secondary rounded-lg;
+}
+
+.md-table-action-button {
+	@apply p-2 size-8 rounded-sm bg-white border border-neutral-300;
+}
+
+.md-table-action-button[data-enabled=true] {
+	@apply bg-primary text-primary-foreground border-none;
+}
+
 .ProseMirror blockquote {
 	@apply border-l-2 border-primary pl-5 italic text-neutral-600;
 }
@@ -118,7 +130,7 @@
 
 /* Titles */
 .md-title {
-	@apply mb-2 @4xl/main:mb-3 font-bold;
+	@apply mb-2 font-bold @4xl/main:mb-3;
 }
 
 .md-title-1 {
@@ -190,10 +202,10 @@
 
 /* Code mirror styling */
 .cm-editor {
-	@apply overflow-hidden -mx-8 @4xl/main:mx-0 @4xl/main:rounded-md bg-secondary;
+	@apply -mx-8 overflow-hidden bg-secondary @4xl/main:mx-0 @4xl/main:rounded-md;
 }
 .exported .cm-editor {
-	@apply mx-0 rounded-md
+	@apply mx-0 rounded-md;
 }
 
 .cm-editor * {

@@ -5,6 +5,7 @@ const cellAttrs: Record<string, AttributeSpec> = {
 	colspan: { default: 1 },
 	rowspan: { default: 1 },
 	colwidth: { default: null },
+	align: { default: "start" }, // start - center - end
 };
 
 function getCellAttrs(dom: HTMLElement | string, extraAttrs: Attrs): Attrs {
@@ -30,21 +31,20 @@ function getCellAttrs(dom: HTMLElement | string, extraAttrs: Attrs): Attrs {
 	return result;
 }
 
-function setCellAttrs(node: Node, extraAttrs: Attrs): Attrs {
+function setCellAttrs(node: Node, extraAttrs: Attrs, skipAlignment?: boolean): Attrs {
 	const attrs: Record<string, string> = {};
 	if (node.attrs.colspan != 1) attrs.colspan = node.attrs.colspan;
 	if (node.attrs.rowspan != 1) attrs.rowspan = node.attrs.rowspan;
 	if (node.attrs.colwidth) attrs["data-colwidth"] = node.attrs.colwidth.join(",");
+	if (!skipAlignment) {
+		attrs.align = node.attrs.align;
+	}
 	for (const prop in extraAttrs) {
 		const setter = extraAttrs[prop].setDOMAttr;
 		if (setter) setter(node.attrs[prop], attrs);
 	}
 	return attrs;
 }
-
-const sharedBlockAttrs = {
-	// extendsPrevious: { default: false }
-};
 
 // TODO: Organize this in different files
 const mdSchema = new Schema({
@@ -53,9 +53,6 @@ const mdSchema = new Schema({
 		paragraph: {
 			group: "block",
 			content: "inline*",
-			attrs: {
-				...sharedBlockAttrs,
-			},
 			parseDOM: [
 				{
 					tag: "p",
@@ -72,7 +69,6 @@ const mdSchema = new Schema({
 			defining: true,
 			attrs: {
 				language: { default: "", validate: "string" },
-				...sharedBlockAttrs,
 			},
 			isolating: true,
 			code: true,
@@ -159,6 +155,7 @@ const mdSchema = new Schema({
 			attrs: cellAttrs,
 			tableRole: "cell",
 			isolating: true,
+			isCell: true,
 			parseDOM: [{ tag: "td", getAttrs: (dom) => getCellAttrs(dom, {}) }],
 			toDOM(node) {
 				return ["td", setCellAttrs(node, {}), 0];
@@ -169,9 +166,10 @@ const mdSchema = new Schema({
 			attrs: cellAttrs,
 			tableRole: "header_cell",
 			isolating: true,
+			isCell: true,
 			parseDOM: [{ tag: "th", getAttrs: (dom) => getCellAttrs(dom, {}) }],
 			toDOM(node) {
-				return ["th", setCellAttrs(node, {}), 0];
+				return ["th", setCellAttrs(node, {}, true), 0];
 			},
 		},
 		text: {

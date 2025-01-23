@@ -13,7 +13,7 @@ import HTMLView from "@/lib/prosemirror/views/html-view";
 import MathBlockView from "@/lib/prosemirror/views/math-block-view";
 import useConfirmationAlert from "@/lib/store/confirmation-alert-manager";
 import { useSourceManager } from "@/lib/store/source-manager";
-import { ProseMirror } from "@nytimes/react-prosemirror";
+import { ProseMirror, react } from "@nytimes/react-prosemirror";
 import "katex/dist/katex.min.css";
 import { history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
@@ -25,9 +25,13 @@ import "prosemirror-gapcursor/style/gapcursor.css";
 import { useEffect, useState } from "react";
 import "~/css/editor.css";
 import "prosemirror-tables/style/tables.css"
-import { gapCursor } from "prosemirror-gapcursor"
+import TableView from "@/lib/prosemirror/views/table-view";
+import TableToolbar from "./node-widgets/table-toolbar";
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
+	// table(node, view, getPos) {
+	// 	return new TableView(node, view, getPos);
+	// },
 	code(node, view, getPos) {
 		return new CodeBlockView(node, view, getPos, mdSchema);
 	},
@@ -47,8 +51,7 @@ export const editorPlugins = [
 	textShortcutPlugin,
 	listItemDecorator,
 	footnoter,
-	tableEditing({ allowTableNodeSelection: true }),
-	// gapCursor()
+	tableEditing({ allowTableNodeSelection: true })
 ];
 
 const editorInitialState = EditorState.create({
@@ -173,6 +176,7 @@ export default function Editor() {
 			nodeViews={nodeViews}
 		>
 			<Toolbar />
+			<TableToolbar />
 			<div className="md-editor" ref={setMount} />
 		</ProseMirror>
 	);

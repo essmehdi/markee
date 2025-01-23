@@ -15,14 +15,13 @@ import { Command, EditorState, Selection, TextSelection, Transaction } from "pro
 import {
 	addColumnAfter,
 	addColumnBefore,
-	addRowAfter,
 	deleteColumn,
 	deleteRow,
 } from "prosemirror-tables";
 import { EditorView } from "prosemirror-view";
 import { useSourceManager } from "../store/source-manager";
 import { toggleBasicMarkup } from "./commands/markup";
-import { addRowBefore, maybeDeleteTable } from "./commands/tables";
+import { addRowAfter, checkedAddRowBefore, maybeDeleteTable } from "./commands/tables";
 import mdSchema from "./editor-schema";
 import { textShortcuts } from "./plugins/text-shortcuts";
 
@@ -75,7 +74,7 @@ export default function editorKeymap(schema: typeof mdSchema) {
 	keys[editorActionKeybinds.TABLE] = wrapIn(mdSchema.nodes.table);
 	keys[editorActionKeybinds.TABLE_ADD_COLUMN_AFTER] = addColumnAfter;
 	keys[editorActionKeybinds.TABLE_ADD_COLUMN_BEFORE] = addColumnBefore;
-	keys[editorActionKeybinds.TABLE_ADD_ROW_BEFORE] = addRowBefore;
+	keys[editorActionKeybinds.TABLE_ADD_ROW_BEFORE] = checkedAddRowBefore;
 	keys[editorActionKeybinds.TABLE_ADD_ROW_AFTER] = addRowAfter;
 	keys[editorActionKeybinds.TABLE_DELETE_ROW] = deleteRow;
 	keys[editorActionKeybinds.TABLE_DELETE_COLUMN] = deleteColumn;
