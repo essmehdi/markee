@@ -125,8 +125,15 @@
 
 /* Style to hide hidden elements (e.g. punctuation when cursor is near) */
 .md-hidden {
-	@apply hidden;
+	display: inline-block;
+	content: "";
+	width: 0;
+	height: 0;
+	overflow: hidden;
 }
+/* .md-hidden {
+	@apply hidden;
+} */
 
 /* Titles */
 .md-title {
