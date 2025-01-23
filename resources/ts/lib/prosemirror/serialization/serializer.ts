@@ -1,7 +1,6 @@
 import { Node } from "prosemirror-model";
-import { EditorView } from "prosemirror-view";
-import mdSchema from "../editor-schema";
 import { EditorState } from "prosemirror-state";
+import mdSchema from "../editor-schema";
 
 type MarkdownNodeHandlers = {
 	[key: string]: (node: Node, parent?: Node, childIndex?: number) => string;

@@ -13,7 +13,7 @@ const TOKEN_HANDLER_MAP: TokenHandlerMap = {
 		return mdSchema.nodes.code.create({ language: token.lang ?? "" }, mdSchema.text(token.text));
 	},
 	blockquote: (token) => {
-		return mdSchema.nodes.code.createAndFill(null, mdSchema.text(token.text))!;
+		return mdSchema.nodes.blockquote.create(null, deserializeTokens(token.tokens as MarkedToken[]));
 	},
 	html: (token) => {
 		return mdSchema.nodes.html.create(null, mdSchema.text(token.raw));
@@ -59,19 +59,7 @@ export function deserializeTokens(tokens: MarkedToken[]): Node[] {
 		const currentToken = tokens[i] as MarkedToken;
 		if (currentToken.type === "heading" || currentToken.type === "paragraph" || currentToken.type === "text") {
 			const nodeContent = getTextNodesWithBreaks(currentToken);
-			let token = currentToken as MarkedToken;
-			let j = i;
-			while (
-				isExtendable(token) &&
-				(token = tokens[++j]) &&
-				(token.type === "heading" || token.type === "paragraph" || token.type === "text")
-			) {
-				nodeContent.push(...getTextNodesWithBreaks(token));
-			}
 			docContent.push(mdSchema.nodes.paragraph.create(null, nodeContent));
-			if (j !== i) {
-				i = j - 1;
-			}
 		} else {
 			const tokenHandler = TOKEN_HANDLER_MAP[currentToken.type];
 			if (tokenHandler) {
@@ -91,11 +79,9 @@ export function getNewDocFromMarkdown(markdown: string) {
 }
 
 function getTokensFromMarkdown(markdown: string): MarkedToken[] {
-	return marked.lexer(markdown) as MarkedToken[];
-}
-
-function isExtendable(token: Token) {
-	return token.type === "heading" && !token.raw.endsWith("\n\n");
+	const tokens = marked.lexer(markdown) as MarkedToken[];
+	console.log(tokens);
+	return tokens;
 }
 
 function getTextNodesWithBreaks(token: Tokens.Heading | Tokens.Paragraph | Tokens.Text): Node[] {
