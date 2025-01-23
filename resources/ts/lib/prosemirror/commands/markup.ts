@@ -8,10 +8,7 @@ import { selectionMarkupPosition } from "@/lib/prosemirror/plugins/parser";
  * Returns a command that wraps the selection inside a punctuation string
  */
 export function punctuationWrapperCommand(punctuation: string) {
-	return (
-		editorState: EditorState,
-		dispatch?: EditorView["dispatch"],
-	): boolean => {
+	return (editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean => {
 		if (dispatch) {
 			const selection = editorState.selection;
 			const wrappingPuncNode = mdSchema.text(punctuation);
@@ -24,9 +21,9 @@ export function punctuationWrapperCommand(punctuation: string) {
 						TextSelection.create(
 							transaction.doc,
 							selection.from + punctuation.length,
-							selection.to + punctuation.length,
-						),
-					),
+							selection.to + punctuation.length
+						)
+					)
 			);
 			return true;
 		}
@@ -38,10 +35,7 @@ export function punctuationWrapperCommand(punctuation: string) {
  * Returns a command that delete ranges from the document
  */
 export function removeRangesCommand(ranges: Position[]) {
-	return (
-		editorState: EditorState,
-		dispatch?: EditorView["dispatch"],
-	): boolean => {
+	return (editorState: EditorState, dispatch?: EditorView["dispatch"]): boolean => {
 		let transaction = editorState.tr;
 		if (dispatch && ranges.length) {
 			let lastRange: Position | null = null;
@@ -62,14 +56,9 @@ export function removeRangesCommand(ranges: Position[]) {
 }
 
 export function toggleBasicMarkup(markupType: Markup["type"], punctuation: string) {
-	return function(editorState: EditorState, dispatch?: EditorView["dispatch"]) {
+	return function (editorState: EditorState, dispatch?: EditorView["dispatch"]) {
 		const markup = selectionMarkupPosition(editorState, markupType);
-		if (!markup) {
-			const boldCommand = punctuationWrapperCommand(punctuation);
-			return boldCommand(editorState, dispatch);
-		} else {
-			const removeBoldCommand = removeRangesCommand(markup.punctuation);
-			return removeBoldCommand(editorState, dispatch);
-		}
-	}
+		const command = markup ? removeRangesCommand(markup.punctuation) : punctuationWrapperCommand(punctuation);
+		return command(editorState, dispatch);
+	};
 }

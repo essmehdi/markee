@@ -13,6 +13,7 @@ import {
 	LineVertical,
 	ListBullets,
 	ListNumbers,
+	Minus,
 	Pi,
 	Quotes,
 	Table,
@@ -28,6 +29,7 @@ import { EditorView } from "prosemirror-view";
 import Menu from "./menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Fragment } from "react/jsx-runtime";
+import { insertHorizontalRule } from "@/lib/prosemirror/commands/blocks";
 
 type OptionWithId = {
 	id: string;
@@ -218,6 +220,16 @@ const ACTIONS: ToolbarAction[] = [
 			wrapInTable(view.state, view.dispatch);
 		},
 	},
+	{
+		id: "action_insert_horizontal_rule",
+		type: "action",
+		icon: <Minus />,
+		name: "Horizontal rule",
+		description: "Inserts a horizontal rule",
+		onClick: (view) => {
+			insertHorizontalRule(view.state, view.dispatch);
+		}
+	}
 ];
 
 export default function Toolbar() {

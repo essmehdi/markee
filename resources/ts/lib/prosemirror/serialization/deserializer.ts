@@ -64,6 +64,9 @@ const TOKEN_HANDLER_MAP: TokenHandlerMap = {
 	mathblock: (token) => {
 		return mdSchema.nodes.math_block.create(null, mdSchema.text(token.code));
 	},
+	hr: () => {
+		return mdSchema.nodes.horizontal_rule.createAndFill()!;
+	}
 };
 
 export function deserializeTokens(tokens: MarkedToken[]): Node[] {

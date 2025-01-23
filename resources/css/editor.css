@@ -98,6 +98,10 @@
 	@apply mx-auto w-auto min-w-60 max-w-full overflow-x-scroll;
 }
 
+.md-editor hr.md-block {
+	@apply h-1 border-none bg-secondary rounded-lg;
+}
+
 .ProseMirror th,
 .ProseMirror td {
 	@apply border border-neutral-800 px-2 py-1;

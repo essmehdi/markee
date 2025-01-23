@@ -116,6 +116,9 @@ const MD_NODE_HANDLERS: MarkdownNodeHandlers = {
 	},
 	table_cell: (node) => {
 		return node.textContent;
+	},
+	horizontal_rule: () => {
+		return "---";
 	}
 };
 

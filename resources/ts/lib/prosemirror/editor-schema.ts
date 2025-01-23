@@ -132,6 +132,13 @@ const mdSchema = new Schema({
 			group: "block",
 			code: true,
 		},
+		horizontal_rule: {
+			group: "block",
+			atom: true,
+			toDOM() {
+				return ["hr", { class: "md-block" }];
+			},
+		},
 		table: {
 			content: "table_row table_row+",
 			tableRole: "table",
