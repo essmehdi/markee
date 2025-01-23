@@ -96,7 +96,6 @@ const MD_NODE_HANDLERS: MarkdownNodeHandlers = {
 			cellsCount++;
 			return false;
 		});
-		console.log("Counted", cellsCount, "cells");
 		buffer += " |"
 		if (childIndex === 0) {
 			buffer += '\n| ';

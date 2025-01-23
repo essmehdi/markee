@@ -81,7 +81,6 @@ function decorate(node: Node): ParsingResult {
 		}
 
 		const tokens = marked.lexer(nodeText);
-		console.log(position);
 		let cursor = position + 1;
 		const htmlStack: HTMLToken[] = [];
 		for (const token of tokens) {
