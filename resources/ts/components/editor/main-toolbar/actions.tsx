@@ -261,7 +261,7 @@ export default function Actions() {
 								</Toggle>
 							</div>
 						</TooltipTrigger>
-						<TooltipContent className="flex flex-col items-center">
+						<TooltipContent className="flex flex-col items-center" side="bottom">
 							<p>{action.name}</p>
 							{action.shortcut && (
 								<div className="text-sm">
@@ -291,7 +291,7 @@ export default function Actions() {
 								{action.icon}
 							</Button>
 						</TooltipTrigger>
-						<TooltipContent className="flex flex-col items-center">
+						<TooltipContent className="flex flex-col items-center" side="bottom">
 							<p>{action.name}</p>
 							{action.shortcut && (
 								<div className="text-sm">
