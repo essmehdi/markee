@@ -1,4 +1,4 @@
-import Toolbar from "@/components/editor/toolbar";
+import MainToolbar from "@/components/editor/main-toolbar";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import editorKeymap from "@/lib/prosemirror/keymap";
 import footnoter from "@/lib/prosemirror/plugins/footnotes";
@@ -26,6 +26,7 @@ import { useEffect, useState } from "react";
 import "~/css/editor.css";
 import "prosemirror-tables/style/tables.css";
 import TableToolbar from "./node-widgets/table-toolbar";
+import Toolbar from "./toolbar";
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
 	code(node, view, getPos) {
@@ -171,8 +172,9 @@ export default function Editor() {
 			}}
 			nodeViews={nodeViews}
 		>
+			{/* <MainToolbar />
+			<TableToolbar /> */}
 			<Toolbar />
-			<TableToolbar />
 			<div className="md-editor" ref={setMount} />
 		</ProseMirror>
 	);

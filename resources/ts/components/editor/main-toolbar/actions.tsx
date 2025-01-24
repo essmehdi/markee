@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { insertHorizontalRule } from "@/lib/prosemirror/commands/blocks";
 import { toggleBasicMarkup } from "@/lib/prosemirror/commands/markup";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import { toggleListItemCheckbox, wrapInTable } from "@/lib/prosemirror/keymap";
@@ -26,10 +28,7 @@ import { setBlockType, wrapIn } from "prosemirror-commands";
 import { wrapInList } from "prosemirror-schema-list";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import Menu from "./menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Fragment } from "react/jsx-runtime";
-import { insertHorizontalRule } from "@/lib/prosemirror/commands/blocks";
 
 type OptionWithId = {
 	id: string;
@@ -228,11 +227,11 @@ const ACTIONS: ToolbarAction[] = [
 		description: "Inserts a horizontal rule",
 		onClick: (view) => {
 			insertHorizontalRule(view.state, view.dispatch);
-		}
-	}
+		},
+	},
 ];
 
-export default function Toolbar() {
+export default function Actions() {
 	const editorState = useEditorState();
 
 	const applyAction = useEditorEventCallback(
@@ -318,13 +317,10 @@ export default function Toolbar() {
 
 	const toolbarActions = getToolbarActions();
 	return (
-		<div className="sticky z-[1] mx-auto mb-5 w-full items-center gap-1 border-b border-neutral-100 bg-white p-1 text-neutral-700 shadow-md shadow-gray-100 @6xl/main:top-5 @6xl/main:mt-10 @6xl/main:flex @6xl/main:w-11/12 @6xl/main:max-w-6xl @6xl/main:justify-between @6xl/main:rounded-[calc(theme(borderRadius.lg)+0.25rem)] @6xl/main:border">
-			<Menu />
-			<div id="editor-toolbar" className="flex items-center gap-1">
-				{toolbarActions.toggles}
-				<LineVertical className="text-neutral-200" size={10} />
-				{toolbarActions.actions}
-			</div>
+		<div id="editor-toolbar" className="flex items-center gap-1">
+			{toolbarActions.toggles}
+			<LineVertical className="text-neutral-200" size={10} />
+			{toolbarActions.actions}
 		</div>
 	);
 }
