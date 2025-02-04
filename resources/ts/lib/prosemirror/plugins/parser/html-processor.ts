@@ -11,7 +11,7 @@ export type HTMLToken = {
 };
 
 const UNSUPPORTED_HTML_TAGS = ["input", "textarea", "form", "select", "option", "script", "style"];
-const SUPPORTED_HTML_TAGS = ["img", "br", "hr", "span", "a"];
+const SUPPORTED_HTML_TAGS = ["img", "br", "span"];
 const VOID_HTML_TAGS = ["br", "img", "hr"];
 
 /**
@@ -61,12 +61,12 @@ export function processHTMLTokens(tokens: HTMLToken[]): Markup[] {
 					code: raw,
 					style: style ?? undefined,
 					punctuation:
-						style !== null
-							? [
+						/* style !== null
+							? */ [
 									[startingTag.position, startingTag.position + startingTag.token.raw.length],
 									[tag.position, tag.position + tag.token.raw.length],
 								]
-							: [],
+							/* : [] */,
 					context: [startingTag.position, tag.position + tag.token.raw.length],
 					decorations: startingTag.decorations,
 				});
@@ -84,7 +84,9 @@ export function processHTMLTokens(tokens: HTMLToken[]): Markup[] {
 			markups.push({
 				type: "html",
 				code: correctedRaw,
-				punctuation: [],
+				punctuation: [
+					[startingTag.position, startingTag.position + correctedRaw.length],
+				],
 				context: [startingTag.position, startingTag.position + correctedRaw.length],
 				decorations: startingTag.decorations,
 			});

@@ -128,6 +128,7 @@ function decorate(node: Node): ParsingResult {
 			cursor = newPosition;
 		}
 		markups.push(...processHTMLTokens(htmlStack));
+		console.log(markups);
 		return false;
 	});
 
@@ -168,7 +169,7 @@ function punctuationDecorator(
 ): Decoration[] {
 	const decorationsArray: Decoration[] = [];
 	markup.punctuation.forEach((punctuation) => {
-		let punctuationClass = "md-punctuation";
+		let punctuationClass = "md-punctuation " + "md-" + markup.type;
 		if (!isSelectionNear) {
 			punctuationClass = punctuationClass.concat(" md-hidden");
 		}

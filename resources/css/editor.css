@@ -65,6 +65,10 @@
 	@apply text-gray-300;
 }
 
+.md-punctuation.md-html {
+	@apply font-mono;
+}
+
 .md-code-block {
 	@apply rounded-md bg-gray-100 p-5;
 }
