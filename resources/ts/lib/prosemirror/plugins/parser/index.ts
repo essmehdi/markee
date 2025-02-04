@@ -169,7 +169,10 @@ function punctuationDecorator(
 ): Decoration[] {
 	const decorationsArray: Decoration[] = [];
 	markup.punctuation.forEach((punctuation) => {
-		let punctuationClass = "md-punctuation " + "md-" + markup.type;
+		let punctuationClass = "md-punctuation";
+		if (markup.type === "html") {
+			punctuationClass += " md-" + markup.type;
+		}
 		if (!isSelectionNear) {
 			punctuationClass = punctuationClass.concat(" md-hidden");
 		}
