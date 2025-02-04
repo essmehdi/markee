@@ -6,7 +6,7 @@ import { addCommandToTransaction } from "../utils/transactions";
 import { Node } from "prosemirror-model";
 
 export const CODE_BLOCK_STARTER = /^```([^`].*)?$/m;
-export const UNORDERED_LIST_STARTER = /^-\s/m;
+export const UNORDERED_LIST_STARTER = /^(-|\+)\s/m;
 export const ORDERED_LIST_STARTER = /^(\d+).\s/m;
 export const DOUBLE_BREAK = /\n\n/;
 export const QUOTE_STARTER = /^>\s/;
