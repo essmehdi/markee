@@ -27,6 +27,7 @@ import "~/css/editor.css";
 import "prosemirror-tables/style/tables.css";
 import TableToolbar from "./node-widgets/table-toolbar";
 import Toolbar from "./toolbar";
+import pasteHandler from "@/lib/prosemirror/plugins/paste-handler";
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
 	code(node, view, getPos) {
@@ -49,6 +50,7 @@ export const editorPlugins = [
 	listItemDecorator,
 	footnoter,
 	tableEditing({ allowTableNodeSelection: true }),
+	pasteHandler
 ];
 
 const editorInitialState = EditorState.create({
@@ -172,8 +174,6 @@ export default function Editor() {
 			}}
 			nodeViews={nodeViews}
 		>
-			{/* <MainToolbar />
-			<TableToolbar /> */}
 			<Toolbar />
 			<div className="md-editor" ref={setMount} />
 		</ProseMirror>

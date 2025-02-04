@@ -1,7 +1,7 @@
 import type { CustomMarkedToken } from "@/lib/marked";
 import marked from "@/lib/marked";
 import { MarkedToken, Tokens } from "marked";
-import { Node } from "prosemirror-model";
+import { Fragment, Node, Slice } from "prosemirror-model";
 import mdSchema from "../editor-schema";
 
 type TokenHandlerMap = {
@@ -88,6 +88,11 @@ export function deserializeTokens(tokens: MarkedToken[]): Node[] {
 		i++;
 	}
 	return docContent;
+}
+
+export function getSliceFromMarkdown(markdown: string): Slice {
+	const docContent = deserializeTokens(getTokensFromMarkdown(markdown));
+	return new Slice(Fragment.from(docContent), 0, 0);
 }
 
 export function getNewDocFromMarkdown(markdown: string) {
