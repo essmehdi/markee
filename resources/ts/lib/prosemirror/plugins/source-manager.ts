@@ -1,7 +1,7 @@
 import { useSourceManager } from "@/lib/store/source-manager";
 import { EditorState, Plugin } from "prosemirror-state";
 import mdSchema from "../editor-schema";
-import { editorPlugins } from "@/Pages/Editor";
+import { editorPlugins } from "@/components/editor";
 import { getNewDocFromMarkdown } from "../serialization/deserializer";
 
 const sourceManager = new Plugin({
