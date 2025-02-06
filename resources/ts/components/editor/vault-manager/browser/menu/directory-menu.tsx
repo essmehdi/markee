@@ -1,8 +1,7 @@
 import { DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import useDialog from "@/lib/store/dialog-manager";
-import { VaultDirectory } from "@/lib/vaults/types";
-import NewItemDialog from "./new-item-dialog";
 import { FilePlus, FolderPlus } from "@phosphor-icons/react";
+import NewItemDialog from "./new-item-dialog";
 
 type BrowserDirectoryMenuContentProps = {
 	directoryPath: string;

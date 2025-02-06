@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSourceManager } from "@/lib/store/source-manager";
 import { Vault, VaultDirectory, VaultItem } from "@/lib/vaults/types";
-import { CaretDown, CircleNotch, DotsThreeVertical } from "@phosphor-icons/react";
+import { CaretDown, CircleNotch } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { NodeApi, Tree } from "react-arborist";
 import useResizeObserver from "use-resize-observer";
