@@ -1,7 +1,10 @@
 import Message from "@/components/common/message";
+import BrowserDirectoryMenuContent from "@/components/editor/vault-manager/browser/menu/directory-menu";
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useSourceManager } from "@/lib/store/source-manager";
 import { Vault, VaultDirectory, VaultItem } from "@/lib/vaults/types";
-import { CircleNotch } from "@phosphor-icons/react";
+import { CaretDown, CircleNotch, DotsThreeVertical } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { NodeApi, Tree } from "react-arborist";
 import useResizeObserver from "use-resize-observer";
@@ -12,16 +15,10 @@ type BrowserProps = {
 };
 
 export default function Browser({ vault }: BrowserProps) {
-	const changeCurrentSelection = useSourceManager(
-		(state) => state.changeCurrentSelection,
-	);
+	const changeCurrentSelection = useSourceManager((state) => state.changeCurrentSelection);
 	const currentSelection = useSourceManager((state) => state.currentSelection);
 
-	const {
-		ref: treeParentRef,
-		height,
-		width,
-	} = useResizeObserver<HTMLDivElement>();
+	const { ref: treeParentRef, height, width } = useResizeObserver<HTMLDivElement>();
 
 	const queryClient = useQueryClient();
 	const {
@@ -34,10 +31,7 @@ export default function Browser({ vault }: BrowserProps) {
 	});
 
 	const onItemActivate = async (selectedNode: NodeApi<VaultItem>) => {
-		if (
-			selectedNode.data.type === "directory" &&
-			(selectedNode.data as VaultDirectory).content === null
-		) {
+		if (selectedNode.data.type === "directory" && (selectedNode.data as VaultDirectory).content === null) {
 			// If it is a directory, expand all files
 			const dirPath = selectedNode.data.absolutePath;
 			await vault.expandDirectoryContent(dirPath);
@@ -50,19 +44,23 @@ export default function Browser({ vault }: BrowserProps) {
 	};
 
 	if (isLoading)
-		return (
-			<Message
-				icon={<CircleNotch className="animate-spin" size={30} />}
-				message="Loading files"
-				error
-			/>
-		);
+		return <Message icon={<CircleNotch className="animate-spin" size={30} />} message="Loading files" error />;
 
 	if (error || !items) return <Message message="Could not fetch files" error />;
 
 	return (
-		<div className="flex flex-col grow">
-			<p className="font-bold text-primary px-8">Files</p>
+		<div className="flex grow flex-col">
+			<div className="flex items-center justify-between">
+				<p className="px-8 font-bold text-primary">Files</p>
+				<DropdownMenu modal={false}>
+					<DropdownMenuTrigger onClick={(e) => e.stopPropagation()} asChild>
+						<Button size="icon" variant="ghost" className="shrink-0 hover:bg-transparent mr-5 text-primary">
+							<CaretDown />
+						</Button>
+					</DropdownMenuTrigger>
+					<BrowserDirectoryMenuContent directoryPath="/" />
+				</DropdownMenu>
+			</div>
 			{items.length > 0 ? (
 				<div className="grow" ref={treeParentRef}>
 					<Tree

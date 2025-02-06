@@ -1,18 +1,14 @@
-import {
-    DropdownMenuContent,
-    DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import useDialog from "@/lib/store/dialog-manager";
 import { VaultDirectory } from "@/lib/vaults/types";
 import NewItemDialog from "./new-item-dialog";
+import { FilePlus, FolderPlus } from "@phosphor-icons/react";
 
 type BrowserDirectoryMenuContentProps = {
-	directory: VaultDirectory;
+	directoryPath: string;
 };
 
-export default function BrowserDirectoryMenuContent({
-	directory,
-}: BrowserDirectoryMenuContentProps) {
+export default function BrowserDirectoryMenuContent({ directoryPath: directory }: BrowserDirectoryMenuContentProps) {
 	const showDialog = useDialog((state) => state.showDialog);
 	const closeDialog = useDialog((state) => state.closeDialog);
 
@@ -20,28 +16,18 @@ export default function BrowserDirectoryMenuContent({
 		<DropdownMenuContent>
 			<DropdownMenuItem
 				onClick={() => {
-					showDialog(
-						<NewItemDialog
-							closeDialog={closeDialog}
-							location={directory.absolutePath}
-							type="file"
-						/>
-					);
+					showDialog(<NewItemDialog closeDialog={closeDialog} location={directory} type="file" />);
 				}}
 			>
+				<FilePlus />
 				New file
 			</DropdownMenuItem>
 			<DropdownMenuItem
 				onSelect={() => {
-					showDialog(
-						<NewItemDialog
-							closeDialog={closeDialog}
-							location={directory.absolutePath}
-							type="directory"
-						/>
-					);
+					showDialog(<NewItemDialog closeDialog={closeDialog} location={directory} type="directory" />);
 				}}
 			>
+				<FolderPlus />
 				New directory
 			</DropdownMenuItem>
 		</DropdownMenuContent>
