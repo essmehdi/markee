@@ -8,7 +8,7 @@ export interface VaultItem {
 }
 
 export interface VaultFile extends VaultItem {
-	type: "file"
+	type: "file";
 	updatedAt: string;
 	getContent: () => Blob;
 }

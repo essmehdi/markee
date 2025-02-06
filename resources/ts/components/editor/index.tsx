@@ -63,6 +63,7 @@ const editorInitialState = EditorState.create({
 export default function Editor() {
 	const {
 		isCurrentSourceDeleted,
+		isLoadingSource,
 		currentSelection,
 		currentSource,
 		lastSaveHash,
@@ -172,6 +173,7 @@ export default function Editor() {
 				setEditorState((oldState) => oldState.apply(tr));
 			}}
 			nodeViews={nodeViews}
+			editable={() => !isLoadingSource}
 		>
 			<Toolbar />
 			<ImagePicker />
