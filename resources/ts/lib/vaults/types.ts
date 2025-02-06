@@ -1,3 +1,4 @@
+import BrowserVault from "./browser-vault";
 import LocalVault from "./local-vault";
 
 export interface VaultItem {
@@ -33,4 +34,5 @@ export interface BaseVault {
 	removeFile(filePath: string): Promise<void>;
 }
 
-export type Vault = LocalVault;
+export type Vault = LocalVault | BrowserVault;
+export type VaultType = Vault["type"];

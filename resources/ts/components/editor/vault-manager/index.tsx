@@ -5,29 +5,25 @@ import LocalVault from "@/lib/vaults/local-vault";
 import { Plus, Vault } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "../../ui/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "../../ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
 import Browser from "./browser";
 import NewVaultDialog from "./new-vault-dialog";
 import VaultSelectItem from "./vault-select-item";
+import BrowserVault from "@/lib/vaults/browser-vault";
 
 export default function VaultBrowser() {
-	const changeCurrentSelection = useSourceManager(
-		(state) => state.changeCurrentSelection,
-	);
+	const changeCurrentSelection = useSourceManager((state) => state.changeCurrentSelection);
 	const currentSelection = useSourceManager((state) => state.currentSelection);
 	const showDialog = useDialog((state) => state.showDialog);
 	const closeDialog = useDialog((state) => state.closeDialog);
 
 	const { data: vaults, isLoading } = useQuery({
 		queryKey: ["vaults"],
-		queryFn: () => LocalVault.getAllLocalVaultsFromIndexedDB(),
+		queryFn: async () => [
+			...(await BrowserVault.getAllBrowserVaults()),
+			...(await LocalVault.getAllLocalVaultsFromIndexedDB()),
+		],
 	});
 
 	const setSelectedVault = (vaultId: string) => {
@@ -40,35 +36,23 @@ export default function VaultBrowser() {
 	};
 
 	return (
-		<div className="flex flex-col items-stretch grow max-h-full">
-			<div className="flex gap-2 items-center p-5">
-				<Select
-					value={currentSelection.vault?.id ?? undefined}
-					onValueChange={setSelectedVault}
-				>
+		<div className="flex max-h-full grow flex-col items-stretch">
+			<div className="flex items-center gap-2 p-5">
+				<Select value={currentSelection.vault?.id ?? undefined} onValueChange={setSelectedVault}>
 					<SelectTrigger className="w-96">
-						<SelectValue
-							placeholder={isLoading ? "Loading vaults..." : "Select a vault"}
-						/>
+						<SelectValue placeholder={isLoading ? "Loading vaults..." : "Select a vault"} />
 					</SelectTrigger>
 					<SelectContent position="popper">
 						{vaults?.map((vault) => (
 							<SelectItem key={vault.id} value={vault.id}>
-								<VaultSelectItem
-									vault={vault}
-								/>
+								<VaultSelectItem vault={vault} />
 							</SelectItem>
 						))}
 					</SelectContent>
 				</Select>
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Button
-							className="shrink-0"
-							variant="ghost"
-							size="icon"
-							onClick={showNewVaultDialog}
-						>
+						<Button className="shrink-0" variant="ghost" size="icon" onClick={showNewVaultDialog}>
 							<Plus />
 						</Button>
 					</TooltipTrigger>

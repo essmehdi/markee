@@ -1,12 +1,13 @@
-import { Vault } from "@/lib/vaults/types";
-import { HardDrive } from "@phosphor-icons/react";
+import { Vault, VaultType } from "@/lib/vaults/types";
+import { Browser, HardDrive } from "@phosphor-icons/react";
 
 type VaultSelectItemProps = {
 	vault: Vault;
 };
 
-const vaultTypeIconMap: Record<Vault["type"], JSX.Element> = {
+const vaultTypeIconMap: Record<VaultType, JSX.Element> = {
 	local: <HardDrive />,
+	browser: <Browser />
 };
 
 export default function VaultSelectItem({ vault }: VaultSelectItemProps) {
