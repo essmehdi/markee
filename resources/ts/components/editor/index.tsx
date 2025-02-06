@@ -1,9 +1,10 @@
-import MainToolbar from "@/components/editor/main-toolbar";
+import ImagePicker from "@/components/editor/node-widgets/image-picker";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import editorKeymap from "@/lib/prosemirror/keymap";
 import footnoter from "@/lib/prosemirror/plugins/footnotes";
 import listItemDecorator from "@/lib/prosemirror/plugins/list-checkbox";
 import markdownParser from "@/lib/prosemirror/plugins/parser";
+import pasteHandler from "@/lib/prosemirror/plugins/paste-handler";
 import textShortcutPlugin from "@/lib/prosemirror/plugins/text-shortcuts";
 import transformer from "@/lib/prosemirror/plugins/transformer";
 import { getNewDocFromMarkdown } from "@/lib/prosemirror/serialization/deserializer";
@@ -13,21 +14,19 @@ import HTMLView from "@/lib/prosemirror/views/html-view";
 import MathBlockView from "@/lib/prosemirror/views/math-block-view";
 import useConfirmationAlert from "@/lib/store/confirmation-alert-manager";
 import { useSourceManager } from "@/lib/store/source-manager";
-import { ProseMirror, react } from "@nytimes/react-prosemirror";
+import { ProseMirror } from "@nytimes/react-prosemirror";
 import "katex/dist/katex.min.css";
+import "prosemirror-gapcursor/style/gapcursor.css";
 import { history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { EditorState } from "prosemirror-state";
 import { tableEditing } from "prosemirror-tables";
+import "prosemirror-tables/style/tables.css";
 import { NodeViewConstructor } from "prosemirror-view";
 import "prosemirror-view/style/prosemirror.css";
-import "prosemirror-gapcursor/style/gapcursor.css";
 import { useEffect, useState } from "react";
 import "~/css/editor.css";
-import "prosemirror-tables/style/tables.css";
-import TableToolbar from "./node-widgets/table-toolbar";
 import Toolbar from "./toolbar";
-import pasteHandler from "@/lib/prosemirror/plugins/paste-handler";
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
 	code(node, view, getPos) {
@@ -175,6 +174,7 @@ export default function Editor() {
 			nodeViews={nodeViews}
 		>
 			<Toolbar />
+			<ImagePicker />
 			<div className="md-editor" ref={setMount} />
 		</ProseMirror>
 	);

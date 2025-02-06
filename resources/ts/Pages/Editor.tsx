@@ -10,7 +10,7 @@ export default function EditorPage() {
 	return (
 		<BaseLayout>
 			<BaseSidebar />
-			<SidebarInset className="@container/main relative w-full">
+			<SidebarInset className="@container/main w-full">
 				<Editor />
 			</SidebarInset>
 		</BaseLayout>
