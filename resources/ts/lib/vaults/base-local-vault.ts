@@ -9,9 +9,9 @@ export default abstract class BaseLocalVault implements BaseVault {
 
 	public id: string;
 	public name: string;
-	private rootHandle: FileSystemDirectoryHandle;
-	private expandedDirs: Set<string> = new Set();
-	private tree: VaultItem[] | null = null;
+	protected rootHandle: FileSystemDirectoryHandle;
+	protected expandedDirs: Set<string> = new Set();
+	protected tree: VaultItem[] | null = null;
 
 	constructor(id: string, name: string, rootHandle: FileSystemDirectoryHandle) {
 		this.id = id;
@@ -55,10 +55,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 	 * @param depth The current depth of the parsing
 	 * @returns The content of the directory
 	 */
-	private async getContent(
-		handle: FileSystemDirectoryHandle,
-		depth: string[],
-	): Promise<VaultItem[]> {
+	protected async getContent(handle: FileSystemDirectoryHandle, depth: string[]): Promise<VaultItem[]> {
 		const permission = await this.rootHandle.requestPermission();
 		if (permission !== "granted") {
 			throw new PermissionNotGrantedError();
@@ -76,10 +73,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 					createdAt: "",
 					absolutePath: absolutePath,
 					content: this.expandedDirs.has(absolutePath)
-						? await this.getContent(
-							await handle.getDirectoryHandle(entry.name),
-							absolutePathArray,
-						)
+						? await this.getContent(await handle.getDirectoryHandle(entry.name), absolutePathArray)
 						: null,
 				} as VaultDirectory);
 			} else {
@@ -112,7 +106,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 	 * Gets a file in the vault and returns the file handle
 	 * @param filePath File to get
 	 */
-	private async getFileHandle(filePath: string): Promise<FileSystemFileHandle> {
+	protected async getFileHandle(filePath: string): Promise<FileSystemFileHandle> {
 		const filePathSplit = filePath.split("/");
 		const fileName = filePathSplit.pop()!;
 
@@ -136,9 +130,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 	 * Gets a directory in the vault and returns the file handle
 	 * @param dirPath File to get
 	 */
-	private async getDirectoryHandle(
-		dirPath: string,
-	): Promise<FileSystemDirectoryHandle> {
+	protected async getDirectoryHandle(dirPath: string): Promise<FileSystemDirectoryHandle> {
 		if (dirPath === "/") {
 			return this.rootHandle;
 		}
@@ -221,9 +213,14 @@ export default abstract class BaseLocalVault implements BaseVault {
 	 * @param filePath Location of the file to remove
 	 */
 	public async removeFile(filePath: string): Promise<void> {
-		const fileHandle = await this.getFileHandle(filePath);
-		// @ts-expect-error This is apparently missing in types :/
-		await fileHandle.remove();
+		const splitFilePath = filePath.split("/");
+		if (splitFilePath.length === 1) {
+			return await this.rootHandle.removeEntry(filePath);
+		}
+		const fileName = splitFilePath.pop()!;
+		const parentDirPath = splitFilePath.join("/");
+		const parentDirHandle = await this.getDirectoryHandle(parentDirPath);
+		await parentDirHandle.removeEntry(fileName);
 	}
 
 	/**

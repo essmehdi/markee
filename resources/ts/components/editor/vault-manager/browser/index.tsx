@@ -36,10 +36,6 @@ export default function Browser({ vault }: BrowserProps) {
 			const dirPath = selectedNode.data.absolutePath;
 			await vault.expandDirectoryContent(dirPath);
 			queryClient.invalidateQueries({ queryKey: ["vault", vault.id] });
-		} else if (selectedNode.data.type === "file") {
-			// If it is a file, set it as the source for the editor
-			const filePath = selectedNode.data.absolutePath;
-			changeCurrentSelection(vault, filePath);
 		}
 	};
 
@@ -54,7 +50,7 @@ export default function Browser({ vault }: BrowserProps) {
 				<p className="px-8 font-bold text-primary">Files</p>
 				<DropdownMenu modal={false}>
 					<DropdownMenuTrigger onClick={(e) => e.stopPropagation()} asChild>
-						<Button size="icon" variant="ghost" className="shrink-0 hover:bg-transparent mr-5 text-primary">
+						<Button size="icon" variant="ghost" className="mr-5 shrink-0 text-primary hover:bg-transparent">
 							<CaretDown />
 						</Button>
 					</DropdownMenuTrigger>

@@ -6,8 +6,12 @@ import clsx from "clsx";
 import { NodeRendererProps } from "react-arborist";
 import BrowserDirectoryMenuContent from "./menu/directory-menu";
 import BrowserFileMenuContent from "./menu/file-menu";
+import { useSourceManager } from "@/lib/store/source-manager";
 
 export default function BrowserItem({ node, style }: NodeRendererProps<VaultItem>) {
+	const changeCurrentSelection = useSourceManager((state) => state.changeCurrentSelection);
+	const vault = useSourceManager((state) => state.currentSelection.vault);
+
 	const className = clsx(
 		"hover:bg-neutral-100 flex items-center justify-between rounded-lg h-full cursor-pointer mx-5 relative",
 		{
@@ -29,8 +33,16 @@ export default function BrowserItem({ node, style }: NodeRendererProps<VaultItem
 		});
 	};
 
+	const openFile = () => {
+		if (node.data.type === "file") {
+			// If it is a file, set it as the source for the editor
+			const filePath = node.data.absolutePath;
+			changeCurrentSelection(vault, filePath);
+		}
+	};
+
 	return (
-		<div style={style} className={className}>
+		<div style={style} className={className} onDoubleClick={openFile}>
 			{alignmentIndicators()}
 			<div
 				className="flex grow items-center gap-2 truncate p-3"

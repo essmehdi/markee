@@ -69,5 +69,5 @@ export default class BrowserVault extends BaseLocalVault {
 	 */
 	public delete() {
 		BrowserVault.deleteVault(this.name);
-	}
+	}	
 }
