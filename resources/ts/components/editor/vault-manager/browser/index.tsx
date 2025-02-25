@@ -4,6 +4,7 @@ import BrowserContext from "@/components/editor/vault-manager/browser/context";
 import BrowserDirectoryMenuContent from "@/components/editor/vault-manager/browser/menu/directory-menu";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useHotkey } from "@/hooks/use-hotkey";
+import { useToast } from "@/hooks/use-toast";
 import useVault from "@/hooks/vaults/use-vault";
 import { useSourceManager } from "@/lib/store/source-manager";
 import BaseLocalVault from "@/lib/vaults/base-local-vault";
@@ -15,7 +16,6 @@ import { NodeApi, Tree } from "react-arborist";
 import useResizeObserver from "use-resize-observer";
 import BrowserItem from "./item";
 import { BROWSER_HOTKEYS } from "@/components/editor/vault-manager/browser/hotkeys";
-import { useToast } from "@/hooks/use-toast";
 
 type BrowserProps = {
 	vault: Vault;
@@ -115,7 +115,7 @@ export default function Browser({ vault }: BrowserProps) {
 		if (moveError) {
 			toast({ title: "Could not move file(s)", description: moveError.message });
 		}
-	}, [moveError])
+	}, [moveError]);
 
 	useHotkey({ ...BROWSER_HOTKEYS.COPY_HOTKEY, callback: copyToClipboard });
 	useHotkey({ ...BROWSER_HOTKEYS.CUT_HOTKEY, callback: cutToClipboard });

@@ -1,16 +1,14 @@
-import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { VaultFile, VaultItem } from "@/lib/vaults/types";
-import { DotsThreeVertical, File, Folder, FolderOpen } from "@phosphor-icons/react";
+import BrowserContext from "@/components/editor/vault-manager/browser/context";
+import BrowserSelectionMenu from "@/components/editor/vault-manager/browser/menu/selection-menu";
+import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { useSourceManager } from "@/lib/store/source-manager";
+import { VaultItem } from "@/lib/vaults/types";
+import { File, Folder, FolderOpen } from "@phosphor-icons/react";
 import clsx from "clsx";
+import { MouseEvent, useContext } from "react";
 import { NodeRendererProps } from "react-arborist";
 import BrowserDirectoryMenuContent from "./menu/directory-menu";
 import BrowserFileMenuContent from "./menu/file-menu";
-import { useSourceManager } from "@/lib/store/source-manager";
-import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { MouseEvent, useContext } from "react";
-import BrowserContext from "@/components/editor/vault-manager/browser/context";
-import BrowserSelectionMenu from "@/components/editor/vault-manager/browser/menu/selection-menu";
 
 export default function BrowserItem({ node, style, tree }: NodeRendererProps<VaultItem>) {
 	const { clipboard, selection } = useContext(BrowserContext);

@@ -88,6 +88,7 @@ export default function BrowserDirectoryMenuContent({ directory }: BrowserDirect
 				Paste
 				<ContextMenuShortcut>{getHotkeyText(BROWSER_HOTKEYS.PASTE_HOTKEY)}</ContextMenuShortcut>
 			</ContextMenuItem>
+			<ContextMenuSeparator />
 			<ContextMenuItem className="text-destructive" onSelect={promptRemoveDirectory}>
 				Remove
 			</ContextMenuItem>
