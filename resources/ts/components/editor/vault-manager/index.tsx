@@ -8,7 +8,7 @@ import { Button } from "../../ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
 import Browser from "./browser";
-import NewVaultDialog from "./new-vault-dialog";
+import NewVaultDialog from "./dialogs/new-vault-dialog";
 import VaultSelectItem from "./vault-select-item";
 import BrowserVault from "@/lib/vaults/browser-vault";
 

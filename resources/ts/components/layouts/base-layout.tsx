@@ -34,7 +34,7 @@ export default function BaseLayout({ children }: PropsWithChildren) {
 					</SidebarProvider>
 				</IconContext.Provider>
 			</TooltipProvider>
-			<ReactQueryDevtools buttonPosition="bottom-left" initialIsOpen={false} />
+			<ReactQueryDevtools buttonPosition="bottom-right" initialIsOpen={false} />
 		</QueryClientProvider>
 	);
 }

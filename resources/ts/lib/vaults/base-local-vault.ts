@@ -1,11 +1,18 @@
 import { ConflictError, PermissionNotGrantedError, UnsupportedOperationError } from "./errors";
-import type { BaseVault, VaultDirectory, VaultItem } from "./types";
+import type { BaseVault, VaultDirectory, VaultFile, VaultItem } from "./types";
 
 /**
  * Local vault that represents a directory in the local file system
  */
 export default abstract class BaseLocalVault implements BaseVault {
 	public static SUPPORTED_FILE_EXTENSIONS_REGEX = /\.(txt|md)$/i;
+	public static ROOT_DIRECTORY: VaultDirectory = {
+		name: "root",
+		absolutePath: "/",
+		content: [],
+		type: "directory",
+		createdAt: "",
+	};
 
 	public id: string;
 	public name: string;
@@ -44,8 +51,8 @@ export default abstract class BaseLocalVault implements BaseVault {
 	 * Expands a directory and updates the content tree
 	 * @param dir The directory to expand
 	 */
-	public async expandDirectoryContent(dir: string): Promise<void> {
-		this.expandedDirs.add(dir);
+	public async expandDirectoryContent(dir: VaultDirectory): Promise<void> {
+		this.expandedDirs.add(dir.absolutePath);
 		await this.getRootContent();
 	}
 
@@ -58,7 +65,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 	protected async getContent(handle: FileSystemDirectoryHandle, depth: string[]): Promise<VaultItem[]> {
 		const permission = await this.rootHandle.requestPermission();
 		if (permission !== "granted") {
-			throw new PermissionNotGrantedError();
+			return Promise.reject(new PermissionNotGrantedError());
 		}
 
 		const items: VaultItem[] = [];
@@ -100,6 +107,31 @@ export default abstract class BaseLocalVault implements BaseVault {
 		});
 
 		return items;
+	}
+
+	/**
+	 * Returns a dummy vault item to represent the root directory
+	 */
+	public getRootVaultDirectory(): VaultDirectory {
+		return {
+			name: "root",
+			absolutePath: "/",
+			content: [],
+			type: "directory",
+			createdAt: "",
+		};
+	}
+
+	/**
+	 * Gets an item in the vault and returns the handle
+	 * @param filePath File to get
+	 */
+	protected getHandle(item: VaultItem) {
+		if (item.type === "file") {
+			return this.getFileHandle(item.absolutePath);
+		} else {
+			return this.getDirectoryHandle(item.absolutePath);
+		}
 	}
 
 	/**
@@ -156,22 +188,22 @@ export default abstract class BaseLocalVault implements BaseVault {
 
 	/**
 	 * Reads a file in the vault and returns its bytes content
-	 * @param filePath The file to read
+	 * @param file The file to read
 	 * @returns The file content bytes
 	 */
-	public async getFileContent(filePath: string): Promise<string> {
-		const fileHandle = await this.getFileHandle(filePath);
-		const file = await fileHandle.getFile();
-		return await file.text();
+	public async getFileContent(file: VaultItem): Promise<string> {
+		const fileHandle = await this.getFileHandle(file.absolutePath);
+		const fileObj = await fileHandle.getFile();
+		return await fileObj.text();
 	}
 
 	/**
 	 * Writes to file in the vault
-	 * @param filePath Path of the file to write in
+	 * @param file File to write in
 	 * @param content Data to write
 	 */
-	public async writeToFile(filePath: string, content: string): Promise<void> {
-		const fileHandle = await this.getFileHandle(filePath);
+	public async writeToFile(file: VaultFile, content: string): Promise<void> {
+		const fileHandle = await this.getFileHandle(file.absolutePath);
 		const writableStream = await fileHandle.createWritable();
 		await writableStream.truncate(0);
 		await writableStream.write(content);
@@ -180,62 +212,65 @@ export default abstract class BaseLocalVault implements BaseVault {
 
 	/**
 	 * Creates a file in the specified directory
-	 * @param dirPath Location where to create the file
+	 * @param directory Directory where to create the file
 	 * @param name Name of the file
 	 */
-	public async createFile(dirPath: string, name: string): Promise<void> {
+	public async createFile(directory: VaultDirectory, name: string): Promise<void> {
 		try {
-			await this.getFileHandle([dirPath, name].join("/"));
-			throw new ConflictError();
+			await this.getFileHandle([directory.absolutePath, name].join("/"));
+			return Promise.reject(new ConflictError());
 		} catch {
-			const targetDirectoryHandle = await this.getDirectoryHandle(dirPath);
+			const targetDirectoryHandle = await this.getDirectoryHandle(directory.absolutePath);
 			targetDirectoryHandle.getFileHandle(name, { create: true });
 		}
 	}
 
 	/**
 	 * Creates a directory in the specified directory
-	 * @param dirPath Location where to create the directory
+	 * @param directory Directory where to create the directory
 	 * @param name Name of the directory
 	 */
-	public async createDirectory(dirPath: string, name: string): Promise<void> {
+	public async createDirectory(directory: VaultDirectory, name: string): Promise<void> {
 		try {
-			await this.getDirectoryHandle([dirPath, name].join("/"));
-			throw new ConflictError();
+			await this.getDirectoryHandle([directory.absolutePath, name].join("/"));
+			return Promise.reject(new ConflictError());
 		} catch {
-			const targetDirectoryHandle = await this.getDirectoryHandle(dirPath);
+			const targetDirectoryHandle = await this.getDirectoryHandle(directory.absolutePath);
 			targetDirectoryHandle.getDirectoryHandle(name, { create: true });
 		}
 	}
 
 	/**
-	 * Removes a file in the vault
-	 * @param filePath Location of the file to remove
+	 * Removes a file or directory in the vault
+	 * @param item Item to remove
 	 */
-	public async removeFile(filePath: string): Promise<void> {
-		const splitFilePath = filePath.split("/");
+	public async remove(item: VaultItem): Promise<void> {
+		const options = item.type === "directory" ? { recursive: true } : undefined;
+		const splitFilePath = item.absolutePath.split("/");
 		if (splitFilePath.length === 1) {
-			return await this.rootHandle.removeEntry(filePath);
+			return await this.rootHandle.removeEntry(item.absolutePath, options);
 		}
 		const fileName = splitFilePath.pop()!;
 		const parentDirPath = splitFilePath.join("/");
 		const parentDirHandle = await this.getDirectoryHandle(parentDirPath);
-		await parentDirHandle.removeEntry(fileName);
+		await parentDirHandle.removeEntry(fileName, options);
 	}
 
 	/**
-	 * Copies a file in a specified directory
+	 * Copies a file to a specified directory
+	 * @param source Source file to copy
+	 * @param destinationDir Destination directory
 	 */
-	public async copyFile(): Promise<void> {
-		throw new UnsupportedOperationError();
+	public async copy(source: VaultItem, destinationDir: VaultDirectory): Promise<void> {
+		return Promise.reject(new UnsupportedOperationError());
 	}
 
 	/**
 	 * Moves a file in the vault to another directory in the same vault
-	 * @param filePath Location of the file to move
-	 * @param destinationDirPath Location of the destination directory
+	 * @param source Source file to move
+	 * @param destinationDir Destination directory
 	 */
-	public async moveFile(): Promise<void> {
-		throw new UnsupportedOperationError();
+	public async move(source: VaultItem, destinationDir: VaultDirectory): Promise<void> {
+		return Promise.reject(new UnsupportedOperationError());
 	}
 }

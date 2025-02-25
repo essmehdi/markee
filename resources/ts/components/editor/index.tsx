@@ -49,7 +49,7 @@ export const editorPlugins = [
 	listItemDecorator,
 	footnoter,
 	tableEditing({ allowTableNodeSelection: true }),
-	pasteHandler
+	pasteHandler,
 ];
 
 const editorInitialState = EditorState.create({
@@ -87,9 +87,9 @@ export default function Editor() {
 		const doLoadSource = () => {
 			setIsLoadingSource(true);
 
-			const { vault, filePath } = currentSelection;
+			const { vault, file } = currentSelection;
 			vault!
-				.getFileContent(filePath!)
+				.getFileContent(file!)
 				.then((decodedFileContent) => {
 					const doc = getNewDocFromMarkdown(decodedFileContent);
 					getNodeHash(doc).then((docHash) => {
@@ -105,7 +105,7 @@ export default function Editor() {
 
 					changeCurrentSource({
 						vault: vault!,
-						filePath: filePath!,
+						file: file!,
 					});
 				})
 				.catch((error) => {
@@ -119,8 +119,8 @@ export default function Editor() {
 
 		if (
 			currentSelection.vault &&
-			currentSelection.filePath &&
-			(currentSelection.vault !== currentSource?.vault || currentSelection.filePath !== currentSource?.filePath)
+			currentSelection.file &&
+			(currentSelection.vault !== currentSource?.vault || currentSelection.file !== currentSource?.file)
 		) {
 			if (currentSource && lastSaveHash !== currentHash) {
 				showConfirmationAlert(

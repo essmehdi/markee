@@ -1,33 +1,33 @@
+import BrowserContext from "@/components/editor/vault-manager/browser/context";
+import { BROWSER_HOTKEYS, getHotkeyText } from "@/components/editor/vault-manager/browser/hotkeys";
 import {
-	DropdownMenuContent,
-	DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuSeparator,
+	ContextMenuShortcut,
+} from "@/components/ui/context-menu";
 import useConfirmationAlert from "@/lib/store/confirmation-alert-manager";
 import { useSourceManager } from "@/lib/store/source-manager";
 import { VaultFile } from "@/lib/vaults/types";
 import { useQueryClient } from "@tanstack/react-query";
+import { useContext } from "react";
 
 type BrowserFileMenuContentProps = {
 	file: VaultFile;
 };
 
-export default function BrowserFileMenuContent({
-	file,
-}: BrowserFileMenuContentProps) {
+export default function BrowserFileMenuContent({ file }: BrowserFileMenuContentProps) {
 	const queryClient = useQueryClient();
 	const vault = useSourceManager((state) => state.currentSelection.vault);
-	const changeCurrentSourceDeletedFlag = useSourceManager(
-		(state) => state.changeCurrentSourceDeletedFlag,
-	);
-	const showAlertConfirmation = useConfirmationAlert(
-		(state) => state.showConfirmationAlert,
-	);
+	const changeCurrentSourceDeletedFlag = useSourceManager((state) => state.changeCurrentSourceDeletedFlag);
+	const showAlertConfirmation = useConfirmationAlert((state) => state.showConfirmationAlert);
+	const { setClipboard } = useContext(BrowserContext);
 
 	/**
 	 * Removes file from vault
 	 */
 	const removeFile = () => {
-		return vault?.removeFile(file.absolutePath).then(() => {
+		return vault?.remove(file).then(() => {
 			changeCurrentSourceDeletedFlag(true);
 			queryClient.invalidateQueries({ queryKey: ["vault"] });
 		});
@@ -41,16 +41,25 @@ export default function BrowserFileMenuContent({
 			showAlertConfirmation(
 				removeFile,
 				"Are you sure?",
-				"This action cannot be undone. This will permanently delete the file and cannot be recovered!",
+				"This action cannot be undone. This will permanently delete the file and cannot be recovered!"
 			);
 		}
 	};
 
 	return (
-		<DropdownMenuContent>
-			<DropdownMenuItem onSelect={promptRemoveFile}>
-				Remove file
-			</DropdownMenuItem>
-		</DropdownMenuContent>
+		<ContextMenuContent>
+			<ContextMenuItem onSelect={() => setClipboard({ items: [file], move: false })}>
+				Copy
+				<ContextMenuShortcut>{getHotkeyText(BROWSER_HOTKEYS.COPY_HOTKEY)}</ContextMenuShortcut>
+			</ContextMenuItem>
+			<ContextMenuItem onSelect={() => setClipboard({ items: [file], move: true })}>
+				Cut
+				<ContextMenuShortcut>{getHotkeyText(BROWSER_HOTKEYS.CUT_HOTKEY)}</ContextMenuShortcut>
+			</ContextMenuItem>
+			<ContextMenuSeparator />
+			<ContextMenuItem className="text-destructive" onSelect={promptRemoveFile}>
+				Remove
+			</ContextMenuItem>
+		</ContextMenuContent>
 	);
 }

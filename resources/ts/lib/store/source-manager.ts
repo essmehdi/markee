@@ -1,17 +1,17 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { Vault } from "../vaults/types";
+import { Vault, VaultFile, VaultItem } from "../vaults/types";
 import { getMarkdownFromDocAsync } from "../prosemirror/serialization/serializer";
 import { EditorState } from "prosemirror-state";
 import { getNodeHash } from "../prosemirror/serialization/hash";
 
 export type Source = {
-	filePath: string;
+	file: VaultFile;
 	vault: Vault;
 };
 
 export type Selection = {
-	filePath: string | null;
+	file: VaultFile | null;
 	vault: Vault | null;
 };
 
@@ -40,10 +40,7 @@ export type SourceState = {
 	/** currentSource setter */
 	changeCurrentSource: (source: Source | null) => void;
 	/** currentSelection setter */
-	changeCurrentSelection: (
-		vault: Vault | null,
-		filePath: string | null,
-	) => void;
+	changeCurrentSelection: (vault: Vault | null, filePath: VaultFile | null) => void;
 	changeCurrentSourceDeletedFlag: (flag: boolean) => void;
 	checkDocSavedState: (editorState: EditorState) => Promise<boolean>;
 };
@@ -56,7 +53,7 @@ export const useSourceManager = create<SourceState>()(
 		isCurrentSourceDeleted: false,
 		currentSource: null,
 		currentSelection: {
-			filePath: null,
+			file: null,
 			vault: null,
 		},
 
@@ -66,7 +63,7 @@ export const useSourceManager = create<SourceState>()(
 				return;
 			}
 
-			const { vault, filePath } = currentSource;
+			const { vault, file: filePath } = currentSource;
 			const markdown = await getMarkdownFromDocAsync(editorState);
 			await vault.writeToFile(filePath, markdown);
 			const saveHash = await getNodeHash(editorState.doc);
@@ -106,10 +103,7 @@ export const useSourceManager = create<SourceState>()(
 			});
 		},
 		changeCurrentSource: (source) => {
-			if (
-				get().currentSource?.vault.id === source?.vault.id &&
-				get().currentSource?.filePath === source?.filePath
-			) {
+			if (get().currentSource?.vault.id === source?.vault.id && get().currentSource?.file === source?.file) {
 				return;
 			}
 			set((state) => {
@@ -120,17 +114,14 @@ export const useSourceManager = create<SourceState>()(
 			});
 		},
 		changeCurrentSelection: (vault, filePath) => {
-			if (
-				get().currentSelection.vault?.id === vault?.id &&
-				filePath === get().currentSelection.filePath
-			) {
+			if (get().currentSelection.vault?.id === vault?.id && filePath === get().currentSelection.file) {
 				return;
 			}
 			set((state) => {
 				return {
 					...state,
 					currentSelection: {
-						filePath: filePath,
+						file: filePath,
 						vault: vault,
 					},
 				};
@@ -146,5 +137,5 @@ export const useSourceManager = create<SourceState>()(
 			const docHash = await getNodeHash(editorState.doc);
 			return docHash === get().lastSaveHash;
 		},
-	})),
+	}))
 );

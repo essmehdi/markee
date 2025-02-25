@@ -27,16 +27,16 @@ type SourceProps = {
  * Component that displays the current source of the editor
  */
 export default function Source({ saved, currentSource }: SourceProps) {
-	const fileName = currentSource?.filePath.split("/").pop() ?? "Draft";
+	const fileName = currentSource?.file.absolutePath.split("/").pop() ?? "Draft";
 
 	return (
-		<div className="space-y-0 flex items-center gap-2">
+		<div className="flex items-center gap-2 space-y-0">
 			<div>
 				<AnimatePresence>
 					{currentSource && (
 						<motion.p
 							key={currentSource.vault.name}
-							className={clsx("text-neutral-400 text-xs text-left -mb-0.5", {
+							className={clsx("-mb-0.5 text-left text-xs text-neutral-400", {
 								"h-0": !currentSource,
 							})}
 							{...opacityAnimation}
@@ -47,14 +47,10 @@ export default function Source({ saved, currentSource }: SourceProps) {
 				</AnimatePresence>
 				<div>
 					<AnimatePresence initial={false} mode="wait">
-						<motion.h1
-							key={fileName}
-							className="font-bold text-base text-left truncate"
-							{...opacityAnimation}
-						>
+						<motion.h1 key={fileName} className="truncate text-left text-base font-bold" {...opacityAnimation}>
 							{fileName}
 							<span
-								className={clsx("text-primary pl-2", {
+								className={clsx("pl-2 text-primary", {
 									visible: saved === false,
 									invisible: saved || saved === undefined,
 								})}

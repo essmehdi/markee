@@ -1,37 +1,38 @@
 import BrowserVault from "./browser-vault";
 import LocalVault from "./local-vault";
 
-export interface VaultItem {
+interface BaseVaultItem {
 	name: string;
 	type: string;
 	absolutePath: string;
 	createdAt: string;
 }
 
-export interface VaultFile extends VaultItem {
+export interface VaultFile extends BaseVaultItem {
 	type: "file";
-	updatedAt: string;
-	getContent: () => Blob;
 }
 
-export interface VaultDirectory extends VaultItem {
+export interface VaultDirectory extends BaseVaultItem {
 	type: "directory";
 	content: VaultItem[] | null;
 }
+
+export type VaultItem = VaultFile | VaultDirectory;
 
 export interface BaseVault {
 	id: string;
 	name: string;
 	getCachedRootContent(): Promise<VaultItem[]>;
+	getRootVaultDirectory(): VaultDirectory;
 	getRootContent(): Promise<VaultItem[]>;
-	getFileContent(filePath: string): Promise<string>;
-	writeToFile(filePath: string, content: string): Promise<void>;
-	expandDirectoryContent(dir: string): Promise<void>;
-	createFile(dirPath: string, name: string): Promise<void>;
-	createDirectory(dirPath: string, name: string): Promise<void>;
-	copyFile(filePath: string, destinationDirPath: string): Promise<void>;
-	moveFile(filePath: string, destinationDirPath: string): Promise<void>;
-	removeFile(filePath: string): Promise<void>;
+	getFileContent(file: VaultFile): Promise<string>;
+	writeToFile(file: VaultFile, content: string): Promise<void>;
+	expandDirectoryContent(dir: VaultDirectory): Promise<void>;
+	createFile(dirPath: VaultDirectory, name: string): Promise<void>;
+	createDirectory(dirPath: VaultDirectory, name: string): Promise<void>;
+	copy(item: VaultItem, destinationDir: VaultDirectory): Promise<void>;
+	move(item: VaultItem, destinationDir: VaultDirectory): Promise<void>;
+	remove(item: VaultItem): Promise<void>;
 }
 
 export type Vault = LocalVault | BrowserVault;

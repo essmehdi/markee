@@ -7,7 +7,7 @@ import { getNewDocFromMarkdown } from "../serialization/deserializer";
 const sourceManager = new Plugin({
 	view(view) {
 		const sourceUnsubsribe = useSourceManager.subscribe((state) => {
-			const { vault: currentVault, filePath: currentFilePath } = state.currentSelection;
+			const { vault: currentVault, file: currentFilePath } = state.currentSelection;
 			if (currentVault && currentFilePath) {
 				currentVault
 					.getFileContent(currentFilePath)
