@@ -105,7 +105,6 @@ export default function Browser({ vault }: BrowserProps) {
 	};
 
 	useEffect(() => {
-		console.log(copyError);
 		if (copyError) {
 			toast({ title: "Could not copy file(s)", description: copyError.message });
 		}

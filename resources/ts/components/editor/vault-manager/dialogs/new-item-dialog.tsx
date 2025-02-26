@@ -1,10 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle
-} from "@/components/ui/dialog";
+import { DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useSourceManager } from "@/lib/store/source-manager";
@@ -18,11 +13,7 @@ type NewItemDialogProps = {
 	closeDialog: () => void;
 };
 
-export default function NewItemDialog({
-	location,
-	type,
-	closeDialog,
-}: NewItemDialogProps) {
+export default function NewItemDialog({ location, type, closeDialog }: NewItemDialogProps) {
 	const queryClient = useQueryClient();
 	const dialogTitle = type === "file" ? "New file" : "New directory";
 	const dialogDescription =
@@ -51,9 +42,7 @@ export default function NewItemDialog({
 	const createFile = useCallback(
 		(event: React.FormEvent<HTMLFormElement>) => {
 			event.preventDefault();
-			const itemName = new FormData(event.currentTarget)
-				.get("itemName")!
-				.toString();
+			const itemName = new FormData(event.currentTarget).get("itemName")!.toString();
 			if (!itemName) {
 				setError("You must supply a name");
 				return;
@@ -65,7 +54,7 @@ export default function NewItemDialog({
 			}
 			createItem(correctedItemName);
 		},
-		[type],
+		[type]
 	);
 
 	return (
@@ -78,7 +67,7 @@ export default function NewItemDialog({
 				<div className="w-full space-y-1.5">
 					<Label htmlFor="item-name">Name</Label>
 					<Input id="item-name" name="itemName" required />
-					{error && <p className="text-red-400 text-sm">{error}</p>}
+					{error && <p className="text-sm text-red-400">{error}</p>}
 				</div>
 				<DialogFooter>
 					<Button type="submit">Create</Button>

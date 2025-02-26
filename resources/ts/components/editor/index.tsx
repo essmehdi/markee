@@ -52,7 +52,7 @@ export const editorPlugins = [
 	pasteHandler,
 ];
 
-const editorInitialState = EditorState.create({
+export const editorInitialState = EditorState.create({
 	schema: mdSchema,
 	plugins: editorPlugins,
 });

@@ -1,4 +1,4 @@
-import { editorInitialState, nodeViews } from "@/Pages/Editor";
+import { editorInitialState, nodeViews } from "@/components/editor";
 import { EditorView } from "prosemirror-view";
 
 export function setupEditor() {
