@@ -1,10 +1,10 @@
 import BrowserContext from "@/components/editor/vault-manager/browser/context";
 import { BROWSER_HOTKEYS, getHotkeyText } from "@/components/editor/vault-manager/browser/hotkeys";
 import {
-    ContextMenuContent,
-    ContextMenuItem,
-    ContextMenuSeparator,
-    ContextMenuShortcut,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuSeparator,
+	ContextMenuShortcut,
 } from "@/components/ui/context-menu";
 import useConfirmationAlert from "@/lib/store/confirmation-alert-manager";
 import useDialog from "@/lib/store/dialog-manager";
@@ -51,7 +51,6 @@ export default function BrowserDirectoryMenuContent({ directory }: BrowserDirect
 		}
 	};
 
-
 	return (
 		<ContextMenuContent>
 			<ContextMenuItem
@@ -78,7 +77,9 @@ export default function BrowserDirectoryMenuContent({ directory }: BrowserDirect
 				<ContextMenuShortcut>{getHotkeyText(BROWSER_HOTKEYS.CUT_HOTKEY)}</ContextMenuShortcut>
 			</ContextMenuItem>
 			<ContextMenuItem
-				disabled={clipboard.items.length === 0}
+				disabled={
+					clipboard.items.length === 0 || clipboard.items.find((item) => item.absolutePath === directory.absolutePath) !== undefined
+				}
 				onSelect={() =>
 					clipboard.move
 						? move({ items: clipboard.items, destination: directory })
