@@ -27,6 +27,7 @@ import "prosemirror-view/style/prosemirror.css";
 import { useEffect, useState } from "react";
 import "~/css/editor.css";
 import Toolbar from "./toolbar";
+import decorator from "@/lib/prosemirror/plugins/decorator";
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
 	code(node, view, getPos) {
@@ -44,6 +45,7 @@ export const editorPlugins = [
 	history(),
 	keymap(editorKeymap(mdSchema)),
 	markdownParser,
+	decorator,
 	transformer,
 	textShortcutPlugin,
 	listItemDecorator,
