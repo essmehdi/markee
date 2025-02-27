@@ -13,10 +13,7 @@ import { processTokenForRanges } from "./tokens-processor";
 
 /** Map for each markup to the its decorations handler that provides ProseMirror decorations */
 type MarkupDecorationHandlers = {
-	[K in Markup["type"]]: (
-		markup: Extract<Markup, { type: K }>,
-		isSelectionNear: boolean
-	) => Decoration[];
+	[K in Markup["type"]]: (markup: Extract<Markup, { type: K }>, isSelectionNear: boolean) => Decoration[];
 };
 
 type Transform = {
@@ -81,7 +78,6 @@ function decorate(node: Node): ParsingResult {
 		}
 
 		const tokens = marked.lexer(nodeText);
-		console.log(tokens);
 		let cursor = position + 1;
 		const htmlStack: HTMLToken[] = [];
 		for (const token of tokens) {
@@ -98,19 +94,13 @@ function decorate(node: Node): ParsingResult {
 			) {
 				if (token.type === "html" && node.type !== mdSchema.nodes.html) {
 					transforms.push({ targetType: mdSchema.nodes.html, position, token });
-				} else if (
-					token.type === "table" &&
-					node.type !== mdSchema.nodes.table
-				) {
+				} else if (token.type === "table" && node.type !== mdSchema.nodes.table) {
 					transforms.push({
 						targetType: mdSchema.nodes.table,
 						position: cursor,
 						token,
 					});
-				} else if (
-					token.type === "paragraph" &&
-					node.type !== mdSchema.nodes.paragraph
-				) {
+				} else if (token.type === "paragraph" && node.type !== mdSchema.nodes.paragraph) {
 					transforms.push({
 						targetType: mdSchema.nodes.paragraph,
 						position,
@@ -118,17 +108,11 @@ function decorate(node: Node): ParsingResult {
 					});
 				}
 			}
-			const [newRanges, newPosition] = processTokenForRanges(
-				token,
-				cursor,
-				[],
-				htmlStack
-			);
+			const [newRanges, newPosition] = processTokenForRanges(token, cursor, [], htmlStack);
 			markups.push(...newRanges);
 			cursor = newPosition;
 		}
 		markups.push(...processHTMLTokens(htmlStack));
-		console.log(markups);
 		return false;
 	});
 
@@ -142,31 +126,21 @@ function decorate(node: Node): ParsingResult {
  * Generic decorator for simple decorations like bold, italic, etc.
  * where there is simple styling.
  */
-function styleDecorator(
-	markup: Markup,
-	isSelectionNear: boolean
-): Decoration[] {
+function styleDecorator(markup: Markup, isSelectionNear: boolean): Decoration[] {
 	const decorationsArray = [];
 	if (markup.punctuation.length > 0) {
 		const decoClass = `md-${markup.type}`;
 		decorationsArray.push(
-			Decoration.inline(
-				markup.punctuation[0][1],
-				markup.punctuation[1]?.[0] ?? markup.context[1],
-				{
-					class: decoClass,
-				}
-			)
+			Decoration.inline(markup.punctuation[0][1], markup.punctuation[1]?.[0] ?? markup.context[1], {
+				class: decoClass,
+			})
 		);
 	}
 
 	return decorationsArray;
 }
 
-function punctuationDecorator(
-	markup: Markup,
-	isSelectionNear: boolean
-): Decoration[] {
+function punctuationDecorator(markup: Markup, isSelectionNear: boolean): Decoration[] {
 	const decorationsArray: Decoration[] = [];
 	markup.punctuation.forEach((punctuation) => {
 		let punctuationClass = "md-punctuation";
@@ -185,14 +159,8 @@ function punctuationDecorator(
 	return decorationsArray;
 }
 
-function genericDecorator(
-	markup: Markup,
-	isSelectionNear: boolean
-): Decoration[] {
-	return [
-		...styleDecorator(markup, isSelectionNear),
-		...punctuationDecorator(markup, isSelectionNear),
-	];
+function genericDecorator(markup: Markup, isSelectionNear: boolean): Decoration[] {
+	return [...styleDecorator(markup, isSelectionNear), ...punctuationDecorator(markup, isSelectionNear)];
 }
 
 /**
@@ -208,13 +176,9 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 		if (markup.punctuation.length > 0) {
 			const decoClass = `md-title-${markup.level} md-title`;
 			decorationsArray.push(
-				Decoration.inline(
-					markup.punctuation[0][1],
-					markup.punctuation[1]?.[0] ?? markup.context[1],
-					{
-						class: decoClass,
-					}
-				)
+				Decoration.inline(markup.punctuation[0][1], markup.punctuation[1]?.[0] ?? markup.context[1], {
+					class: decoClass,
+				})
 			);
 		}
 
@@ -277,13 +241,9 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				})
 			);
 			decorationArray.push(
-				Decoration.widget(
-					markup.context[0],
-					image(markup.url, markup.alt, markup.title),
-					{
-						key: `${markup.url}-${markup.alt}-${markup.title}`
-					}
-				)
+				Decoration.widget(markup.context[0], image(markup.url, markup.alt, markup.title), {
+					key: `${markup.url}-${markup.alt}-${markup.title}`,
+				})
 			);
 		}
 		return decorationArray;
@@ -296,13 +256,9 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 			})
 		);
 		decorationsArray.push(
-			Decoration.widget(
-				markup.punctuation[0][1],
-				inlineMathWidget(markup.expression, isSelectionNear),
-				{
-					key: `${markup.expression}-${isSelectionNear}`,
-				}
-			)
+			Decoration.widget(markup.punctuation[0][1], inlineMathWidget(markup.expression, isSelectionNear), {
+				key: `${markup.expression}-${isSelectionNear}`,
+			})
 		);
 		return decorationsArray;
 	},
@@ -311,18 +267,11 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 		if (!isSelectionNear) {
 			if (markup.style) {
 				decorationsArray.push(
-					Decoration.inline(
-						markup.punctuation[0][1],
-						markup.punctuation[1][0],
-						{ style: markup.style }
-					)
+					Decoration.inline(markup.punctuation[0][1], markup.punctuation[1][0], { style: markup.style })
 				);
 			} else {
 				const styleClasses = markup.decorations.reduce(
-					(acc, type) =>
-						["em", "strong", "del", "codespan"].includes(type)
-							? acc.concat(`md-${type}`)
-							: acc,
+					(acc, type) => (["em", "strong", "del", "codespan"].includes(type) ? acc.concat(`md-${type}`) : acc),
 					[] as string[]
 				);
 				decorationsArray.push(
@@ -330,9 +279,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 						class: "md-hidden",
 					})
 				);
-				decorationsArray.push(
-					Decoration.widget(markup.context[0], html(markup.code, styleClasses))
-				);
+				decorationsArray.push(Decoration.widget(markup.context[0], html(markup.code, styleClasses)));
 			}
 		}
 		return decorationsArray;
@@ -361,14 +308,10 @@ const markdownParser = new Plugin({
 			const decorationArray: Decoration[] = [];
 			parsingResult.markups.forEach((markup) => {
 				const isSelectionNear =
-					(selection.anchor <= markup.context[1] &&
-						selection.anchor >= markup.context[0]) ||
-					(selection.head <= markup.context[1] &&
-						selection.head >= markup.context[0]) ||
-					(selection.anchor <= markup.context[0] &&
-						selection.head >= markup.context[1]) ||
-					(selection.head <= markup.context[0] &&
-						selection.anchor >= markup.context[1]);
+					(selection.anchor <= markup.context[1] && selection.anchor >= markup.context[0]) ||
+					(selection.head <= markup.context[1] && selection.head >= markup.context[0]) ||
+					(selection.anchor <= markup.context[0] && selection.head >= markup.context[1]) ||
+					(selection.head <= markup.context[0] && selection.anchor >= markup.context[1]);
 
 				const markupDecorationHandler = DECORATIONS_MAP[markup.type];
 				decorationArray.push(
@@ -378,16 +321,14 @@ const markdownParser = new Plugin({
 			});
 
 			console.timeEnd("Decorator");
-			return DecorationSet.create(state.doc, decorationArray);
+			const decSet = DecorationSet.create(state.doc, decorationArray);
+			return decSet;
 		},
 		handleDOMEvents: {
 			mousedown(_, event) {
 				if (event.target instanceof HTMLElement) {
 					const target = event.target;
-					if (
-						target.classList.contains("md-link") &&
-						target.getAttribute("href")
-					) {
+					if (target.classList.contains("md-link") && target.getAttribute("href")) {
 						event.preventDefault();
 						return true;
 					}
@@ -396,23 +337,15 @@ const markdownParser = new Plugin({
 			click(_, event) {
 				if (event.target instanceof HTMLElement) {
 					const target = event.target;
-					if (
-						target.classList.contains("md-link") &&
-						target.getAttribute("href")
-					) {
+					if (target.classList.contains("md-link") && target.getAttribute("href")) {
 						event.preventDefault();
 						window.open(target.getAttribute("href") ?? "", "_blank")?.focus();
 						return true;
 					} else if (target.classList.contains("md-rendered-image")) {
 						const nextSibling = target.nextSibling as HTMLElement | null;
-						if (
-							nextSibling?.classList.contains("md-link") &&
-							nextSibling?.getAttribute("href")
-						) {
+						if (nextSibling?.classList.contains("md-link") && nextSibling?.getAttribute("href")) {
 							event.preventDefault();
-							window
-								.open(nextSibling.getAttribute("href") ?? "", "_blank")
-								?.focus();
+							window.open(nextSibling.getAttribute("href") ?? "", "_blank")?.focus();
 							return true;
 						}
 					}
@@ -426,18 +359,11 @@ const markdownParser = new Plugin({
  * Gets the nearest markup that wraps the current selection.
  * Since the parser is sequential, the markups are supposed to be sorted by context start position.
  */
-export function selectionMarkupPosition(
-	editorState: EditorState,
-	markupType: Markup["type"]
-): Markup | null {
+export function selectionMarkupPosition(editorState: EditorState, markupType: Markup["type"]): Markup | null {
 	const selection = editorState.selection;
 	const markups = markdownParser.getState(editorState)?.markups ?? [];
 	const filteredMarkups = markups.filter((markup) => {
-		return (
-			markup.context[0] <= selection.from &&
-			markup.type === markupType &&
-			markup.context[1] >= selection.to
-		);
+		return markup.context[0] <= selection.from && markup.type === markupType && markup.context[1] >= selection.to;
 	});
 	return filteredMarkups.pop() ?? null;
 }

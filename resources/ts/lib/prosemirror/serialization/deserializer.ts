@@ -102,7 +102,6 @@ export function getNewDocFromMarkdown(markdown: string) {
 
 function getTokensFromMarkdown(markdown: string): MarkedToken[] {
 	const tokens = marked.lexer(markdown) as MarkedToken[];
-	console.log(tokens);
 	return tokens;
 }
 
