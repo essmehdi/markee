@@ -56,12 +56,11 @@ export function processHTMLTokens(tokens: HTMLToken[]): Markup[] {
 					type: "html",
 					code: raw.reduce((acc, t) => acc + t.raw, ""),
 					style: undefined,
-					punctuation: /* style !== null
-							? */ [
+					punctuation: [
 						[startingTag.position, startingTag.position + startingTag.token.raw.length],
 						[tag.position, tag.position + tag.token.raw.length],
 					],
-					/* : [] */ context: [startingTag.position, tag.position + tag.token.raw.length],
+					context: [startingTag.position, tag.position + tag.token.raw.length],
 					decorations: startingTag.decorations,
 				});
 				found = true;
