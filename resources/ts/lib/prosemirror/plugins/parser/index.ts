@@ -1,20 +1,11 @@
-import { Token } from "marked";
 import marked from "@/lib/marked";
-import { Node, NodeType } from "prosemirror-model";
-import { EditorState, Plugin, PluginKey, Selection } from "prosemirror-state";
-import { Decoration, DecorationSet } from "prosemirror-view";
-import type { Markup, Position } from "@/lib/prosemirror/types";
 import mdSchema from "@/lib/prosemirror/editor-schema";
-import html from "@/lib/prosemirror/widgets/html-widget";
-import image from "@/lib/prosemirror/widgets/image-widget";
-import inlineMathWidget from "@/lib/prosemirror/widgets/inline-math-widget";
+import type { Markup } from "@/lib/prosemirror/types";
+import { Token } from "marked";
+import { Node, NodeType } from "prosemirror-model";
+import { EditorState, Plugin, PluginKey } from "prosemirror-state";
 import { HTMLToken, processHTMLTokens } from "./html-processor";
 import { processTokenForRanges } from "./tokens-processor";
-
-/** Map for each markup to the its decorations handler that provides ProseMirror decorations */
-type MarkupDecorationHandlers = {
-	[K in Markup["type"]]: (markup: Extract<Markup, { type: K }>) => Decoration[];
-};
 
 type Transform = {
 	targetType: NodeType;
