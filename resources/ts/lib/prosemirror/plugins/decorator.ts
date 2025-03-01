@@ -237,8 +237,8 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 const decorator = new Plugin({
 	key: new PluginKey("parser"),
 	state: {
-		init() {
-			return DecorationSet.empty;
+		init(_, initialState) {
+			return getDecorationSet(initialState);
 		},
 		apply(tr, old, _, newState) {
 			if (tr.docChanged) {
