@@ -1,9 +1,9 @@
-import { Token } from "marked";
+import { marked, Token } from "marked";
 import { Markup } from "@/lib/prosemirror/types";
 
 export type HTMLToken = {
 	token: Token;
-	afterContent: string;
+	afterContent: Token[];
 	position: number;
 	closing: boolean;
 	decorations: string[];
@@ -11,7 +11,7 @@ export type HTMLToken = {
 };
 
 const UNSUPPORTED_HTML_TAGS = ["input", "textarea", "form", "select", "option", "script", "style"];
-const SUPPORTED_HTML_TAGS = ["img", "br", "span"];
+const SUPPORTED_HTML_TAGS = ["img", "br", "span", "summary", "details"];
 const VOID_HTML_TAGS = ["br", "img", "hr"];
 
 /**
@@ -33,19 +33,14 @@ export function processHTMLTokens(tokens: HTMLToken[]): Markup[] {
 		const match = startingTag.token.raw.match(/<([^\s]+)(?:\s|>)/)!;
 		const startingTagName = match[1];
 
-		// Check if the HTML tag is supported
-		if (!SUPPORTED_HTML_TAGS.includes(startingTagName)) {
-			continue;
-		}
-
-		let raw = startingTag.afterContent; // Collect the content until we find the closing tag
+		let raw = [startingTag.token, ...startingTag.afterContent]; // Collect the content until we find the closing tag
 		let found = false;
 		// Look for the closing tag
 		for (let j = i + 1; j < tokens.length; j++) {
 			const tag = tokens[j];
 			// Check if it matches the opening tag
 			if (!tag.consumed && startingTagName === tag.token.raw.slice(2, -1)) {
-				raw = raw.concat(tag.token.raw);
+				raw = raw.concat(tag.token, tag.afterContent);
 
 				// If the tag is a span, it will have the styles set, to be
 				// considered as an inline decoration later.
@@ -58,22 +53,21 @@ export function processHTMLTokens(tokens: HTMLToken[]): Markup[] {
 				// When the closing tag is found, add it as an HTML markup.
 				markups.push({
 					type: "html",
-					code: raw,
-					style: style ?? undefined,
-					punctuation:
-						/* style !== null
+					code: raw.reduce((acc, t) => acc + t.raw, ""),
+					style: undefined,
+					punctuation: /* style !== null
 							? */ [
-									[startingTag.position, startingTag.position + startingTag.token.raw.length],
-									[tag.position, tag.position + tag.token.raw.length],
-								]
-							/* : [] */,
-					context: [startingTag.position, tag.position + tag.token.raw.length],
+						[startingTag.position, startingTag.position + startingTag.token.raw.length],
+						[tag.position, tag.position + tag.token.raw.length],
+					],
+					/* : [] */ context: [startingTag.position, tag.position + tag.token.raw.length],
 					decorations: startingTag.decorations,
 				});
 				found = true;
+				i = j;
 				break;
 			} else {
-				raw = raw.concat(tag.afterContent);
+				raw = raw.concat(tag.token, tag.afterContent);
 			}
 		}
 
@@ -84,9 +78,7 @@ export function processHTMLTokens(tokens: HTMLToken[]): Markup[] {
 			markups.push({
 				type: "html",
 				code: correctedRaw,
-				punctuation: [
-					[startingTag.position, startingTag.position + correctedRaw.length],
-				],
+				punctuation: [[startingTag.position, startingTag.position + correctedRaw.length]],
 				context: [startingTag.position, startingTag.position + correctedRaw.length],
 				decorations: startingTag.decorations,
 			});

@@ -199,16 +199,16 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 	},
 	html: (markup) => {
 		const decorationsArray = [...punctuationDecorator(markup)];
-		if (markup.style) {
-			decorationsArray.push(
-				Decoration.inline(
-					markup.punctuation[0][1],
-					markup.punctuation[1][0],
-					{ style: markup.style },
-					{ context: markup.context }
-				)
-			);
-		} else {
+		// if (markup.style) {
+		// 	decorationsArray.push(
+		// 		Decoration.inline(
+		// 			markup.punctuation[0][1],
+		// 			markup.punctuation[1][0],
+		// 			{ style: markup.style },
+		// 			{ context: markup.context }
+		// 		)
+		// 	);
+		// } else {
 			const styleClasses = markup.decorations.reduce(
 				(acc, type) => (["em", "strong", "del", "codespan"].includes(type) ? acc.concat(`md-${type}`) : acc),
 				[] as string[]
@@ -218,7 +218,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					markup.context[0],
 					markup.context[1],
 					{
-						class: "md-hidden",
+						class: "",
 					},
 					{ context: markup.context, shouldHide: true }
 				)
@@ -229,7 +229,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					shouldShow: true,
 				})
 			);
-		}
+		// }
 		return decorationsArray;
 	},
 };

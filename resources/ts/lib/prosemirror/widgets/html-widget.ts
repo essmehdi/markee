@@ -1,3 +1,5 @@
+import marked from "@/lib/marked";
+
 /**
  * Widget to render inline HTML.
  * @param code The HTML code to render
@@ -6,7 +8,7 @@
 export default function html(code: string, styleClasses: string[]) {
 	return () => {
 		const html = document.createElement("span");
-		html.innerHTML = code;
+		html.innerHTML = marked.parseInline(code, { async: false });
 		html.classList.add(...styleClasses);
 		return html;
 	};

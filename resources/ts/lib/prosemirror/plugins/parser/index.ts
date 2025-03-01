@@ -104,7 +104,8 @@ function parse(node: Node): ParsingResult {
 			markups.push(...newRanges);
 			cursor = newPosition;
 		}
-		markups.push(...processHTMLTokens(htmlStack));
+		const htmlTokens = processHTMLTokens(htmlStack);
+		markups.push(...htmlTokens);
 		return false;
 	});
 

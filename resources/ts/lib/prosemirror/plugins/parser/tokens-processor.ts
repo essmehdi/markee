@@ -83,10 +83,10 @@ export function processTokenForRanges(
 	const tokenLength = token.raw.length;
 
 	const htmlRawLength = htmlStack.length;
-	if (htmlRawLength > 0 && token.type !== "html") {
+	if (htmlRawLength > 0 && token.type !== "html" && excludedTypes.length <= 1) {
 		htmlStack[htmlRawLength - 1].afterContent = htmlStack[
 			htmlRawLength - 1
-		].afterContent.concat(token.raw);
+		].afterContent.concat(token);
 	}
 
 	let cursor = initCursor;
@@ -154,14 +154,24 @@ export function processTokenForRanges(
 	}
 
 	if (token.type === "html") {
-		htmlStack.push({
-			token,
-			afterContent: token.raw,
-			position: cursor,
-			closing: token.raw.startsWith("</"),
-			decorations: excludedTypes,
-			consumed: false,
-		});
+		if (token.block) {
+			ranges.push({
+				type: "html",
+				code: token.raw,
+				context,
+				punctuation: [],
+				decorations: excludedTypes
+			});
+		} else {
+			htmlStack.push({
+				token,
+				afterContent: [],
+				position: cursor,
+				closing: token.raw.startsWith("</"),
+				decorations: excludedTypes,
+				consumed: false,
+			});
+		}
 		cursor = context[1];
 	} else if (token.type === "paragraph") {
 		let nestedCursor = initCursor;
