@@ -16,7 +16,10 @@ const TABLE_CELL_ALIGNMENT_MAP = {
 
 const TOKEN_HANDLER_MAP: TokenHandlerMap = {
 	code: (token) => {
-		return mdSchema.nodes.code.create({ language: token.lang ?? "" }, mdSchema.text(token.text));
+		return mdSchema.nodes.code.create(
+			{ language: token.lang ?? "" },
+			token.text.length > 0 ? mdSchema.text(token.text) : null
+		)!;
 	},
 	blockquote: (token) => {
 		return mdSchema.nodes.blockquote.create(null, deserializeTokens(token.tokens as MarkedToken[]));
@@ -66,7 +69,7 @@ const TOKEN_HANDLER_MAP: TokenHandlerMap = {
 	},
 	hr: () => {
 		return mdSchema.nodes.horizontal_rule.createAndFill()!;
-	}
+	},
 };
 
 export function deserializeTokens(tokens: MarkedToken[]): Node[] {
