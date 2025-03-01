@@ -171,7 +171,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 			Decoration.widget(markup.context[0], image(markup.url, markup.alt, markup.title), {
 				key: `${markup.url}-${markup.alt}-${markup.title}`,
 				context: markup.context,
-				shouldHide: true,
+				shouldShow: true,
 			})
 		);
 		return decorationArray;
@@ -192,6 +192,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 			Decoration.widget(markup.punctuation[0][1], inlineMathWidget(markup.expression), {
 				key: `${markup.expression}`,
 				context: markup.context,
+				shouldShow: true,
 			})
 		);
 		return decorationsArray;
@@ -204,7 +205,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					markup.punctuation[0][1],
 					markup.punctuation[1][0],
 					{ style: markup.style },
-					{ context: markup.context, shouldHide: true }
+					{ context: markup.context }
 				)
 			);
 		} else {
@@ -225,7 +226,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 			decorationsArray.push(
 				Decoration.widget(markup.context[0], html(markup.code, styleClasses), {
 					context: markup.context,
-					shouldHide: true,
+					shouldShow: true,
 				})
 			);
 		}
@@ -254,7 +255,9 @@ const decorator = new Plugin({
 			const hiddenDecs = decSet.find(
 				undefined,
 				undefined,
-				(spec) => spec.shouldHide && !isSelectionNear(selection, spec.context)
+				(spec) =>
+					(spec.shouldHide && !isSelectionNear(selection, spec.context)) ||
+					(spec.shouldShow && spec.shouldShow && isSelectionNear(selection, spec.context))
 			);
 			decSet = decSet.add(
 				state.doc,
