@@ -40,6 +40,7 @@ export function processHTMLTokens(tokens: HTMLToken[]): Markup[] {
 			const tag = tokens[j];
 			// Check if it matches the opening tag
 			if (!tag.consumed && startingTagName === tag.token.raw.slice(2, -1)) {
+				tag.consumed = true;
 				raw = raw.concat(tag.token, tag.afterContent);
 
 				// If the tag is a span, it will have the styles set, to be
