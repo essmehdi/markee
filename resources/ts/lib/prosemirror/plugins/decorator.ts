@@ -1,5 +1,5 @@
 import markdownParser from "@/lib/prosemirror/plugins/parser";
-import type { Markup, Position } from "@/lib/prosemirror/types";
+import type { Link, Markup, Position } from "@/lib/prosemirror/types";
 import html from "@/lib/prosemirror/widgets/html-widget";
 import image from "@/lib/prosemirror/widgets/image-widget";
 import inlineMathWidget from "@/lib/prosemirror/widgets/inline-math-widget";
@@ -8,7 +8,7 @@ import { Decoration, DecorationSet } from "prosemirror-view";
 
 /** Map for each markup to the its decorations handler that provides ProseMirror decorations */
 type MarkupDecorationHandlers = {
-	[K in Markup["type"]]: (markup: Extract<Markup, { type: K }>) => Decoration[];
+	[K in Markup["type"]]: (markup: Extract<Markup, { type: K }>, ...args: any[]) => Decoration[];
 };
 
 /**
@@ -26,7 +26,7 @@ function styleDecorator(markup: Markup): Decoration[] {
 				{
 					class: decoClass,
 				},
-				{ context: markup.context }
+				{ markup }
 			)
 		);
 	}
@@ -48,7 +48,7 @@ function punctuationDecorator(markup: Markup): Decoration[] {
 				{
 					class: punctuationClass,
 				},
-				{ context: markup.context, shouldHide: true }
+				{ markup, shouldHide: true }
 			)
 		);
 	});
@@ -78,7 +78,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					{
 						class: decoClass,
 					},
-					{ context: markup.context }
+					{ markup }
 				)
 			);
 		}
@@ -93,7 +93,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 						class: punctuationClass,
 						level: markup.level.toString(),
 					},
-					{ context: markup.context, shouldHide: true }
+					{ markup, shouldHide: true }
 				)
 			);
 		});
@@ -102,7 +102,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 	},
 	codespan: genericDecorator,
 	footnoteref: genericDecorator,
-	link: (markup) => {
+	link: (markup, contentEditable = true) => {
 		const decorationsArray = [...punctuationDecorator(markup)];
 		if (markup.punctuation.length > 0) {
 			decorationsArray.push(
@@ -112,7 +112,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					{
 						class: "",
 					},
-					{ context: markup.context, shouldHide: true }
+					{ markup, shouldHide: true }
 				)
 			);
 			decorationsArray.push(
@@ -120,12 +120,12 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					markup.punctuation[0][1],
 					markup.punctuation[1][0],
 					{
+						nodeName: "a",
 						class: "md-link",
 						href: markup.href,
-						title: markup.title ?? "",
-						role: "link",
+						title: markup.title ?? undefined,
 					},
-					{ context: markup.context }
+					{ markup, clickableLink: true }
 				)
 			);
 		} else if (markup.punctuation.length === 0) {
@@ -134,12 +134,12 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					markup.context[0],
 					markup.context[1],
 					{
+						nodeName: "a",
 						class: "md-link",
 						href: markup.href,
-						title: markup.title ?? "",
-						role: "link",
+						title: markup.title ?? undefined,
 					},
-					{ context: markup.context }
+					{ markup, clickableLink: true }
 				)
 			);
 		}
@@ -154,7 +154,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				{
 					class: "",
 				},
-				{ context: markup.context, shouldHide: true }
+				{ markup, shouldHide: true }
 			)
 		);
 		decorationArray.push(
@@ -164,13 +164,13 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				{
 					class: "",
 				},
-				{ context: markup.context, shouldHide: true }
+				{ markup, shouldHide: true }
 			)
 		);
 		decorationArray.push(
 			Decoration.widget(markup.context[0], image(markup.url, markup.alt, markup.title), {
 				key: `${markup.url}-${markup.alt}-${markup.title}`,
-				context: markup.context,
+				markup,
 				shouldShow: true,
 			})
 		);
@@ -185,13 +185,13 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				{
 					class: `md-inlinemath`,
 				},
-				{ context: markup.context, shouldHide: true }
+				{ markup, shouldHide: true }
 			)
 		);
 		decorationsArray.push(
 			Decoration.widget(markup.punctuation[0][1], inlineMathWidget(markup.expression), {
 				key: `${markup.expression}`,
-				context: markup.context,
+				markup,
 				shouldShow: true,
 			})
 		);
@@ -199,26 +199,26 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 	},
 	html: (markup) => {
 		const decorationsArray = [...punctuationDecorator(markup)];
-			const styleClasses = markup.decorations.reduce(
-				(acc, type) => (["em", "strong", "del", "codespan"].includes(type) ? acc.concat(`md-${type}`) : acc),
-				[] as string[]
-			);
-			decorationsArray.push(
-				Decoration.inline(
-					markup.context[0],
-					markup.context[1],
-					{
-						class: "",
-					},
-					{ context: markup.context, shouldHide: true }
-				)
-			);
-			decorationsArray.push(
-				Decoration.widget(markup.context[0], html(markup.code, styleClasses), {
-					context: markup.context,
-					shouldShow: true,
-				})
-			);
+		const styleClasses = markup.decorations.reduce(
+			(acc, type) => (["em", "strong", "del", "codespan"].includes(type) ? acc.concat(`md-${type}`) : acc),
+			[] as string[]
+		);
+		decorationsArray.push(
+			Decoration.inline(
+				markup.context[0],
+				markup.context[1],
+				{
+					class: "",
+				},
+				{ markup, shouldHide: true }
+			)
+		);
+		decorationsArray.push(
+			Decoration.widget(markup.context[0], html(markup.code, styleClasses), {
+				markup,
+				shouldShow: true,
+			})
+		);
 		return decorationsArray;
 	},
 };
@@ -245,46 +245,30 @@ const decorator = new Plugin({
 				undefined,
 				undefined,
 				(spec) =>
-					(spec.shouldHide && !isSelectionNear(selection, spec.context)) ||
-					(spec.shouldShow && spec.shouldShow && isSelectionNear(selection, spec.context))
+					(spec.shouldHide && !isSelectionNear(selection, spec.markup.context)) ||
+					(spec.shouldShow && spec.shouldShow && isSelectionNear(selection, spec.markup.context)) ||
+					(spec.clickableLink && !isSelectionNear(selection, spec.markup.context))
 			);
 			decSet = decSet.add(
 				state.doc,
 				hiddenDecs.map((dec) => {
+					if (dec.spec.clickableLink) {
+						const specMarkup: Link = dec.spec.markup;
+						return Decoration.inline(dec.from, dec.to, {
+							nodeName: "a",
+							class: "md-link",
+							href: specMarkup.href,
+							title: specMarkup.title ?? undefined,
+							contentEditable: "false",
+							target: "_blank"
+						});
+					}
 					return Decoration.inline(dec.from, dec.to, { class: "md-hidden" });
 				})
 			);
 			decSet = decSet.remove(hiddenDecs);
 			console.timeEnd("Decorator");
 			return decSet;
-		},
-		handleDOMEvents: {
-			mousedown(_, event) {
-				if (event.target instanceof HTMLElement) {
-					const target = event.target;
-					if (target.classList.contains("md-link") && target.getAttribute("href")) {
-						event.preventDefault();
-						return true;
-					}
-				}
-			},
-			click(_, event) {
-				if (event.target instanceof HTMLElement) {
-					const target = event.target;
-					if (target.classList.contains("md-link") && target.getAttribute("href")) {
-						event.preventDefault();
-						window.open(target.getAttribute("href") ?? "", "_blank")?.focus();
-						return true;
-					} else if (target.classList.contains("md-rendered-image")) {
-						const nextSibling = target.nextSibling as HTMLElement | null;
-						if (nextSibling?.classList.contains("md-link") && nextSibling?.getAttribute("href")) {
-							event.preventDefault();
-							window.open(nextSibling.getAttribute("href") ?? "", "_blank")?.focus();
-							return true;
-						}
-					}
-				}
-			},
 		},
 	},
 });
