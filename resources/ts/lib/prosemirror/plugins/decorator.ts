@@ -224,51 +224,26 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 };
 
 const decorator = new Plugin({
-	key: new PluginKey("parser"),
+	key: new PluginKey("decorator"),
 	state: {
 		init(_, initialState) {
-			return getDecorationSet(initialState);
+			return updateDecorations(initialState, getDecorationSet(initialState));
 		},
-		apply(tr, old, _, newState) {
+		apply(tr, old, oldState, newState) {
 			if (tr.docChanged) {
-				return getDecorationSet(newState);
+				return updateDecorations(newState, getDecorationSet(newState));
+			} else {
+				if (oldState.selection.from === newState.selection.from && oldState.selection.to === newState.selection.to) {
+					return old;
+				} else {
+					return updateDecorations(newState, getDecorationSet(newState));
+				}
 			}
-			return old;
 		},
 	},
 	props: {
 		decorations(state) {
-			console.time("Decorator");
-			const selection = state.selection;
-			let decSet = this.getState(state) ?? DecorationSet.empty;
-			const hiddenDecs = decSet.find(
-				undefined,
-				undefined,
-				(spec) =>
-					(spec.shouldHide && !isSelectionNear(selection, spec.markup.context)) ||
-					(spec.shouldShow && spec.shouldShow && isSelectionNear(selection, spec.markup.context)) ||
-					(spec.clickableLink && !isSelectionNear(selection, spec.markup.context))
-			);
-			decSet = decSet.add(
-				state.doc,
-				hiddenDecs.map((dec) => {
-					if (dec.spec.clickableLink) {
-						const specMarkup: Link = dec.spec.markup;
-						return Decoration.inline(dec.from, dec.to, {
-							nodeName: "a",
-							class: "md-link",
-							href: specMarkup.href,
-							title: specMarkup.title ?? undefined,
-							contentEditable: "false",
-							target: "_blank"
-						});
-					}
-					return Decoration.inline(dec.from, dec.to, { class: "md-hidden" });
-				})
-			);
-			decSet = decSet.remove(hiddenDecs);
-			console.timeEnd("Decorator");
-			return decSet;
+			return this.getState(state);
 		},
 	},
 });
@@ -283,6 +258,38 @@ function getDecorationSet(state: EditorState): DecorationSet {
 		}
 	});
 	return DecorationSet.create(state.doc, decorationsArray);
+}
+
+function updateDecorations(state: EditorState, decSet: DecorationSet): DecorationSet {
+	console.time("UpdateDecorations");
+	const selection = state.selection;
+	const hiddenDecs = decSet.find(undefined, undefined, (spec) => {
+		return (
+			(spec.shouldHide && !isSelectionNear(selection, spec.markup.context)) ||
+			(spec.shouldShow && isSelectionNear(selection, spec.markup.context)) ||
+			(spec.clickableLink && !isSelectionNear(selection, spec.markup.context))
+		);
+	});
+	decSet = decSet.add(
+		state.doc,
+		hiddenDecs.map((dec) => {
+			if (dec.spec.clickableLink) {
+				const specMarkup: Link = dec.spec.markup;
+				return Decoration.inline(dec.from, dec.to, {
+					nodeName: "a",
+					class: "md-link",
+					href: specMarkup.href,
+					title: specMarkup.title ?? undefined,
+					contentEditable: "false",
+					target: "_blank",
+				});
+			}
+			return Decoration.inline(dec.from, dec.to, { class: "md-hidden" });
+		})
+	);
+	decSet = decSet.remove(hiddenDecs);
+	console.timeEnd("UpdateDecorations");
+	return decSet;
 }
 
 function isSelectionNear(selection: Selection, context: Position): boolean {
