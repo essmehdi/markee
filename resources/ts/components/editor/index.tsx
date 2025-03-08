@@ -1,6 +1,7 @@
 import ImagePicker from "@/components/editor/node-widgets/image-picker";
 import mdSchema from "@/lib/prosemirror/editor-schema";
 import editorKeymap from "@/lib/prosemirror/keymap";
+import { decorationManager, decorator } from "@/lib/prosemirror/plugins/decorator";
 import footnoter from "@/lib/prosemirror/plugins/footnotes";
 import listItemDecorator from "@/lib/prosemirror/plugins/list-checkbox";
 import markdownParser from "@/lib/prosemirror/plugins/parser";
@@ -27,7 +28,6 @@ import "prosemirror-view/style/prosemirror.css";
 import { useEffect, useState } from "react";
 import "~/css/editor.css";
 import Toolbar from "./toolbar";
-import decorator from "@/lib/prosemirror/plugins/decorator";
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
 	code(node, view, getPos) {
@@ -46,6 +46,7 @@ export const editorPlugins = [
 	keymap(editorKeymap(mdSchema)),
 	markdownParser,
 	decorator,
+	decorationManager,
 	transformer,
 	textShortcutPlugin,
 	listItemDecorator,

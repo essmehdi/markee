@@ -1,3 +1,4 @@
+import mdSchema from "@/lib/prosemirror/editor-schema";
 import markdownParser from "@/lib/prosemirror/plugins/parser";
 import type { Link, Markup, Position } from "@/lib/prosemirror/types";
 import html from "@/lib/prosemirror/widgets/html-widget";
@@ -46,9 +47,20 @@ function punctuationDecorator(markup: Markup): Decoration[] {
 				punctuation[0],
 				punctuation[1],
 				{
-					class: punctuationClass,
+					class: "md-hidden",
 				},
-				{ markup, shouldHide: true }
+				{
+					markup,
+					toggleWhenCursorNear: true,
+					deco: Decoration.inline(
+						punctuation[0],
+						punctuation[1],
+						{
+							class: punctuationClass,
+						},
+						{ markup }
+					),
+				}
 			)
 		);
 	});
@@ -90,10 +102,22 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					punctuation[0],
 					punctuation[1],
 					{
-						class: punctuationClass,
+						class: "md-hidden",
 						level: markup.level.toString(),
 					},
-					{ markup, shouldHide: true }
+					{
+						markup,
+						toggleWhenCursorNear: true,
+						deco: Decoration.inline(
+							punctuation[0],
+							punctuation[1],
+							{
+								class: punctuationClass,
+								level: markup.level.toString(),
+							},
+							{ markup }
+						),
+					}
 				)
 			);
 		});
@@ -110,39 +134,42 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					markup.punctuation[1][1],
 					markup.punctuation[2][0],
 					{
-						class: "",
+						class: "md-hidden",
 					},
-					{ markup, shouldHide: true }
-				)
-			);
-			decorationsArray.push(
-				Decoration.inline(
-					markup.punctuation[0][1],
-					markup.punctuation[1][0],
-					{
-						nodeName: "a",
-						class: "md-link",
-						href: markup.href,
-						title: markup.title ?? undefined,
-					},
-					{ markup, clickableLink: true }
-				)
-			);
-		} else if (markup.punctuation.length === 0) {
-			decorationsArray.push(
-				Decoration.inline(
-					markup.context[0],
-					markup.context[1],
-					{
-						nodeName: "a",
-						class: "md-link",
-						href: markup.href,
-						title: markup.title ?? undefined,
-					},
-					{ markup, clickableLink: true }
+					{ markup, toggleWhenCursorNear: true }
 				)
 			);
 		}
+		const decorationRange: Position =
+			markup.punctuation.length === 0 ? markup.context : [markup.punctuation[0][1], markup.punctuation[1][0]];
+		decorationsArray.push(
+			Decoration.inline(
+				decorationRange[0],
+				decorationRange[1],
+				{
+					nodeName: "a",
+					class: "md-link",
+					href: markup.href,
+					title: markup.title ?? undefined,
+					contentEditable: "true",
+				},
+				{
+					markup,
+					toggleWhenCursorNear: true,
+					deco: Decoration.inline(
+						markup.punctuation[0][1],
+						markup.punctuation[1][0],
+						{
+							nodeName: "a",
+							class: "md-link",
+							href: markup.href,
+							title: markup.title ?? undefined,
+						},
+						{ markup }
+					),
+				}
+			)
+		);
 		return decorationsArray;
 	},
 	image: (markup) => {
@@ -152,9 +179,9 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				markup.punctuation[1][1],
 				markup.punctuation[2][0],
 				{
-					class: "",
+					class: "md-hidden",
 				},
-				{ markup, shouldHide: true }
+				{ markup, toggleWhenCursorNear: true }
 			)
 		);
 		decorationArray.push(
@@ -162,16 +189,16 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				markup.punctuation[0][1],
 				markup.punctuation[1][0],
 				{
-					class: "",
+					class: "md-hidden",
 				},
-				{ markup, shouldHide: true }
+				{ markup, toggleWhenCursorNear: true }
 			)
 		);
 		decorationArray.push(
 			Decoration.widget(markup.context[0], image(markup.url, markup.alt, markup.title), {
 				key: `${markup.url}-${markup.alt}-${markup.title}`,
 				markup,
-				shouldShow: true,
+				toggleWhenCursorNear: true,
 			})
 		);
 		return decorationArray;
@@ -183,16 +210,27 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				markup.punctuation[0][1],
 				markup.punctuation[1][0],
 				{
-					class: `md-inlinemath`,
+					class: "md-hidden",
 				},
-				{ markup, shouldHide: true }
+				{
+					markup,
+					toggleWhenCursorNear: true,
+					deco: Decoration.inline(
+						markup.punctuation[0][1],
+						markup.punctuation[1][0],
+						{
+							class: "md-inlinemath",
+						},
+						{ markup }
+					),
+				}
 			)
 		);
 		decorationsArray.push(
 			Decoration.widget(markup.punctuation[0][1], inlineMathWidget(markup.expression), {
-				key: `${markup.expression}`,
+				key: markup.expression,
 				markup,
-				shouldShow: true,
+				toggleWhenCursorNear: true,
 			})
 		);
 		return decorationsArray;
@@ -208,45 +246,20 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 				markup.context[0],
 				markup.context[1],
 				{
-					class: "",
+					class: "md-hidden",
 				},
-				{ markup, shouldHide: true }
+				{ markup, toggleWhenCursorNear: true }
 			)
 		);
 		decorationsArray.push(
 			Decoration.widget(markup.context[0], html(markup.code, styleClasses), {
 				markup,
-				shouldShow: true,
+				toggleWhenCursorNear: true,
 			})
 		);
 		return decorationsArray;
 	},
 };
-
-const decorator = new Plugin({
-	key: new PluginKey("decorator"),
-	state: {
-		init(_, initialState) {
-			return updateDecorations(initialState, getDecorationSet(initialState));
-		},
-		apply(tr, old, oldState, newState) {
-			if (tr.docChanged) {
-				return updateDecorations(newState, getDecorationSet(newState));
-			} else {
-				if (oldState.selection.from === newState.selection.from && oldState.selection.to === newState.selection.to) {
-					return old;
-				} else {
-					return updateDecorations(newState, getDecorationSet(newState));
-				}
-			}
-		},
-	},
-	props: {
-		decorations(state) {
-			return this.getState(state);
-		},
-	},
-});
 
 function getDecorationSet(state: EditorState): DecorationSet {
 	const decorationsArray: Decoration[] = [];
@@ -261,34 +274,27 @@ function getDecorationSet(state: EditorState): DecorationSet {
 }
 
 function updateDecorations(state: EditorState, decSet: DecorationSet): DecorationSet {
-	console.time("UpdateDecorations");
 	const selection = state.selection;
-	const hiddenDecs = decSet.find(undefined, undefined, (spec) => {
-		return (
-			(spec.shouldHide && !isSelectionNear(selection, spec.markup.context)) ||
-			(spec.shouldShow && isSelectionNear(selection, spec.markup.context)) ||
-			(spec.clickableLink && !isSelectionNear(selection, spec.markup.context))
-		);
+	const selectedBlockStart = selection.$from.node().type.spec.isCell
+		? selection.$from.before()
+		: selection.$from.before(1);
+	const selectedBlockEnd = selection.$to.node().type.spec.isCell ? selection.$to.after() : selection.$to.after(1);
+
+	const hiddenDecs = decSet.find(selectedBlockStart, selectedBlockEnd, (spec) => {
+		const selectionNear = isSelectionNear(selection, spec.markup.context);
+		return spec.toggleWhenCursorNear && selectionNear;
 	});
+
 	decSet = decSet.add(
 		state.doc,
-		hiddenDecs.map((dec) => {
-			if (dec.spec.clickableLink) {
-				const specMarkup: Link = dec.spec.markup;
-				return Decoration.inline(dec.from, dec.to, {
-					nodeName: "a",
-					class: "md-link",
-					href: specMarkup.href,
-					title: specMarkup.title ?? undefined,
-					contentEditable: "false",
-					target: "_blank",
-				});
-			}
-			return Decoration.inline(dec.from, dec.to, { class: "md-hidden" });
-		})
+		hiddenDecs
+			.filter((dec) => dec.spec.deco)
+			.map((dec) => {
+				return dec.spec.deco;
+			})
 	);
+
 	decSet = decSet.remove(hiddenDecs);
-	console.timeEnd("UpdateDecorations");
 	return decSet;
 }
 
@@ -301,4 +307,40 @@ function isSelectionNear(selection: Selection, context: Position): boolean {
 	);
 }
 
-export default decorator;
+const decorator = new Plugin({
+	key: new PluginKey("decorator"),
+	state: {
+		init(_, initialState) {
+			return getDecorationSet(initialState);
+		},
+		apply(tr, old, _, newState) {
+			if (tr.docChanged) {
+				return getDecorationSet(newState);
+			}
+			return old;
+		},
+	},
+});
+
+const decorationManager = new Plugin({
+	key: new PluginKey("decoration-manager"),
+	state: {
+		init(_, initialState) {
+			return updateDecorations(initialState, decorator.getState(initialState) ?? DecorationSet.empty);
+		},
+		apply(tr, old, oldState, newState) {
+			if (oldState.selection.from === newState.selection.from && oldState.selection.to === newState.selection.to) {
+				return old;
+			} else {
+				return updateDecorations(newState, decorator.getState(newState) ?? DecorationSet.empty);
+			}
+		},
+	},
+	props: {
+		decorations(state) {
+			return this.getState(state);
+		},
+	},
+});
+
+export { decorator, decorationManager };
