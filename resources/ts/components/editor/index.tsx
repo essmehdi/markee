@@ -9,7 +9,6 @@ import pasteHandler from "@/lib/prosemirror/plugins/paste-handler";
 import textShortcutPlugin from "@/lib/prosemirror/plugins/text-shortcuts";
 import transformer from "@/lib/prosemirror/plugins/transformer";
 import { getNewDocFromMarkdown } from "@/lib/prosemirror/serialization/deserializer";
-import { getNodeHash } from "@/lib/prosemirror/serialization/hash";
 import CodeBlockView from "@/lib/prosemirror/views/code-view";
 import HTMLView from "@/lib/prosemirror/views/html-view";
 import MathBlockView from "@/lib/prosemirror/views/math-block-view";
@@ -69,13 +68,11 @@ export default function Editor() {
 		isLoadingSource,
 		currentSelection,
 		currentSource,
-		lastSaveHash,
-		currentHash,
 		setIsLoadingSource,
 		changeCurrentSource,
 		changeCurrentSourceDeletedFlag,
-		setLastSaveHash,
-		setCurrentHash,
+		setLastSaveState,
+		checkDocSavedState
 	} = useSourceManager();
 	const { showConfirmationAlert } = useConfirmationAlert();
 
@@ -95,16 +92,13 @@ export default function Editor() {
 				.getFileContent(file!)
 				.then((decodedFileContent) => {
 					const doc = getNewDocFromMarkdown(decodedFileContent);
-					getNodeHash(doc).then((docHash) => {
-						setLastSaveHash(docHash);
-					});
-
 					const newEditorState = EditorState.create({
 						schema: mdSchema,
 						plugins: editorPlugins,
 						doc,
 					});
 					setEditorState(newEditorState);
+					setLastSaveState(newEditorState);
 
 					changeCurrentSource({
 						vault: vault!,
@@ -113,7 +107,7 @@ export default function Editor() {
 				})
 				.catch((error) => {
 					console.error("Could not read file", error);
-					setLastSaveHash(null);
+					setLastSaveState(null);
 				})
 				.finally(() => {
 					setIsLoadingSource(false);
@@ -125,7 +119,7 @@ export default function Editor() {
 			currentSelection.file &&
 			(currentSelection.vault !== currentSource?.vault || currentSelection.file !== currentSource?.file)
 		) {
-			if (currentSource && lastSaveHash !== currentHash) {
+			if (currentSource && !checkDocSavedState(editorState)) {
 				showConfirmationAlert(
 					doLoadSource,
 					"Are you sure?",
@@ -147,7 +141,7 @@ export default function Editor() {
 			plugins: editorPlugins,
 		});
 		setEditorState(newEditorState);
-		setLastSaveHash(null);
+		setLastSaveState(null);
 		changeCurrentSource(null);
 		changeCurrentSourceDeletedFlag(false);
 	};
@@ -161,12 +155,6 @@ export default function Editor() {
 			clearSource();
 		}
 	}, [isCurrentSourceDeleted]);
-
-	useEffect(() => {
-		if (editorState) {
-			getNodeHash(editorState.doc).then((hash) => setCurrentHash(hash));
-		}
-	}, [editorState]);
 
 	return (
 		<ProseMirror

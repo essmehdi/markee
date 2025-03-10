@@ -10,10 +10,7 @@ import mdSchema from "@/lib/prosemirror/editor-schema";
 import { getNewDocFromMarkdown } from "@/lib/prosemirror/serialization/deserializer";
 import useConfirmationAlert from "@/lib/store/confirmation-alert-manager";
 import { useSourceManager } from "@/lib/store/source-manager";
-import {
-	useEditorEventCallback,
-	useEditorState,
-} from "@nytimes/react-prosemirror";
+import { useEditorEventCallback, useEditorState } from "@nytimes/react-prosemirror";
 import { File } from "@phosphor-icons/react";
 import { Node, Slice } from "prosemirror-model";
 import { ChangeEvent, useRef } from "react";
@@ -28,16 +25,13 @@ import SaveMenuItem from "./save";
 function Menu() {
 	const openFileInputRef = useRef<HTMLInputElement>(null);
 	const currentSource = useSourceManager((state) => state.currentSource);
-	const lastSaveHash = useSourceManager((state) => state.lastSaveHash);
-	const currentHash = useSourceManager((state) => state.currentHash);
 	const isLoadingSource = useSourceManager((state) => state.isLoadingSource);
+	const checkSaveState = useSourceManager((state) => state.checkDocSavedState)
 	const { showConfirmationAlert } = useConfirmationAlert();
 	const editorState = useEditorState();
 
-	const isSaved =
-		currentSource === null || isLoadingSource
-			? undefined
-			: lastSaveHash === currentHash;
+	const isSaved = currentSource === null || isLoadingSource ? undefined : checkSaveState(editorState);
+	console.log(checkSaveState(editorState), currentSource, isLoadingSource);
 
 	/**
 	 * Replaces the current document content with a new doc
@@ -48,9 +42,7 @@ function Menu() {
 		}
 
 		const state = view.state;
-		view.dispatch(
-			state.tr.replace(0, state.doc.content.size, new Slice(doc.content, 0, 0)),
-		);
+		view.dispatch(state.tr.replace(0, state.doc.content.size, new Slice(doc.content, 0, 0)));
 	});
 
 	/**
@@ -70,7 +62,7 @@ function Menu() {
 				showConfirmationAlert(
 					action,
 					"Are you sure?",
-					"All the document content will be replaced by the imported file content. History will be preserved.",
+					"All the document content will be replaced by the imported file content. History will be preserved."
 				);
 			} else {
 				action();
@@ -97,10 +89,7 @@ function Menu() {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent className="w-56">
-					<SaveMenuItem
-						editorState={editorState}
-						currentSource={currentSource}
-					/>
+					<SaveMenuItem editorState={editorState} currentSource={currentSource} />
 					<ExportSubMenu editorState={editorState} />
 					<DropdownMenuSeparator />
 					<DropdownMenuItem onSelect={() => openFileInputRef.current?.click()}>

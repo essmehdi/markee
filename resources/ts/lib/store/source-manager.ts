@@ -1,9 +1,8 @@
+import { EditorState } from "prosemirror-state";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import { Vault, VaultFile, VaultItem } from "../vaults/types";
 import { getMarkdownFromDocAsync } from "../prosemirror/serialization/serializer";
-import { EditorState } from "prosemirror-state";
-import { getNodeHash } from "../prosemirror/serialization/hash";
+import { Vault, VaultFile } from "../vaults/types";
 
 export type Source = {
 	file: VaultFile;
@@ -17,7 +16,7 @@ export type Selection = {
 
 export type SourceState = {
 	/** Last save hash to track if the document is saved */
-	lastSaveHash: string | null;
+	lastSaveState: EditorState | null;
 	/** Current document state hash */
 	currentHash: string | null;
 	/** True if the editor is loading the selection */
@@ -32,7 +31,7 @@ export type SourceState = {
 	/** Utility function to serialize the doc to save it */
 	saveDocToSource: (editorState: EditorState) => void;
 	/** lastSaveHash setter */
-	setLastSaveHash: (hash: string | null) => void;
+	setLastSaveState: (hash: EditorState | null) => void;
 	/** currentHash setter */
 	setCurrentHash: (hash: string | null) => void;
 	/** isLoading setter */
@@ -42,12 +41,12 @@ export type SourceState = {
 	/** currentSelection setter */
 	changeCurrentSelection: (vault: Vault | null, filePath: VaultFile | null) => void;
 	changeCurrentSourceDeletedFlag: (flag: boolean) => void;
-	checkDocSavedState: (editorState: EditorState) => Promise<boolean>;
+	checkDocSavedState: (editorState: EditorState) => boolean;
 };
 
 export const useSourceManager = create<SourceState>()(
 	devtools<SourceState>((set, get) => ({
-		lastSaveHash: null,
+		lastSaveState: null,
 		currentHash: null,
 		isLoadingSource: false,
 		isCurrentSourceDeleted: false,
@@ -66,20 +65,19 @@ export const useSourceManager = create<SourceState>()(
 			const { vault, file: filePath } = currentSource;
 			const markdown = await getMarkdownFromDocAsync(editorState);
 			await vault.writeToFile(filePath, markdown);
-			const saveHash = await getNodeHash(editorState.doc);
 			set((state) => ({
 				...state,
-				lastSaveHash: saveHash,
+				lastSaveState: editorState,
 			}));
 		},
-		setLastSaveHash: (hash) => {
-			if (get().lastSaveHash === hash) {
+		setLastSaveState: (savedState) => {
+			if (get().lastSaveState === savedState) {
 				return;
 			}
 			set((state) => {
 				return {
 					...state,
-					lastSaveHash: hash,
+					lastSaveState: savedState,
 				};
 			});
 		},
@@ -133,9 +131,8 @@ export const useSourceManager = create<SourceState>()(
 				isCurrentSourceDeleted: flag,
 			}));
 		},
-		checkDocSavedState: async (editorState) => {
-			const docHash = await getNodeHash(editorState.doc);
-			return docHash === get().lastSaveHash;
+		checkDocSavedState: (editorState) => {
+			return get().lastSaveState !== null && editorState.doc.eq(get().lastSaveState!.doc);
 		},
 	}))
 );
