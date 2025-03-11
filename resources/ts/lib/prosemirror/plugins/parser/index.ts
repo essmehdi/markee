@@ -139,7 +139,6 @@ const markdownParser = new Plugin({
 		apply(tr, old, _, newState) {
 			if (tr.docChanged) {
 				console.time("OptimizedParser");
-				console.log(JSON.stringify(old));
 				const invalidRanges: Position[] = [];
 				const newResults: ParsingResult[] = [];
 				tr.steps.forEach((step) => {
@@ -169,7 +168,6 @@ const markdownParser = new Plugin({
 					old.markups.push(...parsingResult.markups);
 					old.htmlTransforms.push(...parsingResult.htmlTransforms);
 				}
-				console.log(JSON.stringify(old));
 				console.timeEnd("OptimizedParser");
 				return old;
 			}
