@@ -8,7 +8,8 @@ import marked from "@/lib/marked";
 export default function html(code: string, styleClasses: string[]) {
 	return () => {
 		const html = document.createElement("span");
-		html.innerHTML = marked.parseInline(code, { async: false });
+		// html.innerHTML = marked.parseInline(code, { async: false });
+		// marked.parseInline(code, { async: true }).then((renderedMd) => (html.innerHTML = renderedMd));
 		html.classList.add(...styleClasses);
 		return html;
 	};
