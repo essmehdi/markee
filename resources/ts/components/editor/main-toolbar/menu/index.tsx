@@ -31,7 +31,6 @@ function Menu() {
 	const editorState = useEditorState();
 
 	const isSaved = currentSource === null || isLoadingSource ? undefined : checkSaveState(editorState);
-	console.log(checkSaveState(editorState), currentSource, isLoadingSource);
 
 	/**
 	 * Replaces the current document content with a new doc
