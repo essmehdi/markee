@@ -111,7 +111,6 @@ function nodeDescendantsParser(
  * @param nodeEntry The current editor node to decorate
  */
 function parse(node: Node): ParsingResult {
-	// console.time("DocParser");
 	const markups: Markup[] = [];
 	const transforms: Transform[] = [];
 
@@ -123,7 +122,6 @@ function parse(node: Node): ParsingResult {
 		nodeDescendantsParser(markups, transforms, node, position, parent);
 	});
 
-	// console.timeEnd("DocParser");
 	return {
 		markups: markups,
 		htmlTransforms: transforms,
@@ -138,14 +136,11 @@ const markdownParser = new Plugin({
 		},
 		apply(tr, old, _, newState) {
 			if (tr.docChanged) {
-				console.time("OptimizedParser");
 				const invalidRanges: Position[] = [];
 				const newResults: ParsingResult[] = [];
 				tr.steps.forEach((step) => {
 					step.getMap().forEach((oldStart, oldEnd, newStart, newEnd) => {
-						console.log(oldStart, oldEnd, newStart, newEnd);
 						newState.doc.nodesBetween(newStart, newEnd, (node, position, parent) => {
-							console.log("Recalculating node", node);
 							invalidRanges.push([position, position + (node.nodeSize - 2)]);
 							const newResult: ParsingResult = {
 								markups: [],
@@ -168,7 +163,6 @@ const markdownParser = new Plugin({
 					old.markups.push(...parsingResult.markups);
 					old.htmlTransforms.push(...parsingResult.htmlTransforms);
 				}
-				console.timeEnd("OptimizedParser");
 				return old;
 			}
 			return old;

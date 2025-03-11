@@ -151,7 +151,7 @@ const DECORATIONS_MAP: MarkupDecorationHandlers = {
 					class: "md-link",
 					href: markup.href,
 					title: markup.title ?? undefined,
-					contentEditable: "true",
+					contentEditable: "false",
 				},
 				{
 					markup,
