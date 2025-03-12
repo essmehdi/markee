@@ -13,6 +13,7 @@ import SyncedCodeMirrorView from "./synced-codemirror-view";
  */
 export default class CodeBlockView extends SyncedCodeMirrorView {
 	protected currentLanguage: Compartment = new Compartment();
+	private selector!: HTMLInputElement;
 
 	constructor(node: Node, view: EditorView, getPos: () => number | undefined, mdSchema: Schema) {
 		super(node, view, getPos, mdSchema);
@@ -24,7 +25,7 @@ export default class CodeBlockView extends SyncedCodeMirrorView {
 				this.currentLanguage.of([]),
 				syntaxHighlighting(defaultHighlightStyle),
 				CodeMirror.updateListener.of((update) => this.forwardUpdate(update)),
-				showPanel.of(this.createLanguageSelector(node.attrs.language)),
+				showPanel.of(this.createLanguageSelector(node.attrs.language ?? "")),
 			],
 		});
 
@@ -33,26 +34,34 @@ export default class CodeBlockView extends SyncedCodeMirrorView {
 	}
 
 	createLanguageSelector(initialLang: string) {
-		const selector = document.createElement("input") as HTMLInputElement;
-		selector.className = "cm-code-lang";
-		selector.addEventListener("change", (event) => {
+		this.selector = document.createElement("input") as HTMLInputElement;
+		this.selector.className = "cm-code-lang";
+		this.selector.addEventListener("change", (event) => {
 			this.handleLanguageSelection((event.target as HTMLInputElement).value);
 		});
 		if (initialLang) {
-			selector.value = initialLang;
+			this.selector.value = initialLang;
 			this.handleLanguageSelection(initialLang);
 		}
-		return () => ({ dom: selector });
+		return () => ({ dom: this.selector });
 	}
 
 	async handleLanguageSelection(lang: string) {
-		const languageDescription = languages.find((language) => language.alias.includes(lang.trim()));
+		const languageDescription = lang !== "" ? languages.find((language) => language.alias.includes(lang.trim())) : null;
 		if (languageDescription) {
 			const languageSupport = await languageDescription.load();
+			this.selector.value = lang;
 			this.cm.dispatch({
 				effects: [this.currentLanguage.reconfigure(languageSupport)],
 			});
 		}
 	}
 
+	update(node: Node) {
+		const handled = super.update(node);
+		if (handled) {
+			this.handleLanguageSelection(node.attrs.language ?? "");
+		}
+		return handled;
+	}
 }
