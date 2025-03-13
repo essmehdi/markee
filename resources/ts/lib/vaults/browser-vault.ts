@@ -1,6 +1,7 @@
 import { ConflictError } from "@/lib/vaults/errors";
 import BaseLocalVault from "./base-local-vault";
 import { VaultDirectory, VaultItem } from "@/lib/vaults/types";
+import JSZip from "jszip";
 
 export default class BrowserVault extends BaseLocalVault {
 	private static readonly VAULTS_FOLDER_NAME = "vaults";
@@ -88,7 +89,7 @@ export default class BrowserVault extends BaseLocalVault {
 				name: "",
 			});
 			return Promise.reject(new ConflictError());
-		} catch { }
+		} catch {}
 
 		const sourceHandle = await this.getHandle(source);
 		const destHandle = await this.getDirectoryHandle(destinationDir.absolutePath);
@@ -113,6 +114,35 @@ export default class BrowserVault extends BaseLocalVault {
 						createdAt: "",
 					});
 				}
+			}
+		}
+	}
+
+	/**
+	 * Zips the vault
+	 */
+	public async zip(): Promise<Blob> {
+		const zip = new JSZip();
+		await this.addFolderToZip(this.rootHandle, zip);
+		const zipFile = await zip.generateAsync({ type: "blob" });
+		return zipFile;
+	}
+
+	/**
+	 * Recursive function to zip a folder
+	 * @param handle Directory handle to zip
+	 * @param zip JSZip object
+	 * @param path Path of the directory (used to add to zip since directory handles do not hold full paths)
+	 */
+	private async addFolderToZip(handle: FileSystemDirectoryHandle, zip: JSZip, path: string = "") {
+		for await (const entry of handle.values()) {
+			const entryPath = path === "" ? entry.name : path + "/" + entry.name
+			if (entry.kind === "directory") {
+				await this.addFolderToZip(entry, zip, entryPath);
+			} else {
+				const fileObj = await entry.getFile();
+				const content = await fileObj.arrayBuffer();
+				zip.file(entryPath, content);
 			}
 		}
 	}

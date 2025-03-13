@@ -2,7 +2,7 @@ import Message from "@/components/common/message";
 import useDialog from "@/lib/store/dialog-manager";
 import { useSourceManager } from "@/lib/store/source-manager";
 import LocalVault from "@/lib/vaults/local-vault";
-import { Plus, Vault } from "@phosphor-icons/react";
+import { Gear, Plus, Vault } from "@phosphor-icons/react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "../../ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
@@ -11,6 +11,8 @@ import Browser from "./browser";
 import NewVaultDialog from "./dialogs/new-vault-dialog";
 import VaultSelectItem from "./vault-select-item";
 import BrowserVault from "@/lib/vaults/browser-vault";
+import { SyntheticEvent } from "react";
+import VaultManagerDialog from "@/components/editor/vault-manager/dialogs/vault-manager-dialog";
 
 export default function VaultBrowser() {
 	const changeCurrentSelection = useSourceManager((state) => state.changeCurrentSelection);
@@ -31,9 +33,9 @@ export default function VaultBrowser() {
 		changeCurrentSelection(vault, null);
 	};
 
-	const showNewVaultDialog = () => {
-		showDialog(<NewVaultDialog closeDialog={closeDialog} />);
-	};
+	const showVaultManagerDialog = () => {
+		showDialog(<VaultManagerDialog />);
+	}
 
 	return (
 		<div className="flex max-h-full grow flex-col items-stretch">
@@ -52,11 +54,11 @@ export default function VaultBrowser() {
 				</Select>
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Button className="shrink-0" variant="ghost" size="icon" onClick={showNewVaultDialog}>
-							<Plus />
+						<Button className="shrink-0" variant="ghost" size="icon" onClick={showVaultManagerDialog}>
+							<Gear />
 						</Button>
 					</TooltipTrigger>
-					<TooltipContent>Add vault</TooltipContent>
+					<TooltipContent>Manage vaults</TooltipContent>
 				</Tooltip>
 			</div>
 			{currentSelection.vault ? (

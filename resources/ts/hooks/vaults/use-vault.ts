@@ -1,6 +1,8 @@
 import { Vault, VaultDirectory, VaultItem } from "@/lib/vaults/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+const SUPPORTED_FILE_EXTENSIONS_REGEX = /\.(txt|md)$/i;
+
 interface UseVaultOptions {
 	onSettled?: () => void;
 }
@@ -8,6 +10,11 @@ interface UseVaultOptions {
 export interface VaultOperationData {
 	items: VaultItem[];
 	destination: VaultDirectory;
+}
+
+async function getFilteredVaultContent(vault: Vault): Promise<VaultItem[]> {
+	const items = await vault.getRootContent();
+	return items.filter(item => item.type === "directory" || item.name.toLowerCase().match(SUPPORTED_FILE_EXTENSIONS_REGEX));
 }
 
 export default function useVault(vault: Vault, options?: UseVaultOptions) {
@@ -19,7 +26,7 @@ export default function useVault(vault: Vault, options?: UseVaultOptions) {
 		error: fetchError,
 	} = useQuery({
 		queryKey: ["vault", vault.id],
-		queryFn: () => vault.getRootContent(),
+		queryFn: () => getFilteredVaultContent(vault),
 	});
 
 	const {

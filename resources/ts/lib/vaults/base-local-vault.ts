@@ -5,7 +5,6 @@ import type { BaseVault, VaultDirectory, VaultFile, VaultItem } from "./types";
  * Local vault that represents a directory in the local file system
  */
 export default abstract class BaseLocalVault implements BaseVault {
-	public static SUPPORTED_FILE_EXTENSIONS_REGEX = /\.(txt|md)$/i;
 	public static ROOT_DIRECTORY: VaultDirectory = {
 		name: "root",
 		absolutePath: "/",
@@ -84,15 +83,12 @@ export default abstract class BaseLocalVault implements BaseVault {
 						: null,
 				} as VaultDirectory);
 			} else {
-				// Check if it is a supported file
-				if (entry.name.match(BaseLocalVault.SUPPORTED_FILE_EXTENSIONS_REGEX)) {
-					items.push({
-						name: entry.name,
-						type: entry.kind,
-						createdAt: "",
-						absolutePath: absolutePath,
-					});
-				}
+				items.push({
+					name: entry.name,
+					type: entry.kind,
+					createdAt: "",
+					absolutePath: absolutePath,
+				});
 			}
 		}
 
