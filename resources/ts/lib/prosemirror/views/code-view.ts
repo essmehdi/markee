@@ -37,7 +37,11 @@ export default class CodeBlockView extends SyncedCodeMirrorView {
 		this.selector = document.createElement("input") as HTMLInputElement;
 		this.selector.className = "cm-code-lang";
 		this.selector.addEventListener("change", (event) => {
-			this.handleLanguageSelection((event.target as HTMLInputElement).value);
+			const lang = (event.target as HTMLInputElement).value;
+			const nodePosition = this.getPos();
+			if (nodePosition) {
+				this.view.dispatch(this.view.state.tr.setNodeAttribute(nodePosition, "language", lang));
+			}
 		});
 		if (initialLang) {
 			this.selector.value = initialLang;
