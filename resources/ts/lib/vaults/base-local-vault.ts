@@ -40,8 +40,8 @@ export default abstract class BaseLocalVault implements BaseVault {
 	 * Gets the content of the root directory and updates the content tree
 	 * @returns The updated content tree
 	 */
-	public async getRootContent(): Promise<VaultItem[]> {
-		const items: VaultItem[] = await this.getContent(this.rootHandle, []);
+	public async getRootContent(filter?: RegExp): Promise<VaultItem[]> {
+		const items: VaultItem[] = await this.getContent(this.rootHandle, [], filter);
 		this.tree = items;
 		return this.tree;
 	}
@@ -61,7 +61,11 @@ export default abstract class BaseLocalVault implements BaseVault {
 	 * @param depth The current depth of the parsing
 	 * @returns The content of the directory
 	 */
-	protected async getContent(handle: FileSystemDirectoryHandle, depth: string[]): Promise<VaultItem[]> {
+	protected async getContent(
+		handle: FileSystemDirectoryHandle,
+		depth: string[],
+		filter?: RegExp
+	): Promise<VaultItem[]> {
 		const permission = await this.rootHandle.requestPermission();
 		if (permission !== "granted") {
 			return Promise.reject(new PermissionNotGrantedError());
@@ -79,16 +83,18 @@ export default abstract class BaseLocalVault implements BaseVault {
 					createdAt: "",
 					absolutePath: absolutePath,
 					content: this.expandedDirs.has(absolutePath)
-						? await this.getContent(await handle.getDirectoryHandle(entry.name), absolutePathArray)
+						? await this.getContent(await handle.getDirectoryHandle(entry.name), absolutePathArray, filter)
 						: null,
 				} as VaultDirectory);
 			} else {
-				items.push({
-					name: entry.name,
-					type: entry.kind,
-					createdAt: "",
-					absolutePath: absolutePath,
-				});
+				if (!filter || entry.name.toLowerCase().match(filter) !== null) {
+					items.push({
+						name: entry.name,
+						type: entry.kind,
+						createdAt: "",
+						absolutePath: absolutePath,
+					});
+				}
 			}
 		}
 

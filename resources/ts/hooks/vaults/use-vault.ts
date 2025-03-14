@@ -12,11 +12,6 @@ export interface VaultOperationData {
 	destination: VaultDirectory;
 }
 
-async function getFilteredVaultContent(vault: Vault): Promise<VaultItem[]> {
-	const items = await vault.getRootContent();
-	return items.filter(item => item.type === "directory" || item.name.toLowerCase().match(SUPPORTED_FILE_EXTENSIONS_REGEX));
-}
-
 export default function useVault(vault: Vault, options?: UseVaultOptions) {
 	const queryClient = useQueryClient();
 
@@ -26,7 +21,7 @@ export default function useVault(vault: Vault, options?: UseVaultOptions) {
 		error: fetchError,
 	} = useQuery({
 		queryKey: ["vault", vault.id],
-		queryFn: () => getFilteredVaultContent(vault),
+		queryFn: () => vault.getRootContent(SUPPORTED_FILE_EXTENSIONS_REGEX),
 	});
 
 	const {
