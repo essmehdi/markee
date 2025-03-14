@@ -1,6 +1,7 @@
 import NewVaultDialog from "@/components/editor/vault-manager/dialogs/new-vault-dialog";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import useConfirmationAlert from "@/lib/store/confirmation-alert-manager";
 import BrowserVault from "@/lib/vaults/browser-vault";
@@ -72,41 +73,47 @@ export default function VaultManagerDialog() {
 				<DialogTitle>Manage your vaults</DialogTitle>
 			</DialogHeader>
 			<div className="space-y-5">
-				<div className="divide-y">
-					{vaults?.map((vault) => (
-						<div className="flex justify-between py-3">
-							<div>
-								<p className="font-bold">{vault.name}</p>
-								<p className="text-sm capitalize text-muted-foreground">{vault.type}</p>
-							</div>
-							<div className="flex items-center gap-2">
-								{vault.type === "browser" && (
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<Button
-												variant="outline"
-												size="icon"
-												disabled={exportingVaultId !== null}
-												onClick={() => zipVault(vault)}
-											>
-												{exportingVaultId === vault.id ? <CircleNotch className="animate-spin" /> : <Export />}
-											</Button>
-										</TooltipTrigger>
-										<TooltipContent>Export data</TooltipContent>
-									</Tooltip>
-								)}
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button variant="destructive" size="icon" onClick={() => deleteVault(vault)}>
-											<Trash />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>Delete vault</TooltipContent>
-								</Tooltip>
-							</div>
+				{vaults && vaults.length > 0 && false ? (
+					<ScrollArea>
+						<div className="max-h-80 divide-y">
+							{vaults?.map((vault) => (
+								<div className="mr-5 flex justify-between py-3">
+									<div>
+										<p className="font-bold">{vault.name}</p>
+										<p className="text-sm capitalize text-muted-foreground">{vault.type}</p>
+									</div>
+									<div className="flex items-center gap-2">
+										{vault.type === "browser" && (
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<Button
+														variant="outline"
+														size="icon"
+														disabled={exportingVaultId !== null}
+														onClick={() => zipVault(vault)}
+													>
+														{exportingVaultId === vault.id ? <CircleNotch className="animate-spin" /> : <Export />}
+													</Button>
+												</TooltipTrigger>
+												<TooltipContent>Export data</TooltipContent>
+											</Tooltip>
+										)}
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button variant="destructive" size="icon" onClick={() => deleteVault(vault)}>
+													<Trash />
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent>Delete vault</TooltipContent>
+										</Tooltip>
+									</div>
+								</div>
+							))}
 						</div>
-					))}
-				</div>
+					</ScrollArea>
+				) : (
+					<div className="p-10 text-muted-foreground text-center">No vault here yet</div>
+				)}
 				<Button onClick={showNewVaultDialog} className="w-full">
 					<Plus />
 					Add new vault
