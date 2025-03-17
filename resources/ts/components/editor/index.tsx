@@ -27,6 +27,7 @@ import "prosemirror-view/style/prosemirror.css";
 import { useEffect, useState } from "react";
 import "~/css/editor.css";
 import Toolbar from "./toolbar";
+import { useToast } from "@/hooks/use-toast";
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
 	code(node, view, getPos) {
@@ -75,6 +76,7 @@ export default function Editor() {
 		checkDocSavedState
 	} = useSourceManager();
 	const { showConfirmationAlert } = useConfirmationAlert();
+	const { toast } = useToast();
 
 	const [mount, setMount] = useState<HTMLElement | null>(null);
 	const [editorState, setEditorState] = useState<EditorState>(editorInitialState);
@@ -97,16 +99,21 @@ export default function Editor() {
 						plugins: editorPlugins,
 						doc,
 					});
-					setEditorState(newEditorState);
-					setLastSaveState(newEditorState);
 
 					changeCurrentSource({
 						vault: vault!,
 						file: file!,
 					});
+
+					setEditorState(newEditorState);
+					setLastSaveState(newEditorState);
 				})
 				.catch((error) => {
-					console.error("Could not read file", error);
+					console.error("Could not open file", error);
+					toast({
+						title: "Could not open file",
+						description: "An error occured while opening the file"
+					})
 					setLastSaveState(null);
 				})
 				.finally(() => {
