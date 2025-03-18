@@ -1,6 +1,12 @@
 import { ConflictError, PermissionNotGrantedError, UnsupportedOperationError } from "./errors";
 import type { BaseVault, VaultDirectory, VaultFile, VaultItem } from "./types";
 
+export type ItemFilter = {
+	fileNameRegex?: RegExp;
+	dirNameRegex?: RegExp;
+	type?: VaultItem["type"];
+};
+
 /**
  * Local vault that represents a directory in the local file system
  */
@@ -40,7 +46,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 	 * Gets the content of the root directory and updates the content tree
 	 * @returns The updated content tree
 	 */
-	public async getRootContent(filter?: RegExp): Promise<VaultItem[]> {
+	public async getRootContent(filter?: ItemFilter): Promise<VaultItem[]> {
 		const items: VaultItem[] = await this.getContent(this.rootHandle, [], filter);
 		this.tree = items;
 		return this.tree;
@@ -64,7 +70,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 	protected async getContent(
 		handle: FileSystemDirectoryHandle,
 		depth: string[],
-		filter?: RegExp
+		filter?: ItemFilter
 	): Promise<VaultItem[]> {
 		const permission = await this.rootHandle.requestPermission();
 		if (permission !== "granted") {
@@ -77,17 +83,27 @@ export default abstract class BaseLocalVault implements BaseVault {
 			const absolutePathArray = depth.concat(entry.name);
 			const absolutePath = absolutePathArray.join("/");
 			if (entry.kind === "directory") {
-				items.push({
-					name: entry.name,
-					type: "directory",
-					createdAt: "",
-					absolutePath: absolutePath,
-					content: this.expandedDirs.has(absolutePath)
-						? await this.getContent(await handle.getDirectoryHandle(entry.name), absolutePathArray, filter)
-						: null,
-				} as VaultDirectory);
+				if (
+					!filter ||
+					((filter.dirNameRegex === undefined || entry.name.toLowerCase().match(filter.dirNameRegex) !== null) &&
+						(filter.type === null || filter.type === "directory"))
+				) {
+					items.push({
+						name: entry.name,
+						type: "directory",
+						createdAt: "",
+						absolutePath: absolutePath,
+						content: this.expandedDirs.has(absolutePath)
+							? await this.getContent(await handle.getDirectoryHandle(entry.name), absolutePathArray, filter)
+							: null,
+					} as VaultDirectory);
+				}
 			} else {
-				if (!filter || entry.name.toLowerCase().match(filter) !== null) {
+				if (
+					!filter ||
+					((filter.fileNameRegex === undefined || entry.name.toLowerCase().match(filter.fileNameRegex) !== null) &&
+						(filter.type === null || filter.type === "file"))
+				) {
 					items.push({
 						name: entry.name,
 						type: entry.kind,
@@ -217,13 +233,19 @@ export default abstract class BaseLocalVault implements BaseVault {
 	 * @param directory Directory where to create the file
 	 * @param name Name of the file
 	 */
-	public async createFile(directory: VaultDirectory, name: string): Promise<void> {
+	public async createFile(directory: VaultDirectory, name: string): Promise<VaultFile> {
 		try {
 			await this.getFileHandle([directory.absolutePath, name].join("/"));
 			return Promise.reject(new ConflictError());
 		} catch {
 			const targetDirectoryHandle = await this.getDirectoryHandle(directory.absolutePath);
 			targetDirectoryHandle.getFileHandle(name, { create: true });
+			return {
+				name,
+				type: "file",
+				absolutePath: directory.absolutePath + "/" + name,
+				createdAt: "",
+			};
 		}
 	}
 
@@ -232,13 +254,20 @@ export default abstract class BaseLocalVault implements BaseVault {
 	 * @param directory Directory where to create the directory
 	 * @param name Name of the directory
 	 */
-	public async createDirectory(directory: VaultDirectory, name: string): Promise<void> {
+	public async createDirectory(directory: VaultDirectory, name: string): Promise<VaultDirectory> {
 		try {
 			await this.getDirectoryHandle([directory.absolutePath, name].join("/"));
 			return Promise.reject(new ConflictError());
 		} catch {
 			const targetDirectoryHandle = await this.getDirectoryHandle(directory.absolutePath);
 			targetDirectoryHandle.getDirectoryHandle(name, { create: true });
+			return {
+				name,
+				type: "directory",
+				absolutePath: directory.absolutePath + "/" + name,
+				createdAt: "",
+				content: []
+			};
 		}
 	}
 

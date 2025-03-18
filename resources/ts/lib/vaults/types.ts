@@ -28,8 +28,8 @@ export interface BaseVault {
 	getFileContent(file: VaultFile): Promise<string>;
 	writeToFile(file: VaultFile, content: string): Promise<void>;
 	expandDirectoryContent(dir: VaultDirectory): Promise<void>;
-	createFile(dirPath: VaultDirectory, name: string): Promise<void>;
-	createDirectory(dirPath: VaultDirectory, name: string): Promise<void>;
+	createFile(dirPath: VaultDirectory, name: string): Promise<VaultFile>;
+	createDirectory(dirPath: VaultDirectory, name: string): Promise<VaultDirectory>;
 	copy(item: VaultItem, destinationDir: VaultDirectory): Promise<void>;
 	move(item: VaultItem, destinationDir: VaultDirectory): Promise<void>;
 	remove(item: VaultItem): Promise<void>;
