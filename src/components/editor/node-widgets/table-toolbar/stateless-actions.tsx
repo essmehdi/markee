@@ -22,7 +22,7 @@ type ToolbarStatelessAction = {
   id: string;
   label: string;
   onClick: (view: EditorView) => void;
-  icon: JSX.Element;
+  icon: React.JSX.Element;
 };
 
 const TOOLBAR_STATELESS_ACTIONS: ToolbarStatelessAction[] = [

@@ -58,6 +58,7 @@ export default function VaultBrowser() {
             />
           </SelectTrigger>
           <SelectContent position="popper">
+            {(!vaults || vaults?.length === 0) && <p className="text-muted-foreground text-sm text-center p-2">Click on the <Gear className="inline" /> icon to manage your vaults</p>}
             {vaults?.map((vault) => (
               <SelectItem key={vault.id} value={vault.id}>
                 <VaultSelectItem vault={vault} />

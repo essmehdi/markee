@@ -51,7 +51,7 @@ type BaseToolbarAction = {
 
 interface Toggle extends BaseToolbarAction {
   type: "toggle";
-  icon: JSX.Element;
+  icon: React.JSX.Element;
   name: string;
   description: string;
   onClick: (view: EditorView) => void;
@@ -67,7 +67,7 @@ interface Dropdown extends BaseToolbarAction {
 
 interface Action extends BaseToolbarAction {
   type: "action";
-  icon: JSX.Element;
+  icon: React.JSX.Element;
   name: string;
   description: string;
   onClick: (view: EditorView) => void;
@@ -257,8 +257,8 @@ export default function Actions() {
   );
 
   const getToolbarActions = () => {
-    const toggleGroup: JSX.Element[] = [];
-    const actionGroup: JSX.Element[] = [];
+    const toggleGroup: React.JSX.Element[] = [];
+    const actionGroup: React.JSX.Element[] = [];
 
     ACTIONS.forEach((action) => {
       if (action.type === "toggle") {

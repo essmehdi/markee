@@ -22,7 +22,7 @@ type ToolbarStatefulAction = {
   label: string;
   onClick: (view: EditorView) => void;
   getEnabled: (state: EditorState) => boolean;
-  icon: JSX.Element;
+  icon: React.JSX.Element;
 };
 
 const TOOLBAR_STATEFUL_ACTIONS: ToolbarStatefulAction[] = [

@@ -5,7 +5,7 @@ type VaultSelectItemProps = {
   vault: Vault;
 };
 
-const vaultTypeIconMap: Record<VaultType, JSX.Element> = {
+const vaultTypeIconMap: Record<VaultType, React.JSX.Element> = {
   local: <HardDrive />,
   browser: <Browser />,
 };
