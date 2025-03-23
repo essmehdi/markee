@@ -8,7 +8,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useSourceManager } from "~/lib/store/source-manager";
-import { VaultDirectory } from "~/lib/vaults/types";
+import { VaultDirectory, VaultItem } from "~/lib/vaults/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 
@@ -34,7 +34,7 @@ export default function NewItemDialog({
 
   const [error, setError] = useState<string>("");
 
-  const { mutate: createItem } = useMutation({
+  const { mutate: createItem } = useMutation<VaultItem, Error, string>({
     mutationFn: (itemName: string) =>
       type === "file"
         ? currentSelection.vault!.createFile(location, itemName)
