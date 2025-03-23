@@ -86,7 +86,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 				if (
 					!filter ||
 					((filter.dirNameRegex === undefined || entry.name.toLowerCase().match(filter.dirNameRegex) !== null) &&
-						(filter.type === null || filter.type === "directory"))
+						(filter.type === undefined || filter.type === "directory"))
 				) {
 					items.push({
 						name: entry.name,
@@ -99,11 +99,13 @@ export default abstract class BaseLocalVault implements BaseVault {
 					} as VaultDirectory);
 				}
 			} else {
+				console.log("Checking filter...");
 				if (
 					!filter ||
 					((filter.fileNameRegex === undefined || entry.name.toLowerCase().match(filter.fileNameRegex) !== null) &&
-						(filter.type === null || filter.type === "file"))
+						(filter.type === undefined || filter.type === "file"))
 				) {
+					console.log("Pushing item", entry.name);
 					items.push({
 						name: entry.name,
 						type: entry.kind,
