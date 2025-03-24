@@ -1,10 +1,11 @@
 import { ItemFilter } from "~/lib/vaults/base-local-vault";
 import { Vault, VaultDirectory, VaultItem } from "~/lib/vaults/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryKey, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const SUPPORTED_FILE_EXTENSIONS_REGEX = /\.(txt|md)$/i;
 
 interface UseVaultOptions {
+  queryKey?: QueryKey;
   onSettled?: () => void;
   filter?: ItemFilter;
 }
@@ -22,7 +23,7 @@ export default function useVault(vault: Vault, options?: UseVaultOptions) {
     isLoading: isFetching,
     error: fetchError,
   } = useQuery({
-    queryKey: ["vault", vault.id],
+    queryKey: options?.queryKey ? options.queryKey : ["vault", vault.id],
     queryFn: () =>
       vault.getRootContent({
         fileNameRegex:

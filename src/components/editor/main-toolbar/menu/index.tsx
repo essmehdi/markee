@@ -21,6 +21,7 @@ import SidebarToggle from "../sidebar-toggle";
 import Source from "../source";
 import ExportSubMenu from "./export";
 import SaveMenuItem from "./save";
+import SaveAsMenuItem from "~/components/editor/main-toolbar/menu/save-as";
 
 /**
  * The main editor file menu component
@@ -100,6 +101,7 @@ function Menu() {
             editorState={editorState}
             currentSource={currentSource}
           />
+          <SaveAsMenuItem />
           <ExportSubMenu editorState={editorState} />
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={() => openFileInputRef.current?.click()}>

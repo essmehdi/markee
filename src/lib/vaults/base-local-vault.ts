@@ -99,13 +99,11 @@ export default abstract class BaseLocalVault implements BaseVault {
 					} as VaultDirectory);
 				}
 			} else {
-				console.log("Checking filter...");
 				if (
 					!filter ||
 					((filter.fileNameRegex === undefined || entry.name.toLowerCase().match(filter.fileNameRegex) !== null) &&
 						(filter.type === undefined || filter.type === "file"))
 				) {
-					console.log("Pushing item", entry.name);
 					items.push({
 						name: entry.name,
 						type: entry.kind,
@@ -245,7 +243,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 			return {
 				name,
 				type: "file",
-				absolutePath: directory.absolutePath + "/" + name,
+				absolutePath: directory.absolutePath === "/" ? name : directory.absolutePath + "/" + name,
 				createdAt: "",
 			};
 		}
@@ -266,7 +264,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 			return {
 				name,
 				type: "directory",
-				absolutePath: directory.absolutePath + "/" + name,
+				absolutePath: directory.absolutePath === "/" ? name : directory.absolutePath + "/" + name,
 				createdAt: "",
 				content: []
 			};

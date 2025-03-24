@@ -3,25 +3,47 @@ import { Vault, VaultDirectory, VaultItem } from "~/lib/vaults/types";
 import { File, Folder, FolderOpen } from "@phosphor-icons/react";
 import clsx from "clsx";
 import { NodeApi, NodeRendererProps, Tree } from "react-arborist";
+import { useQueryClient } from "@tanstack/react-query";
+import useResizeObserver from "use-resize-observer";
 
 type DirectoryPickerProps = {
   vault: Vault;
   onSelect: (dir: VaultDirectory) => void;
+  className?: string;
 };
 
 export default function DirectoryPicker({
+  className,
   vault,
   onSelect,
 }: DirectoryPickerProps) {
-  const { items } = useVault(vault, { filter: { type: "directory" } });
+  const {
+    ref: treeParentRef,
+    height,
+    width,
+  } = useResizeObserver<HTMLDivElement>();
+  const queryClient = useQueryClient();
+  const { items } = useVault(vault, { queryKey: ["directory-picker-vault", vault.id], filter: { type: "directory" } });
 
   const onActivate = (node: NodeApi<VaultItem>) => {
+    vault.expandDirectoryContent(node.data as VaultDirectory);
+    queryClient.invalidateQueries({ queryKey: ["directory-picker-vault", vault.id] });
     onSelect(node.data as VaultDirectory); // The vault items are filtered to allow only directories
   };
 
+  const parentClassName = clsx(className, "border border-border rounded-lg")
+
   return (
-    <div>
-      <Tree data={items} idAccessor="content" onActivate={onActivate}>
+    <div ref={treeParentRef} className={parentClassName}>
+      <Tree
+        data={items}
+        idAccessor="absolutePath"
+        onActivate={onActivate}
+        childrenAccessor="content"
+        width={width}
+        height={height}
+        rowHeight={30}
+      >
         {Directory}
       </Tree>
     </div>
@@ -30,7 +52,7 @@ export default function DirectoryPicker({
 
 function Directory({ node, style, tree }: NodeRendererProps<VaultItem>) {
   const className = clsx(
-    "hover:bg-neutral-100 flex items-center justify-between rounded-lg h-full cursor-pointer mx-5 relative select-none",
+    "hover:bg-neutral-100 flex items-center justify-between rounded-md h-full cursor-pointer relative select-none",
     {
       "bg-neutral-100": node.isSelected,
     }

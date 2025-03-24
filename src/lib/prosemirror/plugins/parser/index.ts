@@ -32,7 +32,6 @@ function nodeDescendantsParser(
   position: number,
   parent: Node | null
 ): boolean {
-  console.log("Analyzing node", node, node.type.name);
   if (
     node.type === mdSchema.nodes.blockquote ||
     node.type === mdSchema.nodes.bullet_list ||
@@ -41,7 +40,6 @@ function nodeDescendantsParser(
     node.type === mdSchema.nodes.table ||
     node.type === mdSchema.nodes.table_row
   ) {
-    console.log("Diving to children...");
     return true;
   }
 
@@ -50,10 +48,8 @@ function nodeDescendantsParser(
     node.type !== mdSchema.nodes.table_header &&
     node.type !== mdSchema.nodes.table_cell
   ) {
-    console.log("Moving to next sibling node...");
     return false;
   }
-  console.log("Parsing...");
 
   /* The offset is to align the ProseMirror positions with the tokens
    * analyzer. ProseMirror positioning system includes also the html tags
@@ -63,7 +59,6 @@ function nodeDescendantsParser(
   );
 
   if (nodeText.length === 0) {
-    console.log("Empty. oving to next sibling node...");
     return false;
   }
 

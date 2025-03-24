@@ -1,8 +1,15 @@
+import { useEditorState } from "@nytimes/react-prosemirror";
+import { Check, CircleNotch } from "@phosphor-icons/react";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { EditorState } from "prosemirror-state";
+import { useState } from "react";
 import DirectoryPicker from "~/components/editor/main-toolbar/menu/save-as/directory-picker";
 import VaultSelectItem from "~/components/editor/vault-manager/vault-select-item";
 import { Button } from "~/components/ui/button";
-import { DialogContent, DialogHeader } from "~/components/ui/dialog";
+import { DialogHeader } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,35 +17,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import useVault from "~/hooks/vaults/use-vault";
 import { getMarkdownFromDocAsync } from "~/lib/prosemirror/serialization/serializer";
+import useDialog from "~/lib/store/dialog-manager";
+import { useSourceManager } from "~/lib/store/source-manager";
+import BaseLocalVault from "~/lib/vaults/base-local-vault";
 import BrowserVault from "~/lib/vaults/browser-vault";
 import { ConflictError } from "~/lib/vaults/errors";
 import LocalVault from "~/lib/vaults/local-vault";
 import { Vault, VaultDirectory } from "~/lib/vaults/types";
-import { useEditorState } from "@nytimes/react-prosemirror";
-import { Dialog, DialogTitle } from "@radix-ui/react-dialog";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import { Tree } from "react-arborist";
 
 type SaveAsDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  editorState: EditorState;
 };
 
-export default function SaveAsDialog({
-  open,
-  onOpenChange,
-}: SaveAsDialogProps) {
+export default function SaveAsDialog({ editorState }: SaveAsDialogProps) {
+  const queryClient = useQueryClient();
+  const changeCurrentSource = useSourceManager(
+    (state) => state.changeCurrentSource
+  );
+  const setLastSaveState = useSourceManager((state) => state.setLastSaveState);
   const [vault, setVault] = useState<Vault | null>(null);
-  const [selectedDirectory, setSelectedDirectory] =
-    useState<VaultDirectory | null>(null);
+  const [selectedDirectory, setSelectedDirectory] = useState<VaultDirectory>(
+    BaseLocalVault.ROOT_DIRECTORY
+  );
   const [fileName, setFileName] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
-
-  const editorState = useEditorState();
+  const { closeDialog } = useDialog();
 
   const {
     data: vaults,
@@ -77,77 +82,88 @@ export default function SaveAsDialog({
 
     setIsSaving(true);
     vault
-      ?.createFile(selectedDirectory, fileName)
+      ?.createFile(selectedDirectory, correctedFileName)
       .then((file) => {
         getMarkdownFromDocAsync(editorState)
           .then((serialized) => {
             vault
               .writeToFile(file, serialized)
-              .then(() => onOpenChange(false))
-              .catch((e) => setError("An error occured while writing to file"))
+              .then(() => {
+                changeCurrentSource({ vault: vault, file });
+                setLastSaveState(editorState);
+                queryClient.invalidateQueries({
+                  queryKey: ["vault", vault.id],
+                });
+                closeDialog();
+              })
+              .catch((e) => {
+                console.error(e);
+                setError("An error occured while writing to file");
+              })
               .finally(() => setIsSaving(false));
           })
-          .catch(() => {
+          .catch((e) => {
+            console.error(e);
             setError("An error occured while serializing file");
           });
       })
       .catch((e: ConflictError) => {
+        console.error(e);
         setIsSaving(false);
         setError(e.message);
       });
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Choose where to save</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-5">
-          <Select
-            value={vault?.id ?? undefined}
-            onValueChange={setSelectedVault}
-          >
-            <SelectTrigger className="w-96">
-              <SelectValue
-                placeholder={isLoading ? "Loading vaults..." : "Select a vault"}
-              />
-            </SelectTrigger>
-            <SelectContent position="popper">
-              {vaults?.map((vault) => (
-                <SelectItem key={vault.id} value={vault.id}>
-                  <VaultSelectItem vault={vault} />
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {vault && (
-            <>
-              <DirectoryPicker vault={vault} onSelect={setSelectedDirectory} />
+    <>
+      <DialogHeader>
+        <DialogTitle>Choose where to save</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-5">
+        <Select value={vault?.id ?? undefined} onValueChange={setSelectedVault}>
+          <SelectTrigger className="w-full">
+            <SelectValue
+              placeholder={isLoading ? "Loading vaults..." : "Select a vault"}
+            />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            {vaults?.map((vault) => (
+              <SelectItem key={vault.id} value={vault.id}>
+                <VaultSelectItem vault={vault} />
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {vault && (
+          <>
+            <DirectoryPicker
+              className="w-full h-48"
+              vault={vault}
+              onSelect={setSelectedDirectory}
+            />
+            <div>
+              <Label>File name</Label>
               <Input
+                className="w-full"
                 name="file-name"
                 value={fileName}
                 onChange={(e) => setFileName(e.target.value)}
               />
-            </>
-          )}
-          <div className="space-y-2">
-            <p
-              data-visible={error !== ""}
-              className="text-destructive-foreground data-[visible=true]:invisible"
-            >
-              {error}
-            </p>
-            <Button
-              className="h-full"
-              disabled={selectedDirectory === null}
-              onClick={saveFile}
-            >
-              Save
-            </Button>
-          </div>
+            </div>
+          </>
+        )}
+        <div className="space-y-2">
+          {error !== "" && <p className="text-destructive text-sm">{error}</p>}
+          <Button
+            className="h-full"
+            disabled={isSaving || vault === null || fileName === ""}
+            onClick={saveFile}
+          >
+            {isSaving ? <CircleNotch className="animate-spin" /> : <Check />}
+            Save
+          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </>
   );
 }
