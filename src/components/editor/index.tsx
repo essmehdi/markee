@@ -27,10 +27,11 @@ import { tableEditing } from "prosemirror-tables";
 import "prosemirror-tables/style/tables.css";
 import { NodeViewConstructor } from "prosemirror-view";
 import "prosemirror-view/style/prosemirror.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "~/styles/editor.css";
 import Toolbar from "./toolbar";
 import { useToast } from "~/hooks/use-toast";
+import { Node } from "prosemirror-model";
 
 export const nodeViews: { [key: string]: NodeViewConstructor } = {
   code(node, view, getPos) {
@@ -58,9 +59,25 @@ export const editorPlugins = [
   pasteHandler,
 ];
 
+const AUTO_SAVE_DRAFT_INTERVAL = 2000;
+const AUTO_SAVE_DRAFT_LOCAL_STORAGE_KEY = "draft";
+
+// Retrieve auto saved draft doc from local storage
+const localStorageSavedDoc = localStorage.getItem(AUTO_SAVE_DRAFT_LOCAL_STORAGE_KEY);
+let savedDoc: Node | undefined = undefined;
+if (localStorageSavedDoc) {
+  try {
+    savedDoc = Node.fromJSON(mdSchema, JSON.parse(localStorageSavedDoc))
+  } catch (e) {
+    console.error("Could not parse saved doc from local storage.", e);
+  }
+}
+
+// Initialize editor state with empty draft or auto saved draft. 
 export const editorInitialState = EditorState.create({
   schema: mdSchema,
   plugins: editorPlugins,
+  doc: savedDoc
 });
 
 /**
@@ -84,6 +101,7 @@ export default function Editor() {
   const [mount, setMount] = useState<HTMLElement | null>(null);
   const [editorState, setEditorState] =
     useState<EditorState>(editorInitialState);
+  const draftAutoSaveTimeout = useRef<ReturnType<typeof setTimeout>>(null);
 
   /**
    * Reads the selected file and sets it as the source of the
@@ -167,6 +185,20 @@ export default function Editor() {
       clearSource();
     }
   }, [isCurrentSourceDeleted]);
+
+  useEffect(() => {
+    if (!currentSource) {
+      if (draftAutoSaveTimeout.current) {
+        clearTimeout(draftAutoSaveTimeout.current);
+      }
+      draftAutoSaveTimeout.current = setTimeout(() => {
+        localStorage.setItem(
+          AUTO_SAVE_DRAFT_LOCAL_STORAGE_KEY,
+          JSON.stringify(editorState.doc.toJSON())
+        );
+      }, AUTO_SAVE_DRAFT_INTERVAL);
+    }
+  }, [editorState, currentSource]);
 
   return (
     <ProseMirror
