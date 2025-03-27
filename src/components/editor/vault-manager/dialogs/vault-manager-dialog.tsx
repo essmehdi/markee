@@ -83,11 +83,11 @@ export default function VaultManagerDialog() {
         <DialogTitle>Manage your vaults</DialogTitle>
       </DialogHeader>
       <div className="space-y-5">
-        {vaults && vaults.length > 0 && false ? (
+        {vaults && vaults.length > 0 ? (
           <ScrollArea>
             <div className="max-h-80 divide-y">
               {vaults?.map((vault) => (
-                <div className="mr-5 flex justify-between py-3">
+                <div className="flex justify-between py-3">
                   <div>
                     <p className="font-bold">{vault.name}</p>
                     <p className="text-sm capitalize text-muted-foreground">
