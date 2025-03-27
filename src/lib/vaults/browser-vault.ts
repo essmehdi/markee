@@ -5,6 +5,7 @@ import JSZip from "jszip";
 
 export default class BrowserVault extends BaseLocalVault {
   private static readonly VAULTS_FOLDER_NAME = "vaults";
+  private static readonly ID_PREFIX = "browser-";
   public readonly type = "browser";
 
   /**
@@ -39,7 +40,7 @@ export default class BrowserVault extends BaseLocalVault {
     for await (const vault of vaultsDir.values()) {
       vaults.push(
         new BrowserVault(
-          vault.name,
+          BrowserVault.ID_PREFIX + vault.name,
           vault.name,
           vault as FileSystemDirectoryHandle
         )

@@ -7,6 +7,7 @@ import BaseLocalVault from "./base-local-vault";
  */
 export default class LocalVault extends BaseLocalVault {
 	public readonly type = "local";
+	private static readonly ID_PREFIX = "local-"
 
 	/**
 	 * Gets stored vault in IndexedDB
@@ -15,7 +16,7 @@ export default class LocalVault extends BaseLocalVault {
 	 */
 	static async getLocalVaultFromIndexedDB(id: string) {
 		const savedVault = (await db.vaults.get(id))! as SavedVault;
-		return new LocalVault(savedVault.id, savedVault.name, savedVault.rootHandle);
+		return new LocalVault(LocalVault.ID_PREFIX + savedVault.id, savedVault.name, savedVault.rootHandle);
 	}
 
 	/**
@@ -25,7 +26,7 @@ export default class LocalVault extends BaseLocalVault {
 	static async getAllLocalVaultsFromIndexedDB(): Promise<LocalVault[]> {
 		const vaults: LocalVault[] = [];
 		await db.vaults.each((savedVault) =>
-			vaults.push(new LocalVault(savedVault.id, savedVault.name, savedVault.rootHandle))
+			vaults.push(new LocalVault(LocalVault.ID_PREFIX + savedVault.id, savedVault.name, savedVault.rootHandle))
 		);
 		return vaults;
 	}
