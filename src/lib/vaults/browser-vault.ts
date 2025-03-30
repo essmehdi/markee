@@ -82,6 +82,66 @@ export default class BrowserVault extends BaseLocalVault {
   }
 
   /**
+   * Renames vault
+   * @param newName New name
+   */
+  public async rename(newName: string): Promise<void> {
+    // Get the vaults directory
+    const vaultsDir = await BrowserVault.getVaultsDir();
+
+    // Check if a vault with the new name already exists
+    try {
+      await vaultsDir.getDirectoryHandle(newName);
+      return Promise.reject(new ConflictError());
+    } catch {
+      // If the directory doesn't exist, we can proceed
+    }
+
+    // Create a new directory with the new name
+    const newDirHandle = await vaultsDir.getDirectoryHandle(newName, {
+      create: true,
+    });
+
+    // Copy all content from old directory to new directory
+    await this.copyDirectory(this.rootHandle, newDirHandle);
+
+    // Delete the old directory
+    await vaultsDir.removeEntry(this.name);
+
+    // Update the instance properties
+    this.id = BrowserVault.ID_PREFIX + newName;
+    this.name = newName;
+    this.rootHandle = newDirHandle;
+  }
+
+  /**
+   * Helper method to copy all contents from one directory to another
+   * @param sourceDir Source directory handle
+   * @param destDir Destination directory handle
+   */
+  private async copyDirectory(
+    sourceDir: FileSystemDirectoryHandle,
+    destDir: FileSystemDirectoryHandle
+  ): Promise<void> {
+    for await (const entry of sourceDir.values()) {
+      if (entry.kind === "file") {
+        const file = await entry.getFile();
+        const newFileHandle = await destDir.getFileHandle(entry.name, {
+          create: true,
+        });
+        const writable = await newFileHandle.createWritable();
+        await writable.write(await file.arrayBuffer());
+        await writable.close();
+      } else if (entry.kind === "directory") {
+        const newSubDir = await destDir.getDirectoryHandle(entry.name, {
+          create: true,
+        });
+        await this.copyDirectory(entry, newSubDir);
+      }
+    }
+  }
+
+  /**
    * Deletes the vault from OPFS
    */
   public delete() {

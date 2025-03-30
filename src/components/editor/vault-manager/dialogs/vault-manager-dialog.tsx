@@ -17,14 +17,16 @@ import useConfirmationAlert from "~/lib/store/confirmation-alert-manager";
 import BrowserVault from "~/lib/vaults/browser-vault";
 import LocalVault from "~/lib/vaults/local-vault";
 import { Vault } from "~/lib/vaults/types";
-import { CircleNotch, Export, Plus, Trash } from "@phosphor-icons/react";
+import { CircleNotch, Export, Pen, Plus, Trash } from "@phosphor-icons/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import EditVaultDialog from "~/components/editor/vault-manager/dialogs/edit-vault-dialog";
 
 export default function VaultManagerDialog() {
   const queryClient = useQueryClient();
   const [openNewVaultDialog, setOpenNewVaultDialog] = useState(false);
   const [exportingVaultId, setExportingVaultId] = useState<string | null>(null);
+  const [vaultToEditId, setVaultToEditId] = useState<string | null>(null);
   const { showConfirmationAlert } = useConfirmationAlert();
 
   const { data: vaults } = useQuery({
@@ -34,6 +36,11 @@ export default function VaultManagerDialog() {
       ...(await LocalVault.getAllLocalVaultsFromIndexedDB()),
     ],
   });
+
+  const vaultToEdit = useMemo(
+    () => vaults?.find((vault) => vault.id === vaultToEditId) ?? null,
+    [vaultToEditId, vaults]
+  );
 
   const showNewVaultDialog = () => {
     setOpenNewVaultDialog(true);
@@ -77,10 +84,20 @@ export default function VaultManagerDialog() {
       });
   };
 
+  const onVaultEditDialogOpenChange = (open: boolean) => {
+    if (!open) {
+      setVaultToEditId(null);
+    }
+  };
+
   return (
     <>
       <DialogHeader>
         <DialogTitle>Manage your vaults</DialogTitle>
+        <DialogDescription>
+          You can edit your vaults here. Browser vaults will have the option to
+          export your data.
+        </DialogDescription>
       </DialogHeader>
       <div className="space-y-5">
         {vaults && vaults.length > 0 ? (
@@ -117,6 +134,18 @@ export default function VaultManagerDialog() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setVaultToEditId(vault.id)}
+                        >
+                          <Pen />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Edit vault</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
                           variant="destructive"
                           size="icon"
                           onClick={() => deleteVault(vault)}
@@ -143,6 +172,18 @@ export default function VaultManagerDialog() {
         <Dialog open={openNewVaultDialog} onOpenChange={setOpenNewVaultDialog}>
           <DialogContent>
             <NewVaultDialog closeDialog={closeNewVaultDialog} />
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={vaultToEdit !== null}
+          onOpenChange={onVaultEditDialogOpenChange}
+        >
+          <DialogContent>
+            <EditVaultDialog
+              vault={vaultToEdit ?? undefined}
+              closeDialog={() => setVaultToEditId(null)}
+            />
           </DialogContent>
         </Dialog>
       </div>
