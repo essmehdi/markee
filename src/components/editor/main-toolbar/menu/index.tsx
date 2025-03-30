@@ -1,3 +1,11 @@
+import {
+  useEditorEventCallback,
+  useEditorState,
+} from "@nytimes/react-prosemirror";
+import { File } from "@phosphor-icons/react";
+import { Node, Slice } from "prosemirror-model";
+import { ChangeEvent, useRef } from "react";
+import SaveAsMenuItem from "~/components/editor/main-toolbar/menu/save-as";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -10,18 +18,10 @@ import mdSchema from "~/lib/prosemirror/editor-schema";
 import { getNewDocFromMarkdown } from "~/lib/prosemirror/serialization/deserializer";
 import useConfirmationAlert from "~/lib/store/confirmation-alert-manager";
 import { useSourceManager } from "~/lib/store/source-manager";
-import {
-  useEditorEventCallback,
-  useEditorState,
-} from "@nytimes/react-prosemirror";
-import { File } from "@phosphor-icons/react";
-import { Node, Slice } from "prosemirror-model";
-import { ChangeEvent, useRef } from "react";
 import SidebarToggle from "../sidebar-toggle";
 import Source from "../source";
 import ExportSubMenu from "./export";
 import SaveMenuItem from "./save";
-import SaveAsMenuItem from "~/components/editor/main-toolbar/menu/save-as";
 
 /**
  * The main editor file menu component
