@@ -32,7 +32,6 @@ export default function BrowserSelectionMenu() {
           {getHotkeyText(BROWSER_HOTKEYS.CUT_HOTKEY)}
         </ContextMenuShortcut>
       </ContextMenuItem>
-      <ContextMenuSeparator />
     </ContextMenuContent>
   );
 }
