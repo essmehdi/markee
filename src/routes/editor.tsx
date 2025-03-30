@@ -6,6 +6,7 @@ import { SidebarInset } from "~/components/ui/sidebar";
 
 export const Route = createFileRoute('/editor')({
   component: EditorPage,
+	ssr: false
 })
 
 /**
