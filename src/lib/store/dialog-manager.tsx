@@ -24,7 +24,6 @@ const useDialog = create<DialogManagerStore>()((set, get) => ({
   closeDialog: () => {
     set((state) => ({
       ...state,
-      content: <></>,
       open: false,
     }));
   },
