@@ -104,7 +104,7 @@ export default function VaultManagerDialog() {
           <ScrollArea>
             <div className="max-h-80 divide-y">
               {vaults?.map((vault) => (
-                <div className="flex justify-between py-3">
+                <div key={vault.id} className="flex justify-between py-3">
                   <div>
                     <p className="font-bold">{vault.name}</p>
                     <p className="text-sm capitalize text-muted-foreground">
