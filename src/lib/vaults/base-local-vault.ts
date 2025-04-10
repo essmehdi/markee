@@ -332,7 +332,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 	public async copy(
 		source: VaultItem,
 		destinationDir: VaultDirectory,
-	): Promise<void> {
+	): Promise<VaultItem> {
 		return Promise.reject(new UnsupportedOperationError());
 	}
 
@@ -344,7 +344,15 @@ export default abstract class BaseLocalVault implements BaseVault {
 	public async move(
 		source: VaultItem,
 		destinationDir: VaultDirectory,
-	): Promise<void> {
+	): Promise<VaultItem> {
 		return Promise.reject(new UnsupportedOperationError());
+	}
+
+	public static joinPaths(...parts: string[]): string {
+		const result = parts.join("/").replace(new RegExp("/" + "{1,}", "g"), "/");
+		if (result.startsWith("/") && result !== "/") {
+			return result.slice(1);
+		}
+		return result;
 	}
 }
