@@ -68,9 +68,6 @@ export default function useVault(vault: Vault, options?: UseVaultOptions) {
 				items.map((item) => vault.move(item, destination)),
 			);
 		},
-		onError: (error) => {
-			console.error(error);
-		},
 		onSuccess: (data, variables) => {
 			// If currentSource file was moved, update the currentSource state.
 			const oldCurrentFileIndex =
