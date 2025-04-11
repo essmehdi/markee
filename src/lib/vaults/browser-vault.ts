@@ -156,10 +156,20 @@ export default class BrowserVault extends BaseLocalVault {
 	public async copy(
 		source: VaultItem,
 		destinationDir: VaultDirectory,
+		newName?: string,
 	): Promise<VaultItem> {
 		const joinedPath = BaseLocalVault.joinPaths(
 			destinationDir.absolutePath,
-			source.name,
+			newName ?? source.name,
+		);
+
+		console.log(
+			"Copying",
+			source,
+			"to",
+			destinationDir,
+			"with new name",
+			newName,
 		);
 
 		// Check potential conflict
@@ -171,7 +181,6 @@ export default class BrowserVault extends BaseLocalVault {
 				content: null,
 				name: "",
 			});
-			console.log("No conflict detected");
 			return Promise.reject(new ConflictError());
 		} catch { }
 
@@ -182,23 +191,29 @@ export default class BrowserVault extends BaseLocalVault {
 
 		if (source.type === "file") {
 			const file = await (sourceHandle as FileSystemFileHandle).getFile();
-			const newFileHandle = await destHandle.getFileHandle(source.name, {
-				create: true,
-			});
+			const newFileHandle = await destHandle.getFileHandle(
+				newName ?? source.name,
+				{
+					create: true,
+				},
+			);
 			const writable = await newFileHandle.createWritable();
 			await writable.write(await file.text());
 			await writable.close();
 			return {
-				name: source.name,
+				name: newName ?? source.name,
 				absolutePath: joinedPath,
 				type: "file",
 				createdAt: "",
 			};
 		} else {
 			// For directories, recursively copy all contents
-			const newDirHandle = await destHandle.getDirectoryHandle(source.name, {
-				create: true,
-			});
+			const newDirHandle = await destHandle.getDirectoryHandle(
+				newName ?? source.name,
+				{
+					create: true,
+				},
+			);
 			const sourceDir = source as VaultDirectory;
 			if (sourceDir.content) {
 				for (const item of sourceDir.content) {
@@ -212,13 +227,43 @@ export default class BrowserVault extends BaseLocalVault {
 				}
 			}
 			return {
-				name: source.name,
+				name: newName ?? source.name,
 				absolutePath: joinedPath,
 				type: "directory",
 				content: null,
 				createdAt: "",
 			};
 		}
+	}
+
+	/**
+	 * Renames a vault item
+	 * @param item The item to rename
+	 * @param newName New item name
+	 */
+	public async renameItem(
+		item: VaultItem,
+		newName: string,
+	): Promise<VaultItem> {
+		let splitPath = item.absolutePath.split("/");
+		splitPath.pop();
+		let destinationPath = splitPath.join("/");
+		if (destinationPath === "") {
+			destinationPath = "/";
+		}
+		const newItem = await this.copy(
+			item,
+			{
+				name: "",
+				absolutePath: destinationPath,
+				type: "directory",
+				createdAt: "",
+				content: null,
+			},
+			newName,
+		);
+		await this.remove(item);
+		return newItem;
 	}
 
 	/**

@@ -333,7 +333,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 		source: VaultItem,
 		destinationDir: VaultDirectory,
 	): Promise<VaultItem> {
-		return Promise.reject(new UnsupportedOperationError());
+		throw new UnsupportedOperationError();
 	}
 
 	/**
@@ -345,7 +345,7 @@ export default abstract class BaseLocalVault implements BaseVault {
 		source: VaultItem,
 		destinationDir: VaultDirectory,
 	): Promise<VaultItem> {
-		return Promise.reject(new UnsupportedOperationError());
+		throw new UnsupportedOperationError();
 	}
 
 	public static joinPaths(...parts: string[]): string {
@@ -354,5 +354,13 @@ export default abstract class BaseLocalVault implements BaseVault {
 			return result.slice(1);
 		}
 		return result;
+	}
+
+	public rename(name: string): Promise<void> {
+		throw new UnsupportedOperationError();
+	}
+
+	public renameItem(item: VaultItem, newName: string): Promise<VaultItem> {
+		throw new UnsupportedOperationError();
 	}
 }

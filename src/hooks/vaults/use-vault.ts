@@ -21,6 +21,11 @@ export interface VaultOperationData {
 	destination: VaultDirectory;
 }
 
+export interface VaultItemRenameData {
+	item: VaultItem;
+	newName: string;
+}
+
 export default function useVault(vault: Vault, options?: UseVaultOptions) {
 	const queryClient = useQueryClient();
 	const currentSource = useSourceManager((state) => state.currentSource);
@@ -104,6 +109,53 @@ export default function useVault(vault: Vault, options?: UseVaultOptions) {
 		onSettled: options?.onSettled,
 	});
 
+	const {
+		mutateAsync: rename,
+		isPending: isRenaming,
+		error: renameError,
+	} = useMutation({
+		mutationFn: async (operations: VaultItemRenameData[]) => {
+			return await Promise.all(
+				operations.map(({ item, newName }) => vault.renameItem(item, newName)),
+			);
+		},
+		onSuccess: (data, renameOperations) => {
+			// If currentSource file was moved, update the currentSource state.
+			const oldCurrentFileIndex =
+				currentSource !== null && currentSource.vault.id === vault.id
+					? renameOperations.findIndex((operation) =>
+						operation.item.type === "file"
+							? operation.item.absolutePath ===
+							currentSource?.file.absolutePath
+							: currentSource?.file.absolutePath.startsWith(
+								operation.item.absolutePath,
+							),
+					)
+					: -1;
+			if (oldCurrentFileIndex !== -1) {
+				const movedItem = data[oldCurrentFileIndex];
+				let newFile;
+				if (movedItem.type === "file") {
+					newFile = movedItem;
+				} else {
+					newFile = {
+						...currentSource!.file,
+						absolutePath: BaseLocalVault.joinPaths(
+							movedItem.absolutePath,
+							currentSource!.file.name,
+						),
+					};
+				}
+				changeCurrentSource({
+					...currentSource!,
+					file: newFile,
+				});
+			}
+			queryClient.invalidateQueries({ queryKey: ["vault", vault.id] });
+		},
+		onSettled: options?.onSettled,
+	});
+
 	return {
 		items,
 		isFetching,
@@ -114,5 +166,8 @@ export default function useVault(vault: Vault, options?: UseVaultOptions) {
 		move,
 		isMoving,
 		moveError,
+		rename,
+		isRenaming,
+		renameError,
 	};
 }

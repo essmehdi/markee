@@ -22,6 +22,8 @@ export type VaultItem = VaultFile | VaultDirectory;
 export interface BaseVault {
 	id: string;
 	name: string;
+	rename(name: string): Promise<void>;
+	renameItem(item: VaultItem, newName: string): Promise<VaultItem>;
 	getCachedRootContent(): Promise<VaultItem[]>;
 	getRootVaultDirectory(): VaultDirectory;
 	getRootContent(): Promise<VaultItem[]>;
@@ -29,7 +31,10 @@ export interface BaseVault {
 	writeToFile(file: VaultFile, content: string): Promise<void>;
 	expandDirectoryContent(dir: VaultDirectory): Promise<void>;
 	createFile(dirPath: VaultDirectory, name: string): Promise<VaultFile>;
-	createDirectory(dirPath: VaultDirectory, name: string): Promise<VaultDirectory>;
+	createDirectory(
+		dirPath: VaultDirectory,
+		name: string,
+	): Promise<VaultDirectory>;
 	copy(item: VaultItem, destinationDir: VaultDirectory): Promise<VaultItem>;
 	move(item: VaultItem, destinationDir: VaultDirectory): Promise<VaultItem>;
 	remove(item: VaultItem): Promise<void>;

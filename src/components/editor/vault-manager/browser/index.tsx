@@ -12,7 +12,7 @@ import { Vault, VaultDirectory, VaultItem } from "~/lib/vaults/types";
 import { CircleNotch } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { NodeApi, Tree } from "react-arborist";
+import { NodeApi, RenameHandler, Tree } from "react-arborist";
 import useResizeObserver from "use-resize-observer";
 import BrowserItem from "./item";
 import { BROWSER_HOTKEYS } from "~/components/editor/vault-manager/browser/hotkeys";
@@ -84,12 +84,15 @@ export default function Browser({ vault }: BrowserProps) {
 		items,
 		copy,
 		move,
+		rename,
 		isFetching,
 		isCopying,
 		isMoving,
+		isRename,
 		fetchError,
 		copyError,
 		moveError,
+		renameError,
 	} = useVault(vault, {
 		onSettled: () => {
 			setClipboard({ items: [], move: false });
@@ -105,6 +108,10 @@ export default function Browser({ vault }: BrowserProps) {
 			await vault.expandDirectoryContent(selectedNode.data);
 			queryClient.invalidateQueries({ queryKey: ["vault", vault.id] });
 		}
+	};
+
+	const onRename: RenameHandler<VaultItem> = ({ name, node }) => {
+		rename([{ item: node.data, newName: name }]);
 	};
 
 	const onSelect = (nodes: NodeApi<VaultItem>[]) => {
@@ -150,6 +157,15 @@ export default function Browser({ vault }: BrowserProps) {
 			});
 		}
 	}, [moveError]);
+
+	useEffect(() => {
+		if (renameError) {
+			toast({
+				title: "Could not rename file(s)",
+				description: renameError.message,
+			});
+		}
+	}, [renameError]);
 
 	useHotkey({
 		...BROWSER_HOTKEYS.COPY_HOTKEY,
@@ -209,6 +225,8 @@ export default function Browser({ vault }: BrowserProps) {
 							childrenAccessor="content"
 							onActivate={onItemActivate}
 							onSelect={onSelect}
+							onRename={onRename}
+							disableEdit={false}
 							width={width}
 							height={height}
 							rowHeight={40}
