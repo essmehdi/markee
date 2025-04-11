@@ -11,7 +11,7 @@ import BaseLocalVault from "~/lib/vaults/base-local-vault";
 import { Vault, VaultDirectory, VaultItem } from "~/lib/vaults/types";
 import { CircleNotch } from "@phosphor-icons/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NodeApi, Tree } from "react-arborist";
 import useResizeObserver from "use-resize-observer";
 import BrowserItem from "./item";
@@ -74,6 +74,10 @@ export default function Browser({ vault }: BrowserProps) {
 		height,
 		width,
 	} = useResizeObserver<HTMLDivElement>();
+
+	const [browserWrapper, setBrowserWrapper] = useState<HTMLElement | null>(
+		null,
+	);
 
 	const queryClient = useQueryClient();
 	const {
@@ -147,11 +151,20 @@ export default function Browser({ vault }: BrowserProps) {
 		}
 	}, [moveError]);
 
-	useHotkey({ ...BROWSER_HOTKEYS.COPY_HOTKEY, callback: copyToClipboard });
-	useHotkey({ ...BROWSER_HOTKEYS.CUT_HOTKEY, callback: cutToClipboard });
+	useHotkey({
+		...BROWSER_HOTKEYS.COPY_HOTKEY,
+		callback: copyToClipboard,
+		element: browserWrapper,
+	});
+	useHotkey({
+		...BROWSER_HOTKEYS.CUT_HOTKEY,
+		callback: cutToClipboard,
+		element: browserWrapper,
+	});
 	useHotkey({
 		...BROWSER_HOTKEYS.PASTE_HOTKEY,
 		callback: pasteClipboardItemsToFolder,
+		element: browserWrapper,
 	});
 
 	if (isFetching) {
@@ -173,7 +186,10 @@ export default function Browser({ vault }: BrowserProps) {
 		<BrowserContext.Provider
 			value={{ selection, clipboard, setClipboard, copy, move }}
 		>
-			<div className="relative flex grow flex-col gap-2">
+			<div
+				className="relative flex grow flex-col gap-2"
+				ref={setBrowserWrapper}
+			>
 				<ContextMenu modal={false}>
 					<ContextMenuTrigger>
 						<div className="flex items-center justify-between">

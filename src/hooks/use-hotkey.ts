@@ -5,6 +5,7 @@ type UseHotkeyConfig = {
 	shiftKey: boolean;
 	key: string;
 	callback: (e: KeyboardEvent) => void;
+	element: HTMLElement | Window | null;
 };
 
 /**
@@ -21,19 +22,34 @@ type UseHotkeyConfig = {
  * });
  * ```
  */
-export function useHotkey({ ctrlKey, shiftKey, key, callback }: UseHotkeyConfig) {
+export function useHotkey({
+	ctrlKey,
+	shiftKey,
+	key,
+	callback,
+	element,
+}: UseHotkeyConfig) {
 	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			const isMac = navigator.userAgent.includes("Mac");
-			const ctrlPressed = isMac ? e.metaKey : e.ctrlKey;
+		if (element) {
+			const handleKeyDown = (e: KeyboardEvent) => {
+				const isMac = navigator.userAgent.includes("Mac");
+				const ctrlPressed = isMac ? e.metaKey : e.ctrlKey;
 
-			if (ctrlPressed === ctrlKey && e.shiftKey === shiftKey && e.key.toLowerCase() === key.toLowerCase()) {
-				e.preventDefault();
-				callback(e);
-			}
-		};
+				if (
+					ctrlPressed === ctrlKey &&
+					e.shiftKey === shiftKey &&
+					e.key.toLowerCase() === key.toLowerCase()
+				) {
+					e.preventDefault();
+					callback(e);
+				}
+			};
 
-		window.addEventListener("keydown", handleKeyDown);
-		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [ctrlKey, shiftKey, key, callback]);
+			element.addEventListener(
+				"keydown",
+				handleKeyDown as EventListenerOrEventListenerObject,
+			);
+			return () => element.removeEventListener("keydown", handleKeyDown as EventListenerOrEventListenerObject);
+		}
+	}, [ctrlKey, shiftKey, key, callback, element]);
 }
