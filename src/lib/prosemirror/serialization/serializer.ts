@@ -170,5 +170,5 @@ export function handleNode(
 	parent?: Node,
 	childIndex?: number
 ): string {
-	return MD_NODE_HANDLERS[node.type.name]?.(node, parent, childIndex) ?? "";
+	return MD_NODE_HANDLERS[node.type.name]?.(node, parent, childIndex) ?? node.textContent;
 }
