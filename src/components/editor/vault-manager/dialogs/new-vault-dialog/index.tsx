@@ -42,7 +42,7 @@ const vaultTypes: Record<VaultType, VaultTypeOption> = {
  */
 export default function NewVaultDialog({ closeDialog }: NewVaultDialogProps) {
   const [newVaultType, setNewVaultType] = useState<VaultType | undefined>(
-    supportsFileSystemAPI ? undefined : "local"
+    supportsFileSystemAPI ? "local" : "browser"
   );
 
   return (
